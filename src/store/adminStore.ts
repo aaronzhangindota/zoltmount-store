@@ -71,6 +71,7 @@ interface AdminState {
   addOrder: (order: Order) => void
   updateOrderStatus: (id: string, status: Order['status']) => void
   updateOrderTracking: (id: string, trackingNumber: string, carrier: string) => void
+  deleteOrder: (id: string) => void
 
   addPaymentMethod: (method: PaymentMethod) => void
   updatePaymentMethod: (id: string, data: Partial<PaymentMethod>) => void
@@ -123,6 +124,8 @@ export const useAdminStore = create<AdminState>()(
         set((s) => ({
           orders: s.orders.map((o) => (o.id === id ? { ...o, trackingNumber, carrier } : o)),
         })),
+      deleteOrder: (id) =>
+        set((s) => ({ orders: s.orders.filter((o) => o.id !== id) })),
 
       addPaymentMethod: (method) =>
         set((s) => ({ paymentMethods: [...s.paymentMethods, method] })),

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { FiShoppingCart, FiSearch, FiMapPin, FiTruck } from 'react-icons/fi'
+import { FiShoppingCart, FiSearch, FiMapPin, FiTruck, FiTrash2, FiCheck, FiX, FiPackage, FiChevronDown, FiChevronUp, FiSave } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 import type { Order } from '../../store/adminStore'
 
@@ -49,8 +49,72 @@ export const AdminOrdersPage: React.FC = () => {
   const orders = useAdminStore((s) => s.orders)
   const updateOrderStatus = useAdminStore((s) => s.updateOrderStatus)
   const updateOrderTracking = useAdminStore((s) => s.updateOrderTracking)
+  const deleteOrder = useAdminStore((s) => s.deleteOrder)
   const [activeTab, setActiveTab] = useState<TabStatus>('all')
   const [search, setSearch] = useState('')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  // Local tracking edits (only save on button click)
+  const [editingTracking, setEditingTracking] = useState<Record<string, { carrier: string; trackingNumber: string }>>({})
+
+  const getTrackingEdit = (order: Order) =>
+    editingTracking[order.id] ?? { carrier: order.carrier || '', trackingNumber: order.trackingNumber || '' }
+
+  const setTrackingField = (orderId: string, field: 'carrier' | 'trackingNumber', value: string) => {
+    setEditingTracking((prev) => ({
+      ...prev,
+      [orderId]: { ...getTrackingEditById(orderId), [field]: value },
+    }))
+  }
+
+  const getTrackingEditById = (id: string) => {
+    const order = orders.find((o) => o.id === id)
+    return editingTracking[id] ?? { carrier: order?.carrier || '', trackingNumber: order?.trackingNumber || '' }
+  }
+
+  const handleSaveTracking = (orderId: string) => {
+    const edit = getTrackingEditById(orderId)
+    updateOrderTracking(orderId, edit.trackingNumber, edit.carrier)
+    // Clear local edit
+    setEditingTracking((prev) => {
+      const next = { ...prev }
+      delete next[orderId]
+      return next
+    })
+  }
+
+  const hasTrackingChanges = (order: Order) => {
+    const edit = editingTracking[order.id]
+    if (!edit) return false
+    return edit.carrier !== (order.carrier || '') || edit.trackingNumber !== (order.trackingNumber || '')
+  }
+
+  // Workflow action: mark as next status
+  const handleConfirmOrder = (id: string) => updateOrderStatus(id, 'processing')
+
+  const handleShipOrder = (id: string) => {
+    const edit = getTrackingEditById(id)
+    if (edit.trackingNumber && edit.carrier) {
+      updateOrderTracking(id, edit.trackingNumber, edit.carrier)
+      setEditingTracking((prev) => { const next = { ...prev }; delete next[id]; return next })
+    }
+    updateOrderStatus(id, 'shipped')
+  }
+
+  const handleCompleteOrder = (id: string) => updateOrderStatus(id, 'completed')
+
+  const handleCancelOrder = (id: string) => {
+    if (window.confirm('确定要取消此订单吗？')) {
+      updateOrderStatus(id, 'cancelled')
+    }
+  }
+
+  const handleDeleteOrder = (id: string) => {
+    if (window.confirm('确定要删除此订单吗？删除后不可恢复。')) {
+      deleteOrder(id)
+      if (expandedId === id) setExpandedId(null)
+    }
+  }
 
   // Count by status
   const statusCounts = useMemo(() => {
@@ -65,12 +129,10 @@ export const AdminOrdersPage: React.FC = () => {
   const filtered = useMemo(() => {
     let result = orders
 
-    // Tab filter
     if (activeTab !== 'all') {
       result = result.filter((o) => o.status === activeTab)
     }
 
-    // Search
     if (search) {
       const q = search.toLowerCase()
       result = result.filter(
@@ -144,126 +206,213 @@ export const AdminOrdersPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {filtered.map((order) => (
-            <div key={order.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden flex">
-              {/* Left colored status bar */}
-              <div className={`w-1.5 flex-shrink-0 ${statusBarColors[order.status] || 'bg-gray-300'}`} />
+          {filtered.map((order) => {
+            const isExpanded = expandedId === order.id
+            const trackingEdit = getTrackingEdit(order)
 
-              <div className="flex-1 min-w-0">
-                {/* Order header */}
-                <div className="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-4">
+            return (
+              <div key={order.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* Order header - clickable to expand */}
+                <button
+                  onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                  className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3 text-sm flex-wrap">
+                    <div className={`w-1.5 h-8 rounded-full flex-shrink-0 ${statusBarColors[order.status] || 'bg-gray-300'}`} />
                     <span className="font-bold text-gray-900">{order.id}</span>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
                       {statusLabels[order.status] || order.status}
                     </span>
+                    <span className="text-gray-400">{order.customer.firstName} {order.customer.lastName}</span>
+                    <span className="text-gray-400">{new Date(order.createdAt).toLocaleDateString('zh-CN')}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <select
-                      value={order.status}
-                      onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
-                      className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    >
-                      {statusOptions.map((s) => (
-                        <option key={s} value={s}>{statusLabels[s] || s}</option>
-                      ))}
-                    </select>
+                    <span className="font-bold text-gray-900">${order.total.toFixed(2)}</span>
+                    {isExpanded ? <FiChevronUp size={16} className="text-gray-400" /> : <FiChevronDown size={16} className="text-gray-400" />}
                   </div>
-                </div>
+                </button>
 
-                {/* Order body */}
-                <div className="px-5 py-4">
-                  <div className="grid sm:grid-cols-3 gap-4 text-sm mb-4">
-                    <div>
-                      <p className="text-gray-500 mb-1">客户信息</p>
-                      <p className="font-medium text-gray-900">{order.customer.firstName} {order.customer.lastName}</p>
-                      <p className="text-gray-500">{order.customer.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500 mb-1">订单金额</p>
-                      <p className="text-xl font-bold text-gray-900">${order.total.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500 mb-1">下单时间</p>
-                      <p className="font-medium text-gray-900">{new Date(order.createdAt).toLocaleString('zh-CN')}</p>
-                    </div>
-                  </div>
-
-                  {/* Shipping address */}
-                  {order.shippingAddress && (order.shippingAddress.address || order.shippingAddress.city) && (
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                        <FiMapPin size={12} /> 收货地址
-                      </p>
-                      <p className="text-sm text-gray-700">
-                        {[
-                          order.shippingAddress.address,
-                          order.shippingAddress.city,
-                          order.shippingAddress.state,
-                          order.shippingAddress.zip,
-                        ]
-                          .filter(Boolean)
-                          .join(', ')}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Tracking */}
-                  <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
-                      <FiTruck size={12} /> 物流追踪
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <select
-                        value={order.carrier || ''}
-                        onChange={(e) => updateOrderTracking(order.id, order.trackingNumber || '', e.target.value)}
-                        className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      >
-                        {carrierOptions.map((c) => (
-                          <option key={c.value} value={c.value}>{c.label}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="text"
-                        value={order.trackingNumber || ''}
-                        onChange={(e) => updateOrderTracking(order.id, e.target.value, order.carrier || '')}
-                        placeholder="输入快递单号..."
-                        className="flex-1 min-w-[200px] px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      />
-                      {order.trackingNumber && (
-                        <a
-                          href={`https://www.17track.net/zh/track#nums=${order.trackingNumber}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
-                        >
-                          查看物流
-                        </a>
-                      )}
-                    </div>
-                    {order.trackingNumber && order.carrier && (
-                      <p className="text-xs text-blue-600 mt-1.5">
-                        {order.carrier}: {order.trackingNumber}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Items */}
-                  <div className="border-t border-gray-100 pt-3">
-                    <p className="text-xs text-gray-500 mb-2">商品明细</p>
-                    <div className="space-y-2">
-                      {order.items.map((item, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-700">{item.name} × {item.quantity}</span>
-                          <span className="font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</span>
+                {/* Expanded detail */}
+                {isExpanded && (
+                  <div className="border-t border-gray-100">
+                    <div className="px-5 py-4">
+                      {/* Info grid */}
+                      <div className="grid sm:grid-cols-3 gap-4 text-sm mb-5">
+                        <div>
+                          <p className="text-gray-500 mb-1">客户信息</p>
+                          <p className="font-medium text-gray-900">{order.customer.firstName} {order.customer.lastName}</p>
+                          <p className="text-gray-500">{order.customer.email}</p>
                         </div>
-                      ))}
+                        <div>
+                          <p className="text-gray-500 mb-1">订单金额</p>
+                          <p className="text-xl font-bold text-gray-900">${order.total.toFixed(2)}</p>
+                          {order.discount && <p className="text-xs text-green-600">会员折扣: -${order.discount.toFixed(2)}</p>}
+                          {order.pointsUsed && <p className="text-xs text-orange-600">积分抵扣: {order.pointsUsed} 积分</p>}
+                        </div>
+                        <div>
+                          <p className="text-gray-500 mb-1">下单时间</p>
+                          <p className="font-medium text-gray-900">{new Date(order.createdAt).toLocaleString('zh-CN')}</p>
+                        </div>
+                      </div>
+
+                      {/* Shipping address */}
+                      {order.shippingAddress && (order.shippingAddress.address || order.shippingAddress.city) && (
+                        <div className="mb-5 p-3 bg-gray-50 rounded-lg">
+                          <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                            <FiMapPin size={12} /> 收货地址
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            {[order.shippingAddress.address, order.shippingAddress.city, order.shippingAddress.state, order.shippingAddress.zip].filter(Boolean).join(', ')}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Items */}
+                      <div className="mb-5">
+                        <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                          <FiPackage size={12} /> 商品明细
+                        </p>
+                        <div className="space-y-2">
+                          {order.items.map((item, i) => (
+                            <div key={i} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
+                              <span className="text-gray-700">{item.name} <span className="text-gray-400">x{item.quantity}</span></span>
+                              <span className="font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Tracking section */}
+                      <div className="mb-5 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                        <p className="text-sm font-medium text-blue-800 mb-3 flex items-center gap-1.5">
+                          <FiTruck size={14} /> 物流信息
+                        </p>
+                        <div className="flex flex-wrap gap-2 items-end">
+                          <div>
+                            <label className="text-xs text-gray-500 block mb-1">快递公司</label>
+                            <select
+                              value={trackingEdit.carrier}
+                              onChange={(e) => setTrackingField(order.id, 'carrier', e.target.value)}
+                              className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                            >
+                              {carrierOptions.map((c) => (
+                                <option key={c.value} value={c.value}>{c.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex-1 min-w-[200px]">
+                            <label className="text-xs text-gray-500 block mb-1">快递单号</label>
+                            <input
+                              type="text"
+                              value={trackingEdit.trackingNumber}
+                              onChange={(e) => setTrackingField(order.id, 'trackingNumber', e.target.value)}
+                              placeholder="输入快递单号..."
+                              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                            />
+                          </div>
+                          <button
+                            onClick={() => handleSaveTracking(order.id)}
+                            disabled={!hasTrackingChanges(order)}
+                            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              hasTrackingChanges(order)
+                                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            }`}
+                          >
+                            <FiSave size={14} />
+                            保存物流
+                          </button>
+                        </div>
+                        {order.trackingNumber && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <p className="text-xs text-blue-600">
+                              已保存: {order.carrier} - {order.trackingNumber}
+                            </p>
+                            <a
+                              href={`https://www.17track.net/zh/track#nums=${order.trackingNumber}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 underline"
+                            >
+                              查看物流
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* === Action buttons === */}
+                      <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100">
+                        {/* Workflow buttons based on status */}
+                        {order.status === 'pending' && (
+                          <button
+                            onClick={() => handleConfirmOrder(order.id)}
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                          >
+                            <FiCheck size={14} />
+                            确认订单
+                          </button>
+                        )}
+
+                        {order.status === 'processing' && (
+                          <button
+                            onClick={() => handleShipOrder(order.id)}
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                          >
+                            <FiTruck size={14} />
+                            标记发货
+                          </button>
+                        )}
+
+                        {order.status === 'shipped' && (
+                          <button
+                            onClick={() => handleCompleteOrder(order.id)}
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                          >
+                            <FiCheck size={14} />
+                            确认收货
+                          </button>
+                        )}
+
+                        {/* Cancel - available for pending/processing */}
+                        {(order.status === 'pending' || order.status === 'processing') && (
+                          <button
+                            onClick={() => handleCancelOrder(order.id)}
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+                          >
+                            <FiX size={14} />
+                            取消订单
+                          </button>
+                        )}
+
+                        {/* Status dropdown for manual override */}
+                        <select
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
+                          className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        >
+                          {statusOptions.map((s) => (
+                            <option key={s} value={s}>{statusLabels[s] || s}</option>
+                          ))}
+                        </select>
+
+                        {/* Spacer */}
+                        <div className="flex-1" />
+
+                        {/* Delete button */}
+                        <button
+                          onClick={() => handleDeleteOrder(order.id)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          <FiTrash2 size={14} />
+                          删除订单
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
