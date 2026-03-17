@@ -17,31 +17,39 @@ const carrierOptions = [
   { value: 'Other', label: '其他' },
 ]
 
-const statusOptions: Order['status'][] = ['待处理', '处理中', '已发货', '已完成', '已取消']
+const statusOptions: Order['status'][] = ['pending', 'processing', 'shipped', 'completed', 'cancelled']
+
+const statusLabels: Record<string, string> = {
+  pending: '待处理',
+  processing: '处理中',
+  shipped: '已发货',
+  completed: '已完成',
+  cancelled: '已取消',
+}
 
 const statusColors: Record<string, string> = {
-  '待处理': 'bg-yellow-100 text-yellow-700',
-  '处理中': 'bg-blue-100 text-blue-700',
-  '已发货': 'bg-purple-100 text-purple-700',
-  '已完成': 'bg-green-100 text-green-700',
-  '已取消': 'bg-red-100 text-red-700',
+  pending: 'bg-yellow-100 text-yellow-700',
+  processing: 'bg-blue-100 text-blue-700',
+  shipped: 'bg-purple-100 text-purple-700',
+  completed: 'bg-green-100 text-green-700',
+  cancelled: 'bg-red-100 text-red-700',
 }
 
 const statusBarColors: Record<string, string> = {
-  '待处理': 'bg-yellow-400',
-  '处理中': 'bg-blue-500',
-  '已发货': 'bg-purple-500',
-  '已完成': 'bg-green-500',
-  '已取消': 'bg-red-400',
+  pending: 'bg-yellow-400',
+  processing: 'bg-blue-500',
+  shipped: 'bg-purple-500',
+  completed: 'bg-green-500',
+  cancelled: 'bg-red-400',
 }
 
-type TabStatus = '全部' | Order['status']
+type TabStatus = 'all' | Order['status']
 
 export const AdminOrdersPage: React.FC = () => {
   const orders = useAdminStore((s) => s.orders)
   const updateOrderStatus = useAdminStore((s) => s.updateOrderStatus)
   const updateOrderTracking = useAdminStore((s) => s.updateOrderTracking)
-  const [activeTab, setActiveTab] = useState<TabStatus>('全部')
+  const [activeTab, setActiveTab] = useState<TabStatus>('all')
   const [search, setSearch] = useState('')
 
   // Count by status
@@ -58,7 +66,7 @@ export const AdminOrdersPage: React.FC = () => {
     let result = orders
 
     // Tab filter
-    if (activeTab !== '全部') {
+    if (activeTab !== 'all') {
       result = result.filter((o) => o.status === activeTab)
     }
 
@@ -77,9 +85,9 @@ export const AdminOrdersPage: React.FC = () => {
     return result
   }, [orders, activeTab, search])
 
-  const tabs: { label: TabStatus; count?: number }[] = [
-    { label: '全部', count: orders.length },
-    ...statusOptions.map((s) => ({ label: s as TabStatus, count: statusCounts[s] || 0 })),
+  const tabItems: { key: TabStatus; label: string; count?: number }[] = [
+    { key: 'all', label: '全部', count: orders.length },
+    ...statusOptions.map((s) => ({ key: s as TabStatus, label: statusLabels[s] || s, count: statusCounts[s] || 0 })),
   ]
 
   return (
@@ -88,12 +96,12 @@ export const AdminOrdersPage: React.FC = () => {
 
       {/* Status tab bar */}
       <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1">
-        {tabs.map((tab) => (
+        {tabItems.map((tab) => (
           <button
-            key={tab.label}
-            onClick={() => setActiveTab(tab.label)}
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-              activeTab === tab.label
+              activeTab === tab.key
                 ? 'bg-blue-600 text-white'
                 : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
             }`}
@@ -101,7 +109,7 @@ export const AdminOrdersPage: React.FC = () => {
             {tab.label}
             {tab.count !== undefined && tab.count > 0 && (
               <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
-                activeTab === tab.label
+                activeTab === tab.key
                   ? 'bg-white/20 text-white'
                   : 'bg-gray-100 text-gray-500'
               }`}>
@@ -147,7 +155,7 @@ export const AdminOrdersPage: React.FC = () => {
                   <div className="flex items-center gap-4">
                     <span className="font-bold text-gray-900">{order.id}</span>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
-                      {order.status}
+                      {statusLabels[order.status] || order.status}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -157,7 +165,7 @@ export const AdminOrdersPage: React.FC = () => {
                       className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                     >
                       {statusOptions.map((s) => (
-                        <option key={s} value={s}>{s}</option>
+                        <option key={s} value={s}>{statusLabels[s] || s}</option>
                       ))}
                     </select>
                   </div>

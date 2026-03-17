@@ -193,6 +193,12 @@ const zh = {
     pointsAvailable: '可用积分：{{points}}（${{value}}）',
     useAllPoints: '全部使用',
     pointsToUse: '使用积分',
+    paymentMethod_credit_card: '信用卡 / 借记卡',
+    paymentMethod_paypal: 'PayPal',
+    paymentMethod_alipay: '支付宝',
+    paymentMethod_wechat: '微信支付',
+    paymentMethod_bank_transfer: '银行转账',
+    paymentMethod_other: '其他',
     noPaymentMethods: '暂无可用支付方式。',
     paypalRedirect: '提交订单后将跳转至 PayPal 完成支付。',
     alipayRedirect: '提交订单后将跳转至支付宝完成支付。',
@@ -355,6 +361,15 @@ const zh = {
     ceilingMounts: '吊顶支架',
     deskMounts: '桌面支架',
     outdoorMounts: '户外支架',
+  },
+
+  // Order status
+  orderStatus: {
+    pending: '待处理',
+    processing: '处理中',
+    shipped: '已发货',
+    completed: '已完成',
+    cancelled: '已取消',
   },
 }
 

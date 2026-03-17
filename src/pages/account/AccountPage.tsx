@@ -375,11 +375,11 @@ const OrdersTab: React.FC = () => {
   )
 
   const statusColors: Record<string, string> = {
-    '待处理': 'bg-yellow-100 text-yellow-700',
-    '处理中': 'bg-blue-100 text-blue-700',
-    '已发货': 'bg-purple-100 text-purple-700',
-    '已完成': 'bg-green-100 text-green-700',
-    '已取消': 'bg-red-100 text-red-700',
+    pending: 'bg-yellow-100 text-yellow-700',
+    processing: 'bg-blue-100 text-blue-700',
+    shipped: 'bg-purple-100 text-purple-700',
+    completed: 'bg-green-100 text-green-700',
+    cancelled: 'bg-red-100 text-red-700',
   }
 
   if (userOrders.length === 0) {
@@ -408,7 +408,7 @@ const OrdersTab: React.FC = () => {
                 {new Date(order.createdAt).toLocaleDateString()}
               </span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColors[order.status] || 'bg-gray-100 text-gray-600'}`}>
-                {order.status}
+                {t(`orderStatus.${order.status}`)}
               </span>
             </div>
             <div className="flex items-center gap-3">

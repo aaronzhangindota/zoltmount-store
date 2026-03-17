@@ -61,7 +61,27 @@ export const CheckoutPage: React.FC = () => {
     ? Math.min(currentUser.points, Math.floor((rawSubtotal - memberDiscountAmount) * 100))
     : 0
 
+  const [formErrors, setFormErrors] = useState<Record<string, boolean>>({})
+
   const handlePlaceOrder = () => {
+    // Validate required fields
+    const errors: Record<string, boolean> = {}
+    if (!email.trim()) errors.email = true
+    if (!firstName.trim()) errors.firstName = true
+    if (!lastName.trim()) errors.lastName = true
+    if (!address.trim()) errors.address = true
+    if (!city.trim()) errors.city = true
+    if (!state.trim()) errors.state = true
+    if (!zip.trim()) errors.zip = true
+    if (!selectedPayment) errors.payment = true
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    setFormErrors({})
+
     const orderId = `MP-${Math.random().toString(36).substr(2, 8).toUpperCase()}`
     setOrderNumber(orderId)
 
@@ -76,7 +96,7 @@ export const CheckoutPage: React.FC = () => {
         quantity: item.quantity,
       })),
       total,
-      status: '待处理',
+      status: 'pending',
       customer: {
         email: email || 'guest@example.com',
         firstName: firstName || 'Guest',
@@ -151,9 +171,9 @@ export const CheckoutPage: React.FC = () => {
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">{t('checkout.contactInfo')}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('checkout.email')} className="col-span-2 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent" />
-                <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t('checkout.firstName')} className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
-                <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t('checkout.lastName')} className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
+                <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setFormErrors((p) => ({ ...p, email: false })) }} placeholder={t('checkout.email')} className={`col-span-2 px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent ${formErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={firstName} onChange={(e) => { setFirstName(e.target.value); setFormErrors((p) => ({ ...p, firstName: false })) }} placeholder={t('checkout.firstName')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.firstName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={lastName} onChange={(e) => { setLastName(e.target.value); setFormErrors((p) => ({ ...p, lastName: false })) }} placeholder={t('checkout.lastName')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.lastName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
               </div>
             </div>
 
@@ -161,10 +181,10 @@ export const CheckoutPage: React.FC = () => {
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">{t('checkout.shippingAddress')}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={t('checkout.address')} className="col-span-2 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
-                <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder={t('checkout.city')} className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
-                <input type="text" value={state} onChange={(e) => setState(e.target.value)} placeholder={t('checkout.state')} className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
-                <input type="text" value={zip} onChange={(e) => setZip(e.target.value)} placeholder={t('checkout.zip')} className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
+                <input type="text" value={address} onChange={(e) => { setAddress(e.target.value); setFormErrors((p) => ({ ...p, address: false })) }} placeholder={t('checkout.address')} className={`col-span-2 px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.address ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={city} onChange={(e) => { setCity(e.target.value); setFormErrors((p) => ({ ...p, city: false })) }} placeholder={t('checkout.city')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.city ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={state} onChange={(e) => { setState(e.target.value); setFormErrors((p) => ({ ...p, state: false })) }} placeholder={t('checkout.state')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.state ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={zip} onChange={(e) => { setZip(e.target.value); setFormErrors((p) => ({ ...p, zip: false })) }} placeholder={t('checkout.zip')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.zip ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                 <select className="px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-300">
                   <option>United States</option>
                   <option>Canada</option>

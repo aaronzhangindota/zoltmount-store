@@ -38,7 +38,7 @@ export interface Order {
   id: string
   items: { productId: string; name: string; price: number; quantity: number }[]
   total: number
-  status: '待处理' | '处理中' | '已发货' | '已完成' | '已取消'
+  status: 'pending' | 'processing' | 'shipped' | 'completed' | 'cancelled'
   customer: { email: string; firstName: string; lastName: string }
   shippingAddress?: { address: string; city: string; state: string; zip: string }
   createdAt: string

@@ -193,6 +193,12 @@ const en = {
     pointsAvailable: 'Available points: {{points}} (${{value}})',
     useAllPoints: 'Use All',
     pointsToUse: 'Points to use',
+    paymentMethod_credit_card: 'Credit / Debit Card',
+    paymentMethod_paypal: 'PayPal',
+    paymentMethod_alipay: 'Alipay',
+    paymentMethod_wechat: 'WeChat Pay',
+    paymentMethod_bank_transfer: 'Bank Transfer',
+    paymentMethod_other: 'Other',
   },
 
   // Auth
@@ -349,6 +355,15 @@ const en = {
     ceilingMounts: 'Ceiling Mounts',
     deskMounts: 'Desk Mounts',
     outdoorMounts: 'Outdoor Mounts',
+  },
+
+  // Order status
+  orderStatus: {
+    pending: 'Pending',
+    processing: 'Processing',
+    shipped: 'Shipped',
+    completed: 'Completed',
+    cancelled: 'Cancelled',
   },
 }
 
