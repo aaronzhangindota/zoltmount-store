@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 export interface Address {
   id: string
@@ -82,7 +82,21 @@ export const useUserStore = create<UserState>()(
       },
 
       login: (email, password) => {
-        const { users } = get()
+        let { users } = get()
+        // Fallback: if store hasn't hydrated yet, read directly from localStorage
+        if (users.length === 0) {
+          try {
+            const raw = localStorage.getItem('user-store')
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              if (parsed?.state?.users?.length) {
+                users = parsed.state.users
+                // Also restore users into store
+                set({ users })
+              }
+            }
+          } catch { /* ignore */ }
+        }
         const user = users.find(
           (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
         )
@@ -226,6 +240,17 @@ export const useUserStore = create<UserState>()(
         return currentUser ? 0.95 : 1.0
       },
     }),
-    { name: 'user-store' }
+    {
+      name: 'user-store',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        currentUser: state.currentUser,
+        users: state.users,
+      }),
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as object),
+      }),
+    }
   )
 )
