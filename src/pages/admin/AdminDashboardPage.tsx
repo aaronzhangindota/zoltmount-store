@@ -18,7 +18,7 @@ export const AdminDashboardPage: React.FC = () => {
       desc: '在售商品',
       gradient: 'from-blue-500 to-blue-600',
       shadow: 'shadow-blue-500/25',
-      link: '/admin/products',
+      link: '/haijieaaronzhang/products',
     },
     {
       icon: FiShoppingCart,
@@ -27,7 +27,7 @@ export const AdminDashboardPage: React.FC = () => {
       desc: '累计订单',
       gradient: 'from-emerald-500 to-emerald-600',
       shadow: 'shadow-emerald-500/25',
-      link: '/admin/orders',
+      link: '/haijieaaronzhang/orders',
     },
     {
       icon: FiTag,
@@ -36,7 +36,7 @@ export const AdminDashboardPage: React.FC = () => {
       desc: '商品分类',
       gradient: 'from-purple-500 to-purple-600',
       shadow: 'shadow-purple-500/25',
-      link: '/admin/categories',
+      link: '/haijieaaronzhang/categories',
     },
     {
       icon: FiDollarSign,
@@ -45,7 +45,7 @@ export const AdminDashboardPage: React.FC = () => {
       desc: '累计收入',
       gradient: 'from-orange-500 to-orange-600',
       shadow: 'shadow-orange-500/25',
-      link: '/admin/orders',
+      link: '/haijieaaronzhang/orders',
     },
   ]
 
@@ -98,7 +98,7 @@ export const AdminDashboardPage: React.FC = () => {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <Link
-          to="/admin/products/new"
+          to="/haijieaaronzhang/products/new"
           className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-blue-200 transition-all duration-200 group"
         >
           <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
@@ -110,7 +110,7 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </Link>
         <Link
-          to="/admin/orders"
+          to="/haijieaaronzhang/orders"
           className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-emerald-200 transition-all duration-200 group"
         >
           <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
@@ -122,7 +122,7 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </Link>
         <Link
-          to="/admin/categories"
+          to="/haijieaaronzhang/categories"
           className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-purple-200 transition-all duration-200 group"
         >
           <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center group-hover:bg-purple-100 transition-colors">
@@ -164,7 +164,7 @@ export const AdminDashboardPage: React.FC = () => {
                     </div>
                   </div>
                   <Link
-                    to={`/admin/products/edit/${p.id}`}
+                    to={`/haijieaaronzhang/products/edit/${p.id}`}
                     className="flex-shrink-0 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   >
                     <FiEdit2 size={14} />
@@ -215,7 +215,7 @@ export const AdminDashboardPage: React.FC = () => {
       <div className="bg-white rounded-xl border border-gray-200">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="font-bold text-gray-900">最近订单</h2>
-          <Link to="/admin/orders" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/haijieaaronzhang/orders" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
             查看全部
           </Link>
         </div>

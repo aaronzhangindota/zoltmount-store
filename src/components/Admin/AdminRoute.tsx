@@ -6,7 +6,7 @@ export const AdminRoute: React.FC = () => {
   const isLoggedIn = useAdminStore((s) => s.isLoggedIn)
 
   if (!isLoggedIn) {
-    return <Navigate to="/admin/login" replace />
+    return <Navigate to="/haijieaaronzhang/login" replace />
   }
 
   return <Outlet />

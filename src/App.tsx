@@ -41,16 +41,16 @@ const App: React.FC = () => {
         </Route>
 
         {/* Admin routes */}
-        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/haijieaaronzhang/login" element={<AdminLoginPage />} />
         <Route element={<AdminRoute />}>
           <Route element={<AdminLayout />}>
-            <Route path="/admin" element={<AdminDashboardPage />} />
-            <Route path="/admin/products" element={<AdminProductsPage />} />
-            <Route path="/admin/products/new" element={<AdminProductFormPage />} />
-            <Route path="/admin/products/edit/:id" element={<AdminProductFormPage />} />
-            <Route path="/admin/categories" element={<AdminCategoriesPage />} />
-            <Route path="/admin/orders" element={<AdminOrdersPage />} />
-            <Route path="/admin/payment" element={<AdminPaymentPage />} />
+            <Route path="/haijieaaronzhang" element={<AdminDashboardPage />} />
+            <Route path="/haijieaaronzhang/products" element={<AdminProductsPage />} />
+            <Route path="/haijieaaronzhang/products/new" element={<AdminProductFormPage />} />
+            <Route path="/haijieaaronzhang/products/edit/:id" element={<AdminProductFormPage />} />
+            <Route path="/haijieaaronzhang/categories" element={<AdminCategoriesPage />} />
+            <Route path="/haijieaaronzhang/orders" element={<AdminOrdersPage />} />
+            <Route path="/haijieaaronzhang/payment" element={<AdminPaymentPage />} />
           </Route>
         </Route>
       </Routes>

@@ -12,7 +12,7 @@ export const AdminLoginPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (login(password)) {
-      navigate('/admin')
+      navigate('/haijieaaronzhang')
     } else {
       setError('密码错误，请重试')
       setPassword('')

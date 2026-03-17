@@ -104,7 +104,7 @@ export const AdminProductsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold text-gray-900">商品管理</h1>
         <Link
-          to="/admin/products/new"
+          to="/haijieaaronzhang/products/new"
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm"
         >
           <FiPlus size={16} />
@@ -238,7 +238,7 @@ export const AdminProductsPage: React.FC = () => {
                 <td className="px-5 py-3">
                   <div className="flex items-center justify-end gap-1">
                     <Link
-                      to={`/admin/products/edit/${p.id}`}
+                      to={`/haijieaaronzhang/products/edit/${p.id}`}
                       className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="编辑"
                     >

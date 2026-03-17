@@ -200,7 +200,7 @@ export const AdminProductFormPage: React.FC = () => {
       addProduct(product)
     }
 
-    navigate('/admin/products')
+    navigate('/haijieaaronzhang/products')
   }
 
   const toggleVesa = (v: string) => {
@@ -217,7 +217,7 @@ export const AdminProductFormPage: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto pb-24">
       <button
-        onClick={() => navigate('/admin/products')}
+        onClick={() => navigate('/haijieaaronzhang/products')}
         className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors"
       >
         <FiArrowLeft size={16} /> 返回商品列表
@@ -791,7 +791,7 @@ export const AdminProductFormPage: React.FC = () => {
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={() => navigate('/admin/products')}
+              onClick={() => navigate('/haijieaaronzhang/products')}
               className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors text-sm"
             >
               取消

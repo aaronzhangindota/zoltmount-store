@@ -4,20 +4,20 @@ import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMen
 import { useAdminStore } from '../../store/adminStore'
 
 const navItems = [
-  { path: '/admin', icon: FiGrid, label: '仪表盘' },
-  { path: '/admin/products', icon: FiPackage, label: '商品管理' },
-  { path: '/admin/categories', icon: FiTag, label: '分类管理' },
-  { path: '/admin/orders', icon: FiShoppingCart, label: '订单管理' },
-  { path: '/admin/payment', icon: FiCreditCard, label: '支付设置' },
+  { path: '/haijieaaronzhang', icon: FiGrid, label: '仪表盘' },
+  { path: '/haijieaaronzhang/products', icon: FiPackage, label: '商品管理' },
+  { path: '/haijieaaronzhang/categories', icon: FiTag, label: '分类管理' },
+  { path: '/haijieaaronzhang/orders', icon: FiShoppingCart, label: '订单管理' },
+  { path: '/haijieaaronzhang/payment', icon: FiCreditCard, label: '支付设置' },
 ]
 
 const breadcrumbMap: Record<string, string> = {
-  '/admin': '仪表盘',
-  '/admin/products': '商品管理',
-  '/admin/products/new': '添加商品',
-  '/admin/categories': '分类管理',
-  '/admin/orders': '订单管理',
-  '/admin/payment': '支付设置',
+  '/haijieaaronzhang': '仪表盘',
+  '/haijieaaronzhang/products': '商品管理',
+  '/haijieaaronzhang/products/new': '添加商品',
+  '/haijieaaronzhang/categories': '分类管理',
+  '/haijieaaronzhang/orders': '订单管理',
+  '/haijieaaronzhang/payment': '支付设置',
 }
 
 export const AdminLayout: React.FC = () => {
@@ -26,21 +26,21 @@ export const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const isActive = (path: string) =>
-    path === '/admin' ? location.pathname === '/admin' : location.pathname.startsWith(path)
+    path === '/haijieaaronzhang' ? location.pathname === '/haijieaaronzhang' : location.pathname.startsWith(path)
 
   // Build breadcrumbs
   const getBreadcrumbs = () => {
     const path = location.pathname
-    const crumbs: { label: string; path?: string }[] = [{ label: '首页', path: '/admin' }]
+    const crumbs: { label: string; path?: string }[] = [{ label: '首页', path: '/haijieaaronzhang' }]
 
     // Check for edit product route
-    if (path.startsWith('/admin/products/edit/')) {
-      crumbs.push({ label: '商品管理', path: '/admin/products' })
+    if (path.startsWith('/haijieaaronzhang/products/edit/')) {
+      crumbs.push({ label: '商品管理', path: '/haijieaaronzhang/products' })
       crumbs.push({ label: '编辑商品' })
-    } else if (path === '/admin/products/new') {
-      crumbs.push({ label: '商品管理', path: '/admin/products' })
+    } else if (path === '/haijieaaronzhang/products/new') {
+      crumbs.push({ label: '商品管理', path: '/haijieaaronzhang/products' })
       crumbs.push({ label: '添加商品' })
-    } else if (breadcrumbMap[path] && path !== '/admin') {
+    } else if (breadcrumbMap[path] && path !== '/haijieaaronzhang') {
       crumbs.push({ label: breadcrumbMap[path] })
     }
 
