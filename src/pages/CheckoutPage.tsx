@@ -25,6 +25,9 @@ export const CheckoutPage: React.FC = () => {
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
   const [zip, setZip] = useState('')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardExpiry, setCardExpiry] = useState('')
+  const [cardCvc, setCardCvc] = useState('')
 
   const currentUser = useUserStore((s) => s.currentUser)
   const getDefaultAddress = useUserStore((s) => s.getDefaultAddress)
@@ -74,6 +77,12 @@ export const CheckoutPage: React.FC = () => {
     if (!state.trim()) errors.state = true
     if (!zip.trim()) errors.zip = true
     if (!selectedPayment) errors.payment = true
+    // Validate credit card fields when credit card is selected
+    if (selectedMethod?.type === 'credit_card') {
+      if (!cardNumber.trim() || cardNumber.replace(/\s/g, '').length < 13) errors.cardNumber = true
+      if (!cardExpiry.trim() || !/^\d{2}\s*\/\s*\d{2}$/.test(cardExpiry.trim())) errors.cardExpiry = true
+      if (!cardCvc.trim() || cardCvc.trim().length < 3) errors.cardCvc = true
+    }
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors)
@@ -235,10 +244,10 @@ export const CheckoutPage: React.FC = () => {
                           ))}
                         </div>
                       )}
-                      <input type="text" placeholder={t('checkout.cardNumber')} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
+                      <input type="text" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setFormErrors((p) => ({ ...p, cardNumber: false })) }} placeholder={t('checkout.cardNumber')} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardNumber ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                       <div className="grid grid-cols-2 gap-4">
-                        <input type="text" placeholder={t('checkout.expiry')} className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
-                        <input type="text" placeholder={t('checkout.cvc')} className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
+                        <input type="text" value={cardExpiry} onChange={(e) => { setCardExpiry(e.target.value); setFormErrors((p) => ({ ...p, cardExpiry: false })) }} placeholder={t('checkout.expiry')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardExpiry ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                        <input type="text" value={cardCvc} onChange={(e) => { setCardCvc(e.target.value); setFormErrors((p) => ({ ...p, cardCvc: false })) }} placeholder={t('checkout.cvc')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardCvc ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                       </div>
                     </div>
                   )}

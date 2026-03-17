@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { products as defaultProducts, categories as defaultCategories } from '../data/products'
 import type { Product, Category } from '../data/products'
 
@@ -133,6 +133,13 @@ export const useAdminStore = create<AdminState>()(
       deletePaymentMethod: (id) =>
         set((s) => ({ paymentMethods: s.paymentMethods.filter((m) => m.id !== id) })),
     }),
-    { name: 'admin-store' }
+    {
+      name: 'admin-store',
+      storage: createJSONStorage(() => localStorage),
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as object),
+      }),
+    }
   )
 )
