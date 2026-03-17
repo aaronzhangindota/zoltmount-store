@@ -200,7 +200,7 @@ export const CheckoutPage: React.FC = () => {
                         }`}
                       >
                         <span className="text-lg">{method.icon}</span>
-                        {method.name}
+                        {t('checkout.paymentMethod_' + method.type)}
                       </button>
                     ))}
                   </div>
