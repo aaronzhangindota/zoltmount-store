@@ -242,6 +242,7 @@ export const useUserStore = create<UserState>()(
     }),
     {
       name: 'user-store',
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         currentUser: state.currentUser,

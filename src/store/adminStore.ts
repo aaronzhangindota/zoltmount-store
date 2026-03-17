@@ -138,7 +138,15 @@ export const useAdminStore = create<AdminState>()(
     }),
     {
       name: 'admin-store',
+      version: 2,
       storage: createJSONStorage(() => localStorage),
+      migrate: (persisted, version) => {
+        // v0/v1 had Chinese status strings — reset orders
+        if (version < 2) {
+          return { ...(persisted as object), orders: [] }
+        }
+        return persisted as object
+      },
       merge: (persisted, current) => ({
         ...current,
         ...(persisted as object),
