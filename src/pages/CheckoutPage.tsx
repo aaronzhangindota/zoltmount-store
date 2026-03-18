@@ -26,6 +26,7 @@ export const CheckoutPage: React.FC = () => {
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
   const [zip, setZip] = useState('')
+  const [country, setCountry] = useState('US')
   const [cardNumber, setCardNumber] = useState('')
   const [cardExpiry, setCardExpiry] = useState('')
   const [cardCvc, setCardCvc] = useState('')
@@ -54,8 +55,35 @@ export const CheckoutPage: React.FC = () => {
     }
   }, [currentUser])
 
+  const shippingZones = useDataStore((s) => s.shippingZones)
+  const products = useDataStore((s) => s.products)
+
+  // Calculate shipping based on country and product weights
+  const calculateShipping = () => {
+    if (shippingZones.length === 0) return 0
+
+    // Find the zone matching selected country
+    let zone = shippingZones.find((z) => z.countries.includes(country))
+    if (!zone) {
+      // Fallback to zone with highest sortOrder
+      zone = [...shippingZones].sort((a, b) => b.sortOrder - a.sortOrder)[0]
+    }
+    if (!zone) return 0
+
+    // Calculate total weight
+    const totalWeight = items.reduce((sum, item) => {
+      const product = products.find((p) => p.id === item.product.id)
+      const weight = product?.shippingWeight ?? 5
+      return sum + weight * item.quantity
+    }, 0)
+
+    // Formula: [initialPrice + max(totalWeight - 1, 0) * incrementalPrice] * (1 + fuelSurchargeRate)
+    const base = zone.initialPrice + Math.max(totalWeight - 1, 0) * zone.incrementalPrice
+    return Math.round(base * (1 + zone.fuelSurchargeRate) * 100) / 100
+  }
+
   const rawSubtotal = subtotal()
-  const shipping = rawSubtotal >= 49 ? 0 : 9.99
+  const shipping = calculateShipping()
   const discountRate = getMemberDiscount()
   const memberDiscountAmount = currentUser ? rawSubtotal * (1 - discountRate) : 0
   const pointsDiscountAmount = pointsToUse / 100
@@ -206,12 +234,61 @@ export const CheckoutPage: React.FC = () => {
                 <input type="text" value={city} onChange={(e) => { setCity(e.target.value); setFormErrors((p) => ({ ...p, city: false })) }} placeholder={t('checkout.city')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.city ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                 <input type="text" value={state} onChange={(e) => { setState(e.target.value); setFormErrors((p) => ({ ...p, state: false })) }} placeholder={t('checkout.state')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.state ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                 <input type="text" value={zip} onChange={(e) => { setZip(e.target.value); setFormErrors((p) => ({ ...p, zip: false })) }} placeholder={t('checkout.zip')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.zip ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
-                <select className="px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-300">
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>United Kingdom</option>
-                  <option>Australia</option>
-                  <option>Germany</option>
+                <select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-300"
+                >
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="ES">Spain</option>
+                  <option value="IT">Italy</option>
+                  <option value="NL">Netherlands</option>
+                  <option value="BE">Belgium</option>
+                  <option value="AT">Austria</option>
+                  <option value="CH">Switzerland</option>
+                  <option value="SE">Sweden</option>
+                  <option value="NO">Norway</option>
+                  <option value="DK">Denmark</option>
+                  <option value="FI">Finland</option>
+                  <option value="PT">Portugal</option>
+                  <option value="IE">Ireland</option>
+                  <option value="PL">Poland</option>
+                  <option value="CZ">Czech Republic</option>
+                  <option value="RO">Romania</option>
+                  <option value="HU">Hungary</option>
+                  <option value="GR">Greece</option>
+                  <option value="RU">Russia</option>
+                  <option value="UA">Ukraine</option>
+                  <option value="BY">Belarus</option>
+                  <option value="KZ">Kazakhstan</option>
+                  <option value="AU">Australia</option>
+                  <option value="NZ">New Zealand</option>
+                  <option value="JP">Japan</option>
+                  <option value="KR">South Korea</option>
+                  <option value="CN">China</option>
+                  <option value="TW">Taiwan</option>
+                  <option value="HK">Hong Kong</option>
+                  <option value="SG">Singapore</option>
+                  <option value="MY">Malaysia</option>
+                  <option value="TH">Thailand</option>
+                  <option value="VN">Vietnam</option>
+                  <option value="PH">Philippines</option>
+                  <option value="ID">Indonesia</option>
+                  <option value="IN">India</option>
+                  <option value="SA">Saudi Arabia</option>
+                  <option value="AE">UAE</option>
+                  <option value="IL">Israel</option>
+                  <option value="TR">Turkey</option>
+                  <option value="BR">Brazil</option>
+                  <option value="MX">Mexico</option>
+                  <option value="AR">Argentina</option>
+                  <option value="CL">Chile</option>
+                  <option value="CO">Colombia</option>
+                  <option value="ZA">South Africa</option>
                 </select>
                 <input type="tel" placeholder={t('checkout.phone')} className="col-span-2 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
               </div>
@@ -384,8 +461,12 @@ export const CheckoutPage: React.FC = () => {
 
                 <div className="flex justify-between text-gray-500">
                   <span>{t('checkout.shipping')}</span>
-                  <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>
-                    {shipping === 0 ? t('checkout.free') : `$${shipping.toFixed(2)}`}
+                  <span className={shipping === 0 && shippingZones.length === 0 ? 'text-green-600 font-medium' : ''}>
+                    {shipping === 0 && shippingZones.length === 0
+                      ? t('checkout.free')
+                      : shipping === 0
+                      ? t('checkout.free')
+                      : `$${shipping.toFixed(2)}`}
                   </span>
                 </div>
                 <div className="flex justify-between text-gray-500">

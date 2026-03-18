@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { api } from '../api/client'
 import { products as defaultProducts, categories as defaultCategories } from '../data/products'
 import type { Product, Category } from '../data/products'
-import type { Order, PaymentMethod } from './adminStore'
+import type { Order, PaymentMethod, ShippingZone } from './adminStore'
 
 const defaultPaymentMethods: PaymentMethod[] = [
   {
@@ -30,6 +30,7 @@ interface DataState {
   categories: Category[]
   orders: Order[]
   paymentMethods: PaymentMethod[]
+  shippingZones: ShippingZone[]
   isLoading: boolean
   error: string | null
 
@@ -38,6 +39,7 @@ interface DataState {
   fetchCategories: () => Promise<void>
   fetchOrders: () => Promise<void>
   fetchPaymentMethods: () => Promise<void>
+  fetchShippingZones: () => Promise<void>
 }
 
 export const useDataStore = create<DataState>()((set) => ({
@@ -45,21 +47,24 @@ export const useDataStore = create<DataState>()((set) => ({
   categories: defaultCategories,
   orders: [],
   paymentMethods: defaultPaymentMethods,
+  shippingZones: [],
   isLoading: false,
   error: null,
 
   fetchAll: async () => {
     set({ isLoading: true, error: null })
     try {
-      const [products, categories, paymentMethods] = await Promise.all([
+      const [products, categories, paymentMethods, shippingZones] = await Promise.all([
         api.getProducts(),
         api.getCategories(),
         api.getPaymentMethods(),
+        api.getShippingZones(),
       ])
       set({
         products: products.length > 0 ? products : defaultProducts,
         categories: categories.length > 0 ? categories : defaultCategories,
         paymentMethods: paymentMethods.length > 0 ? paymentMethods : defaultPaymentMethods,
+        shippingZones,
         isLoading: false,
       })
     } catch (err) {
@@ -105,6 +110,15 @@ export const useDataStore = create<DataState>()((set) => ({
     try {
       const paymentMethods = await api.getPaymentMethods()
       set({ paymentMethods: paymentMethods.length > 0 ? paymentMethods : defaultPaymentMethods })
+    } catch {
+      // keep current state
+    }
+  },
+
+  fetchShippingZones: async () => {
+    try {
+      const shippingZones = await api.getShippingZones()
+      set({ shippingZones })
     } catch {
       // keep current state
     }

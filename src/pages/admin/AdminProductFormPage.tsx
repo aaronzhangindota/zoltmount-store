@@ -75,6 +75,12 @@ export const AdminProductFormPage: React.FC = () => {
   const [warranty, setWarranty] = useState('')
   const [customSpecs, setCustomSpecs] = useState<{ key: string; value: string }[]>([])
 
+  // Shipping
+  const [shippingWeight, setShippingWeight] = useState('')
+  const [packageLength, setPackageLength] = useState('')
+  const [packageWidth, setPackageWidth] = useState('')
+  const [packageHeight, setPackageHeight] = useState('')
+
   // Images
   const [images, setImages] = useState<string[]>([''])
   const [imgErrors, setImgErrors] = useState<Set<number>>(new Set())
@@ -94,6 +100,10 @@ export const AdminProductFormPage: React.FC = () => {
       setRating(existing.rating.toString())
       setReviewCount(existing.reviewCount.toString())
       setImages(existing.images.length > 0 ? existing.images : [''])
+      setShippingWeight(existing.shippingWeight?.toString() || '')
+      setPackageLength(existing.packageLength?.toString() || '')
+      setPackageWidth(existing.packageWidth?.toString() || '')
+      setPackageHeight(existing.packageHeight?.toString() || '')
 
       // Parse specs into structured fields
       const specs = existing.specs || {}
@@ -194,6 +204,10 @@ export const AdminProductFormPage: React.FC = () => {
       specs,
       badge: (badge || undefined) as Product['badge'],
       inStock: parseInt(stockCount) > 0,
+      shippingWeight: shippingWeight ? parseFloat(shippingWeight) : undefined,
+      packageLength: packageLength ? parseFloat(packageLength) : undefined,
+      packageWidth: packageWidth ? parseFloat(packageWidth) : undefined,
+      packageHeight: packageHeight ? parseFloat(packageHeight) : undefined,
     }
 
     setSaving(true)
@@ -612,6 +626,62 @@ export const AdminProductFormPage: React.FC = () => {
                       <option key={w} value={w}>{w}</option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              {/* Shipping weight & package dimensions */}
+              <div className="border-t border-gray-100 pt-5">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">发货信息</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      发货重量 (kg) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={shippingWeight}
+                      onChange={(e) => setShippingWeight(e.target.value)}
+                      placeholder="例如：5"
+                      className="w-full sm:w-40 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    />
+                    <p className="mt-1 text-xs text-gray-400">未填写时按 5kg 默认值计算运费</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">包装尺寸 (cm)</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={packageLength}
+                        onChange={(e) => setPackageLength(e.target.value)}
+                        placeholder="长"
+                        className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      />
+                      <span className="text-gray-400">x</span>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={packageWidth}
+                        onChange={(e) => setPackageWidth(e.target.value)}
+                        placeholder="宽"
+                        className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      />
+                      <span className="text-gray-400">x</span>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={packageHeight}
+                        onChange={(e) => setPackageHeight(e.target.value)}
+                        placeholder="高"
+                        className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 

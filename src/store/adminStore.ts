@@ -5,6 +5,16 @@ import { useDataStore } from './dataStore'
 import type { Product, Category } from '../data/products'
 import type { AdminAccountInfo, AdminAccount, AdminLog } from '../api/client'
 
+export interface ShippingZone {
+  id: string
+  name: string
+  countries: string[]
+  initialPrice: number
+  incrementalPrice: number
+  fuelSurchargeRate: number
+  sortOrder: number
+}
+
 export interface PaymentMethod {
   id: string
   name: string
@@ -56,6 +66,10 @@ interface AdminState {
   addPaymentMethod: (method: PaymentMethod) => Promise<void>
   updatePaymentMethod: (id: string, data: Partial<PaymentMethod>) => Promise<void>
   deletePaymentMethod: (id: string) => Promise<void>
+
+  addShippingZone: (zone: ShippingZone) => Promise<void>
+  updateShippingZone: (id: string, data: Partial<ShippingZone>) => Promise<void>
+  deleteShippingZone: (id: string) => Promise<void>
 
   seedData: () => Promise<void>
 
@@ -154,6 +168,20 @@ export const useAdminStore = create<AdminState>()(
       deletePaymentMethod: async (id) => {
         await api.deletePaymentMethod(id)
         await useDataStore.getState().fetchPaymentMethods()
+      },
+
+      // Shipping Zones
+      addShippingZone: async (zone) => {
+        await api.createShippingZone(zone)
+        await useDataStore.getState().fetchShippingZones()
+      },
+      updateShippingZone: async (id, data) => {
+        await api.updateShippingZone(id, data)
+        await useDataStore.getState().fetchShippingZones()
+      },
+      deleteShippingZone: async (id) => {
+        await api.deleteShippingZone(id)
+        await useDataStore.getState().fetchShippingZones()
       },
 
       // Seed

@@ -1,5 +1,5 @@
 import type { Product, Category } from '../data/products'
-import type { Order, PaymentMethod } from '../store/adminStore'
+import type { Order, PaymentMethod, ShippingZone } from '../store/adminStore'
 
 export interface AdminAccountInfo {
   id: string
@@ -109,6 +109,20 @@ class ApiClient {
   }
   async deletePaymentMethod(id: string): Promise<void> {
     await this.request(`/payment-methods/${id}`, { method: 'DELETE' })
+  }
+
+  // Shipping Zones
+  async getShippingZones(): Promise<ShippingZone[]> {
+    return this.request<ShippingZone[]>('/shipping-zones')
+  }
+  async createShippingZone(zone: ShippingZone): Promise<ShippingZone> {
+    return this.request<ShippingZone>('/shipping-zones', { method: 'POST', body: JSON.stringify(zone) })
+  }
+  async updateShippingZone(id: string, data: Partial<ShippingZone>): Promise<ShippingZone> {
+    return this.request<ShippingZone>(`/shipping-zones/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+  }
+  async deleteShippingZone(id: string): Promise<void> {
+    await this.request(`/shipping-zones/${id}`, { method: 'DELETE' })
   }
 
   // Seed

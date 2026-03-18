@@ -13,6 +13,10 @@ export interface Product {
   specs: Record<string, string>
   badge?: 'Best Seller' | 'New' | 'Sale'
   inStock: boolean
+  shippingWeight?: number
+  packageLength?: number
+  packageWidth?: number
+  packageHeight?: number
 }
 
 export interface Category {
