@@ -1,5 +1,6 @@
 import type { Product, Category } from '../data/products'
 import type { Order, PaymentMethod, ShippingZone } from '../store/adminStore'
+import type { Address } from '../store/userStore'
 
 export interface AdminAccountInfo {
   id: string
@@ -22,11 +23,33 @@ export interface AdminLog {
   timestamp: string
 }
 
+// User types returned from API (no password/token)
+export interface ApiUser {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  phone: string
+  addresses: Address[]
+  points: number
+  totalSpent: number
+  memberSince: string
+}
+
 class ApiClient {
   private adminToken: string | null = null
+  private userToken: string | null = null
 
   setAdminToken(token: string | null) {
     this.adminToken = token
+  }
+
+  setUserToken(token: string | null) {
+    this.userToken = token
+  }
+
+  getUserToken(): string | null {
+    return this.userToken
   }
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -37,6 +60,9 @@ class ApiClient {
     if (this.adminToken) {
       headers['X-Admin-Token'] = this.adminToken
     }
+    if (this.userToken) {
+      headers['X-User-Token'] = this.userToken
+    }
 
     const res = await fetch(`/api${path}`, { ...options, headers })
     if (!res.ok) {
@@ -46,13 +72,79 @@ class ApiClient {
     return res.json() as Promise<T>
   }
 
-  // Auth
+  // Admin Auth
   async login(username: string, password: string): Promise<{ token: string; account: AdminAccountInfo }> {
     return this.request('/admin-auth', { method: 'POST', body: JSON.stringify({ username, password }) })
   }
 
   async changePassword(oldPassword: string, newPassword: string): Promise<void> {
     await this.request('/admin-auth', { method: 'PUT', body: JSON.stringify({ oldPassword, newPassword }) })
+  }
+
+  // ─── User Auth ───
+  async userRegister(email: string, password: string, firstName: string, lastName: string): Promise<{ token: string; user: ApiUser }> {
+    return this.request('/user-auth', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'register', email, password, firstName, lastName }),
+    })
+  }
+
+  async userLogin(email: string, password: string): Promise<{ token: string; user: ApiUser }> {
+    return this.request('/user-auth', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'login', email, password }),
+    })
+  }
+
+  async getUserMe(): Promise<{ user: ApiUser }> {
+    return this.request('/user-auth')
+  }
+
+  async updateUserProfile(data: { firstName?: string; lastName?: string; phone?: string }): Promise<{ user: ApiUser }> {
+    return this.request('/user-auth', {
+      method: 'PUT',
+      body: JSON.stringify({ action: 'updateProfile', ...data }),
+    })
+  }
+
+  async changeUserPassword(oldPassword: string, newPassword: string): Promise<{ success: boolean }> {
+    return this.request('/user-auth', {
+      method: 'PUT',
+      body: JSON.stringify({ action: 'changePassword', oldPassword, newPassword }),
+    })
+  }
+
+  async addUserPoints(points: number, spent?: number): Promise<{ user: ApiUser }> {
+    return this.request('/user-auth', {
+      method: 'PUT',
+      body: JSON.stringify({ action: 'addPoints', points, spent }),
+    })
+  }
+
+  async useUserPoints(points: number): Promise<{ user: ApiUser }> {
+    return this.request('/user-auth', {
+      method: 'PUT',
+      body: JSON.stringify({ action: 'usePoints', points }),
+    })
+  }
+
+  // ─── User Addresses ───
+  async addUserAddress(address: Omit<Address, 'id'>): Promise<{ address: Address }> {
+    return this.request('/user-addresses', {
+      method: 'POST',
+      body: JSON.stringify(address),
+    })
+  }
+
+  async updateUserAddress(id: string, data: Partial<Address>): Promise<{ user: ApiUser }> {
+    return this.request(`/user-addresses/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteUserAddress(id: string): Promise<{ user: ApiUser }> {
+    return this.request(`/user-addresses/${id}`, { method: 'DELETE' })
   }
 
   // Products

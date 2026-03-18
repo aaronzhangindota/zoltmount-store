@@ -69,26 +69,35 @@ const ProfileTab: React.FC = () => {
   const [pwdMsg, setPwdMsg] = useState('')
   const [pwdError, setPwdError] = useState(false)
 
-  const handleProfileSave = () => {
-    updateProfile({ firstName, lastName, phone })
-    setProfileMsg(t('account.profileUpdated'))
+  const handleProfileSave = async () => {
+    try {
+      await updateProfile({ firstName, lastName, phone })
+      setProfileMsg(t('account.profileUpdated'))
+    } catch {
+      setProfileMsg('Failed to update profile')
+    }
     setTimeout(() => setProfileMsg(''), 3000)
   }
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     setPwdError(false)
     if (newPwd !== confirmPwd) {
       setPwdMsg(t('auth.passwordMismatch'))
       setPwdError(true)
       return
     }
-    const result = changePassword(oldPwd, newPwd)
-    if (result.success) {
-      setPwdMsg(t('account.passwordChanged'))
-      setOldPwd('')
-      setNewPwd('')
-      setConfirmPwd('')
-    } else {
+    try {
+      const result = await changePassword(oldPwd, newPwd)
+      if (result.success) {
+        setPwdMsg(t('account.passwordChanged'))
+        setOldPwd('')
+        setNewPwd('')
+        setConfirmPwd('')
+      } else {
+        setPwdMsg(t('account.wrongPassword'))
+        setPwdError(true)
+      }
+    } catch {
       setPwdMsg(t('account.wrongPassword'))
       setPwdError(true)
     }
@@ -216,11 +225,11 @@ const AddressesTab: React.FC = () => {
     setShowForm(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingId) {
-      updateAddress(editingId, form)
+      await updateAddress(editingId, form)
     } else {
-      addAddress(form)
+      await addAddress(form)
     }
     resetForm()
   }
@@ -336,7 +345,7 @@ const AddressesTab: React.FC = () => {
           <div className="flex gap-2 flex-shrink-0">
             {!addr.isDefault && (
               <button
-                onClick={() => setDefaultAddress(addr.id)}
+                onClick={() => void setDefaultAddress(addr.id)}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors"
               >
                 <FiCheck size={12} /> {t('account.setDefault')}
@@ -349,7 +358,7 @@ const AddressesTab: React.FC = () => {
               <FiEdit2 size={14} />
             </button>
             <button
-              onClick={() => deleteAddress(addr.id)}
+              onClick={() => void deleteAddress(addr.id)}
               className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
             >
               <FiTrash2 size={14} />
@@ -456,9 +465,6 @@ const OrdersTab: React.FC = () => {
               {order.pointsUsed != null && order.pointsUsed > 0 && (
                 <p className="text-xs text-orange-600 mt-1">-{order.pointsUsed} points used</p>
               )}
-              {order.discount != null && order.discount > 0 && (
-                <p className="text-xs text-brand-600 mt-1">Member discount: -${order.discount.toFixed(2)}</p>
-              )}
             </div>
           )}
         </div>
@@ -472,7 +478,6 @@ const PointsTab: React.FC = () => {
   const { t } = useTranslation()
   const currentUser = useUserStore((s) => s.currentUser)
   const points = currentUser?.points || 0
-  const pointsValue = (points / 100).toFixed(2)
 
   return (
     <div className="space-y-6">
@@ -480,16 +485,14 @@ const PointsTab: React.FC = () => {
         <h2 className="text-lg font-bold text-gray-900 mb-2">{t('account.pointsBalance')}</h2>
         <div className="flex items-baseline gap-3">
           <span className="text-4xl font-extrabold text-brand-600">{points}</span>
-          <span className="text-gray-500 text-sm">{t('account.pointsValue', { value: pointsValue })}</span>
+          <span className="text-gray-500 text-sm">{t('account.pointsUnit')}</span>
         </div>
         <p className="text-sm text-gray-500 mt-4 leading-relaxed">{t('account.pointsRule')}</p>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-2">{t('account.memberDiscount')}</h2>
-        <p className="text-sm text-gray-600 leading-relaxed">{t('account.memberDiscountDesc')}</p>
         {currentUser?.memberSince && (
-          <p className="text-xs text-gray-400 mt-3">
+          <p className="text-xs text-gray-400">
             {t('account.memberSince', { date: new Date(currentUser.memberSince).toLocaleDateString() })}
           </p>
         )}

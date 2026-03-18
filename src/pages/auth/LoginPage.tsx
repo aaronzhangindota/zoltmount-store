@@ -13,10 +13,11 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/account'
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -25,11 +26,18 @@ export const LoginPage: React.FC = () => {
       return
     }
 
-    const result = login(email, password)
-    if (result.success) {
-      navigate(from, { replace: true })
-    } else {
-      setError(t(`auth.${result.error}`))
+    setLoading(true)
+    try {
+      const result = await login(email, password)
+      if (result.success) {
+        navigate(from, { replace: true })
+      } else {
+        setError(t(`auth.${result.error}`))
+      }
+    } catch {
+      setError(t('auth.loginFailed'))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -77,9 +85,10 @@ export const LoginPage: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors text-sm shadow-lg shadow-brand-600/20"
+              disabled={loading}
+              className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors text-sm shadow-lg shadow-brand-600/20 disabled:opacity-50"
             >
-              {t('auth.login')}
+              {loading ? '...' : t('auth.login')}
             </button>
           </form>
 

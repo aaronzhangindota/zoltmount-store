@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { api } from '../api/client'
+import type { ApiUser } from '../api/client'
 
 export interface Address {
   id: string
@@ -18,7 +20,6 @@ export interface Address {
 export interface User {
   id: string
   email: string
-  password: string
   firstName: string
   lastName: string
   phone: string
@@ -30,190 +31,136 @@ export interface User {
 
 interface UserState {
   currentUser: User | null
-  users: User[]
+  userToken: string | null
 
-  register: (email: string, password: string, firstName: string, lastName: string) => { success: boolean; error?: string }
-  login: (email: string, password: string) => { success: boolean; error?: string }
+  register: (email: string, password: string, firstName: string, lastName: string) => Promise<{ success: boolean; error?: string }>
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
 
-  updateProfile: (data: { firstName?: string; lastName?: string; phone?: string }) => void
-  changePassword: (oldPassword: string, newPassword: string) => { success: boolean; error?: string }
+  updateProfile: (data: { firstName?: string; lastName?: string; phone?: string }) => Promise<void>
+  changePassword: (oldPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>
 
-  addAddress: (address: Omit<Address, 'id'>) => void
-  updateAddress: (id: string, data: Partial<Address>) => void
-  deleteAddress: (id: string) => void
-  setDefaultAddress: (id: string) => void
+  addAddress: (address: Omit<Address, 'id'>) => Promise<void>
+  updateAddress: (id: string, data: Partial<Address>) => Promise<void>
+  deleteAddress: (id: string) => Promise<void>
+  setDefaultAddress: (id: string) => Promise<void>
 
-  addPoints: (points: number) => void
-  usePoints: (points: number) => boolean
+  addPoints: (points: number, spent?: number) => Promise<void>
+  usePoints: (points: number) => Promise<boolean>
 
   getDefaultAddress: () => Address | undefined
   getMemberDiscount: () => number
+
+  refreshUser: () => Promise<void>
+}
+
+function apiUserToUser(apiUser: ApiUser): User {
+  return {
+    id: apiUser.id,
+    email: apiUser.email,
+    firstName: apiUser.firstName,
+    lastName: apiUser.lastName,
+    phone: apiUser.phone,
+    addresses: apiUser.addresses,
+    points: apiUser.points,
+    totalSpent: apiUser.totalSpent,
+    memberSince: apiUser.memberSince,
+  }
 }
 
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
       currentUser: null,
-      users: [],
+      userToken: null,
 
-      register: (email, password, firstName, lastName) => {
-        const { users } = get()
-        if (users.find((u) => u.email.toLowerCase() === email.toLowerCase())) {
-          return { success: false, error: 'emailExists' }
+      register: async (email, password, firstName, lastName) => {
+        try {
+          const { token, user } = await api.userRegister(email, password, firstName, lastName)
+          api.setUserToken(token)
+          set({ currentUser: apiUserToUser(user), userToken: token })
+          return { success: true }
+        } catch (e: any) {
+          const msg = e.message || ''
+          if (msg.includes('emailExists') || msg.includes('409')) {
+            return { success: false, error: 'emailExists' }
+          }
+          return { success: false, error: 'registrationFailed' }
         }
-        const newUser: User = {
-          id: `user-${Date.now()}`,
-          email,
-          password,
-          firstName,
-          lastName,
-          phone: '',
-          addresses: [],
-          points: 0,
-          totalSpent: 0,
-          memberSince: new Date().toISOString(),
+      },
+
+      login: async (email, password) => {
+        try {
+          const { token, user } = await api.userLogin(email, password)
+          api.setUserToken(token)
+          set({ currentUser: apiUserToUser(user), userToken: token })
+          return { success: true }
+        } catch (e: any) {
+          const msg = e.message || ''
+          if (msg.includes('invalidCredentials') || msg.includes('401')) {
+            return { success: false, error: 'invalidCredentials' }
+          }
+          return { success: false, error: 'loginFailed' }
         }
-        set((s) => ({
-          users: [...s.users, newUser],
-          currentUser: newUser,
-        }))
-        return { success: true }
       },
 
-      login: (email, password) => {
-        const { users } = get()
-        const user = users.find(
-          (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-        )
-        if (!user) {
-          return { success: false, error: 'invalidCredentials' }
+      logout: () => {
+        api.setUserToken(null)
+        set({ currentUser: null, userToken: null })
+      },
+
+      updateProfile: async (data) => {
+        const { user } = await api.updateUserProfile(data)
+        set({ currentUser: apiUserToUser(user) })
+      },
+
+      changePassword: async (oldPassword, newPassword) => {
+        try {
+          await api.changeUserPassword(oldPassword, newPassword)
+          return { success: true }
+        } catch (e: any) {
+          const msg = e.message || ''
+          if (msg.includes('wrongPassword') || msg.includes('400')) {
+            return { success: false, error: 'wrongPassword' }
+          }
+          return { success: false, error: 'passwordChangeFailed' }
         }
-        set({ currentUser: user })
-        return { success: true }
       },
 
-      logout: () => set({ currentUser: null }),
-
-      updateProfile: (data) => {
-        set((s) => {
-          if (!s.currentUser) return s
-          const updated = { ...s.currentUser, ...data }
-          return {
-            currentUser: updated,
-            users: s.users.map((u) => (u.id === updated.id ? updated : u)),
-          }
-        })
+      addAddress: async (address) => {
+        await api.addUserAddress(address)
+        // Refresh full user to get updated addresses
+        await get().refreshUser()
       },
 
-      changePassword: (oldPassword, newPassword) => {
-        const { currentUser } = get()
-        if (!currentUser) return { success: false, error: 'notLoggedIn' }
-        if (currentUser.password !== oldPassword) {
-          return { success: false, error: 'wrongPassword' }
+      updateAddress: async (id, data) => {
+        const { user } = await api.updateUserAddress(id, data)
+        set({ currentUser: apiUserToUser(user) })
+      },
+
+      deleteAddress: async (id) => {
+        const { user } = await api.deleteUserAddress(id)
+        set({ currentUser: apiUserToUser(user) })
+      },
+
+      setDefaultAddress: async (id) => {
+        const { user } = await api.updateUserAddress(id, { isDefault: true })
+        set({ currentUser: apiUserToUser(user) })
+      },
+
+      addPoints: async (points, spent) => {
+        const { user } = await api.addUserPoints(points, spent)
+        set({ currentUser: apiUserToUser(user) })
+      },
+
+      usePoints: async (points) => {
+        try {
+          const { user } = await api.useUserPoints(points)
+          set({ currentUser: apiUserToUser(user) })
+          return true
+        } catch {
+          return false
         }
-        set((s) => {
-          const updated = { ...s.currentUser!, password: newPassword }
-          return {
-            currentUser: updated,
-            users: s.users.map((u) => (u.id === updated.id ? updated : u)),
-          }
-        })
-        return { success: true }
-      },
-
-      addAddress: (address) => {
-        set((s) => {
-          if (!s.currentUser) return s
-          const newAddr: Address = { ...address, id: `addr-${Date.now()}` }
-          // If this is the first address or marked as default, set it as default
-          if (s.currentUser.addresses.length === 0 || newAddr.isDefault) {
-            const addresses = s.currentUser.addresses.map((a) => ({ ...a, isDefault: false }))
-            addresses.push({ ...newAddr, isDefault: true })
-            const updated = { ...s.currentUser, addresses }
-            return {
-              currentUser: updated,
-              users: s.users.map((u) => (u.id === updated.id ? updated : u)),
-            }
-          }
-          const updated = {
-            ...s.currentUser,
-            addresses: [...s.currentUser.addresses, newAddr],
-          }
-          return {
-            currentUser: updated,
-            users: s.users.map((u) => (u.id === updated.id ? updated : u)),
-          }
-        })
-      },
-
-      updateAddress: (id, data) => {
-        set((s) => {
-          if (!s.currentUser) return s
-          const addresses = s.currentUser.addresses.map((a) =>
-            a.id === id ? { ...a, ...data } : a
-          )
-          const updated = { ...s.currentUser, addresses }
-          return {
-            currentUser: updated,
-            users: s.users.map((u) => (u.id === updated.id ? updated : u)),
-          }
-        })
-      },
-
-      deleteAddress: (id) => {
-        set((s) => {
-          if (!s.currentUser) return s
-          const addresses = s.currentUser.addresses.filter((a) => a.id !== id)
-          const updated = { ...s.currentUser, addresses }
-          return {
-            currentUser: updated,
-            users: s.users.map((u) => (u.id === updated.id ? updated : u)),
-          }
-        })
-      },
-
-      setDefaultAddress: (id) => {
-        set((s) => {
-          if (!s.currentUser) return s
-          const addresses = s.currentUser.addresses.map((a) => ({
-            ...a,
-            isDefault: a.id === id,
-          }))
-          const updated = { ...s.currentUser, addresses }
-          return {
-            currentUser: updated,
-            users: s.users.map((u) => (u.id === updated.id ? updated : u)),
-          }
-        })
-      },
-
-      addPoints: (points) => {
-        set((s) => {
-          if (!s.currentUser) return s
-          const updated = {
-            ...s.currentUser,
-            points: s.currentUser.points + points,
-            totalSpent: s.currentUser.totalSpent + points, // $1 = 1 point
-          }
-          return {
-            currentUser: updated,
-            users: s.users.map((u) => (u.id === updated.id ? updated : u)),
-          }
-        })
-      },
-
-      usePoints: (points) => {
-        const { currentUser } = get()
-        if (!currentUser || currentUser.points < points) return false
-        set((s) => {
-          const updated = { ...s.currentUser!, points: s.currentUser!.points - points }
-          return {
-            currentUser: updated,
-            users: s.users.map((u) => (u.id === updated.id ? updated : u)),
-          }
-        })
-        return true
       },
 
       getDefaultAddress: () => {
@@ -222,16 +169,33 @@ export const useUserStore = create<UserState>()(
       },
 
       getMemberDiscount: () => {
-        const { currentUser } = get()
-        return currentUser ? 0.95 : 1.0
+        return 1.0
+      },
+
+      refreshUser: async () => {
+        try {
+          const { user } = await api.getUserMe()
+          set({ currentUser: apiUserToUser(user) })
+        } catch {
+          // Token invalid — log out
+          api.setUserToken(null)
+          set({ currentUser: null, userToken: null })
+        }
       },
     }),
     {
       name: 'user-store',
       partialize: (state) => ({
         currentUser: state.currentUser,
-        users: state.users,
+        userToken: state.userToken,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.userToken) {
+          api.setUserToken(state.userToken)
+          // Refresh user data from server in background
+          state.refreshUser()
+        }
+      },
     }
   )
 )

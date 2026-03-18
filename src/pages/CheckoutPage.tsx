@@ -33,7 +33,6 @@ export const CheckoutPage: React.FC = () => {
 
   const currentUser = useUserStore((s) => s.currentUser)
   const getDefaultAddress = useUserStore((s) => s.getDefaultAddress)
-  const getMemberDiscount = useUserStore((s) => s.getMemberDiscount)
   const addPoints = useUserStore((s) => s.addPoints)
   const usePoints = useUserStore((s) => s.usePoints)
 
@@ -84,13 +83,11 @@ export const CheckoutPage: React.FC = () => {
 
   const rawSubtotal = subtotal()
   const shipping = calculateShipping()
-  const discountRate = getMemberDiscount()
-  const memberDiscountAmount = currentUser ? rawSubtotal * (1 - discountRate) : 0
   const pointsDiscountAmount = pointsToUse / 100
-  const total = rawSubtotal - memberDiscountAmount - pointsDiscountAmount + shipping
+  const total = rawSubtotal - pointsDiscountAmount + shipping
 
   const maxPointsUsable = currentUser
-    ? Math.min(currentUser.points, Math.floor((rawSubtotal - memberDiscountAmount) * 100))
+    ? Math.min(currentUser.points, Math.floor(rawSubtotal * 100))
     : 0
 
   const [formErrors, setFormErrors] = useState<Record<string, boolean>>({})
@@ -125,7 +122,7 @@ export const CheckoutPage: React.FC = () => {
     const orderId = `MP-${Math.random().toString(36).substr(2, 8).toUpperCase()}`
     setOrderNumber(orderId)
 
-    const earnedPoints = Math.floor(total)
+    const earnedPoints = Math.floor(total / 100)
 
     setPlacing(true)
     try {
@@ -154,13 +151,12 @@ export const CheckoutPage: React.FC = () => {
         userId: currentUser?.id,
         pointsEarned: currentUser ? earnedPoints : undefined,
         pointsUsed: pointsToUse > 0 ? pointsToUse : undefined,
-        discount: memberDiscountAmount > 0 ? memberDiscountAmount : undefined,
       })
 
       // Handle points
       if (currentUser) {
-        if (pointsToUse > 0) usePoints(pointsToUse)
-        if (earnedPoints > 0) addPoints(earnedPoints)
+        if (pointsToUse > 0) await usePoints(pointsToUse)
+        if (earnedPoints > 0) await addPoints(earnedPoints, total)
       }
 
       setOrderPlaced(true)
@@ -442,14 +438,6 @@ export const CheckoutPage: React.FC = () => {
                   <span>{t('checkout.subtotal')}</span>
                   <span>${rawSubtotal.toFixed(2)}</span>
                 </div>
-
-                {/* Member discount line */}
-                {currentUser && memberDiscountAmount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>{t('checkout.memberDiscount')}</span>
-                    <span>-${memberDiscountAmount.toFixed(2)}</span>
-                  </div>
-                )}
 
                 {/* Points discount line */}
                 {pointsToUse > 0 && (

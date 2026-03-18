@@ -32,7 +32,7 @@ export interface AuthResult {
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token, X-User-Token',
 }
 
 export const onRequest: PagesFunction<Env>[] = [
@@ -197,6 +197,83 @@ export async function getCollection<T>(kv: KVNamespace, key: string): Promise<T[
 // Helper: put collection to KV
 export async function putCollection<T>(kv: KVNamespace, key: string, data: T[]): Promise<void> {
   await kv.put(key, JSON.stringify(data))
+}
+
+// ─── User Authentication ───
+
+export interface UserRecord {
+  id: string
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone: string
+  addresses: Address[]
+  points: number
+  totalSpent: number
+  memberSince: string
+  token: string
+}
+
+export interface Address {
+  id: string
+  label: string
+  firstName: string
+  lastName: string
+  address: string
+  city: string
+  state: string
+  zip: string
+  country: string
+  phone: string
+  isDefault: boolean
+}
+
+export interface UserAuthResult {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+}
+
+// Helper: authenticate user by X-User-Token header
+export async function authenticateUser(request: Request, kv: KVNamespace): Promise<UserRecord | null> {
+  const token = request.headers.get('X-User-Token')
+  if (!token) return null
+
+  const users = await getCollection<UserRecord>(kv, 'users')
+  return users.find((u) => u.token === token) || null
+}
+
+// Helper: require authenticated user
+export async function requireUser(request: Request, kv: KVNamespace): Promise<{ user: UserRecord; users: UserRecord[] } | { denied: Response }> {
+  const token = request.headers.get('X-User-Token')
+  if (!token) {
+    return {
+      denied: new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      }),
+    }
+  }
+
+  const users = await getCollection<UserRecord>(kv, 'users')
+  const user = users.find((u) => u.token === token)
+  if (!user) {
+    return {
+      denied: new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      }),
+    }
+  }
+  return { user, users }
+}
+
+// Helper: strip sensitive fields from user record
+export function sanitizeUser(user: UserRecord): Omit<UserRecord, 'password' | 'token'> {
+  const { password: _, token: __, ...safe } = user
+  return safe
 }
 
 // Helper: JSON response

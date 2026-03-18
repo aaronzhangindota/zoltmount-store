@@ -4,7 +4,6 @@ import { FiStar, FiShoppingCart } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import type { Product } from '../../data/products'
 import { useCartStore } from '../../store/cartStore'
-import { useUserStore } from '../../store/userStore'
 
 interface ProductCardProps {
   product: Product
@@ -19,15 +18,9 @@ const badgeColors: Record<string, string> = {
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { t } = useTranslation()
   const addItem = useCartStore((s) => s.addItem)
-  const currentUser = useUserStore((s) => s.currentUser)
-  const getMemberDiscount = useUserStore((s) => s.getMemberDiscount)
-
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : 0
-  const memberRate = getMemberDiscount()
-  const memberPrice = product.price * memberRate
-  const isMember = !!currentUser
 
   return (
     <div className="group bg-white rounded-2xl border border-gray-100 hover:border-brand-200 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
@@ -91,23 +84,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Price & CTA */}
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
           <div>
-            {isMember ? (
-              <>
-                <span className="text-lg font-bold text-brand-700">${memberPrice.toFixed(2)}</span>
-                <span className="text-sm text-gray-400 line-through ml-2">${product.price.toFixed(2)}</span>
-                <span className="ml-1.5 bg-orange-100 text-orange-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full align-middle">
-                  {t('product.memberPrice')}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="text-lg font-bold text-brand-700">${product.price.toFixed(2)}</span>
-                {product.originalPrice && (
-                  <span className="text-sm text-gray-400 line-through ml-2">
-                    ${product.originalPrice.toFixed(2)}
-                  </span>
-                )}
-              </>
+            <span className="text-lg font-bold text-brand-700">${product.price.toFixed(2)}</span>
+            {product.originalPrice && (
+              <span className="text-sm text-gray-400 line-through ml-2">
+                ${product.originalPrice.toFixed(2)}
+              </span>
             )}
           </div>
           <button

@@ -135,8 +135,8 @@ export const Footer: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
           <p>{t('footer.copyright')}</p>
           <div className="flex gap-5">
-            <a href="#" className="hover:text-gray-300 transition-colors">{t('footer.privacy')}</a>
-            <a href="#" className="hover:text-gray-300 transition-colors">{t('footer.terms')}</a>
+            <Link to="/privacy" className="hover:text-gray-300 transition-colors">{t('footer.privacy')}</Link>
+            <Link to="/terms" className="hover:text-gray-300 transition-colors">{t('footer.terms')}</Link>
             <a href="#" className="hover:text-gray-300 transition-colors">{t('footer.shippingPolicy')}</a>
           </div>
         </div>

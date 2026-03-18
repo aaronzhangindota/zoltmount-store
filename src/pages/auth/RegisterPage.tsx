@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
 import { FiMail, FiLock, FiUser, FiUserPlus } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useUserStore } from '../../store/userStore'
@@ -16,8 +17,9 @@ export const RegisterPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [agreeTerms, setAgreeTerms] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -34,11 +36,18 @@ export const RegisterPage: React.FC = () => {
       return
     }
 
-    const result = register(email, password, firstName, lastName)
-    if (result.success) {
-      navigate('/account', { replace: true })
-    } else {
-      setError(t(`auth.${result.error}`))
+    setLoading(true)
+    try {
+      const result = await register(email, password, firstName, lastName)
+      if (result.success) {
+        navigate('/account', { replace: true })
+      } else {
+        setError(t(`auth.${result.error}`))
+      }
+    } catch {
+      setError(t('auth.registrationFailed'))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -116,7 +125,11 @@ export const RegisterPage: React.FC = () => {
                 onChange={(e) => setAgreeTerms(e.target.checked)}
                 className="mt-1 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
               />
-              <span className="text-sm text-gray-600">{t('auth.agreeTerms')}</span>
+              <span className="text-sm text-gray-600">
+                <Trans i18nKey="auth.agreeTermsLinked">
+                  I agree to the <Link to="/terms" className="text-brand-600 hover:underline">Terms of Service</Link> and <Link to="/privacy" className="text-brand-600 hover:underline">Privacy Policy</Link>
+                </Trans>
+              </span>
             </label>
 
             {error && (
@@ -125,9 +138,10 @@ export const RegisterPage: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors text-sm shadow-lg shadow-brand-600/20"
+              disabled={loading}
+              className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors text-sm shadow-lg shadow-brand-600/20 disabled:opacity-50"
             >
-              {t('auth.register')}
+              {loading ? '...' : t('auth.register')}
             </button>
           </form>
 

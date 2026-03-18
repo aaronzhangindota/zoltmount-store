@@ -4,7 +4,6 @@ import { FiStar, FiShoppingCart, FiTruck, FiShield, FiRefreshCw, FiCheck, FiMinu
 import { useTranslation } from 'react-i18next'
 import { useProducts } from '../hooks/useProducts'
 import { useCartStore } from '../store/cartStore'
-import { useUserStore } from '../store/userStore'
 import { ProductCard } from '../components/Common/ProductCard'
 
 export const ProductDetailPage: React.FC = () => {
@@ -13,8 +12,6 @@ export const ProductDetailPage: React.FC = () => {
   const { products, getProductBySlug } = useProducts()
   const product = getProductBySlug(slug || '')
   const addItem = useCartStore((s) => s.addItem)
-  const currentUser = useUserStore((s) => s.currentUser)
-  const getMemberDiscount = useUserStore((s) => s.getMemberDiscount)
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState<'features' | 'specs'>('features')
   const [selectedImage, setSelectedImage] = useState(0)
@@ -30,9 +27,6 @@ export const ProductDetailPage: React.FC = () => {
 
   const related = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 3)
   const discount = product.originalPrice ? Math.round((1 - product.price / product.originalPrice) * 100) : 0
-  const memberRate = getMemberDiscount()
-  const memberPrice = product.price * memberRate
-  const isMember = !!currentUser
 
   return (
     <div className="min-h-screen bg-white pt-28 pb-16">
@@ -109,33 +103,16 @@ export const ProductDetailPage: React.FC = () => {
 
             {/* Price */}
             <div className="flex items-baseline gap-3 mt-5 flex-wrap">
-              {isMember ? (
+              <span className="text-3xl font-extrabold text-brand-700">${product.price.toFixed(2)}</span>
+              {product.originalPrice && (
                 <>
-                  <span className="text-3xl font-extrabold text-brand-700">${memberPrice.toFixed(2)}</span>
-                  <span className="text-xl text-gray-400 line-through">${product.price.toFixed(2)}</span>
-                  <span className="bg-orange-100 text-orange-600 text-sm font-bold px-2 py-0.5 rounded-full">
-                    {t('product.memberPrice')}
+                  <span className="text-xl text-gray-400 line-through">${product.originalPrice.toFixed(2)}</span>
+                  <span className="bg-red-100 text-red-600 text-sm font-bold px-2 py-0.5 rounded-full">
+                    {t('detail.save', { percent: discount })}
                   </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-3xl font-extrabold text-brand-700">${product.price.toFixed(2)}</span>
-                  {product.originalPrice && (
-                    <>
-                      <span className="text-xl text-gray-400 line-through">${product.originalPrice.toFixed(2)}</span>
-                      <span className="bg-red-100 text-red-600 text-sm font-bold px-2 py-0.5 rounded-full">
-                        {t('detail.save', { percent: discount })}
-                      </span>
-                    </>
-                  )}
                 </>
               )}
             </div>
-            {!isMember && (
-              <Link to="/login" className="text-sm text-orange-600 hover:underline mt-2 inline-block">
-                {t('product.loginForMemberPrice')}
-              </Link>
-            )}
 
             {/* Description */}
             <p className="text-gray-600 mt-5 leading-relaxed">{product.description}</p>
@@ -163,7 +140,7 @@ export const ProductDetailPage: React.FC = () => {
                 className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all text-sm hover:-translate-y-0.5 shadow-lg shadow-brand-600/20"
               >
                 <FiShoppingCart size={18} />
-                {t('detail.addToCartPrice', { price: ((isMember ? memberPrice : product.price) * quantity).toFixed(2) })}
+                {t('detail.addToCartPrice', { price: (product.price * quantity).toFixed(2) })}
               </button>
             </div>
 
