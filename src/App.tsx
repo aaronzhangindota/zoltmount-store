@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { DataLoader } from './components/DataLoader'
+import { ScrollToTop } from './components/ScrollToTop'
 import { StoreLayout } from './components/Layout/StoreLayout'
 import { AdminLayout } from './components/Admin/AdminLayout'
 import { AdminRoute } from './components/Admin/AdminRoute'
@@ -25,6 +26,7 @@ import { AdminPaymentPage } from './pages/admin/AdminPaymentPage'
 const App: React.FC = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <DataLoader>
         <Routes>
           {/* Store routes */}
