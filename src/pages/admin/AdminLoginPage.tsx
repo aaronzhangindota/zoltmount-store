@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiLock } from 'react-icons/fi'
+import { FiLock, FiUser } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 
 export const AdminLoginPage: React.FC = () => {
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,7 +16,7 @@ export const AdminLoginPage: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      const ok = await login(password)
+      const ok = await login(username, password)
       if (ok) {
         const account = useAdminStore.getState().adminAccount
         if (account?.role === 'staff') {
@@ -24,7 +25,7 @@ export const AdminLoginPage: React.FC = () => {
           navigate('/haijieaaronzhang')
         }
       } else {
-        setError('密码错误，请重试')
+        setError('用户名或密码错误，请重试')
         setPassword('')
       }
     } catch {
@@ -42,13 +43,31 @@ export const AdminLoginPage: React.FC = () => {
             <span className="text-white font-bold text-2xl">Z</span>
           </div>
           <h1 className="text-2xl font-bold text-white">ZoltMount 管理后台</h1>
-          <p className="text-gray-400 text-sm mt-2">请输入管理员 API Key 登录</p>
+          <p className="text-gray-400 text-sm mt-2">请输入用户名和密码登录</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-gray-800 rounded-2xl p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1.5">
-              Admin API Key
+              用户名
+            </label>
+            <div className="relative">
+              <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => { setUsername(e.target.value); setError('') }}
+                placeholder="请输入用户名"
+                className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                autoFocus
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              密码
             </label>
             <div className="relative">
               <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
@@ -56,9 +75,8 @@ export const AdminLoginPage: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError('') }}
-                placeholder="请输入 API Key"
+                placeholder="请输入密码"
                 className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                autoFocus
                 disabled={loading}
               />
             </div>

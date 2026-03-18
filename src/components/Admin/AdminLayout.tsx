@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText } from 'react-icons/fi'
+import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText, FiLock } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 
 const allNavItems = [
@@ -22,6 +22,7 @@ const breadcrumbMap: Record<string, string> = {
   '/haijieaaronzhang/payment': '支付设置',
   '/haijieaaronzhang/accounts': '账号管理',
   '/haijieaaronzhang/logs': '操作日志',
+  '/haijieaaronzhang/change-password': '修改密码',
 }
 
 export const AdminLayout: React.FC = () => {
@@ -98,6 +99,14 @@ export const AdminLayout: React.FC = () => {
             </p>
           </div>
         )}
+        <Link
+          to="/haijieaaronzhang/change-password"
+          onClick={() => setSidebarOpen(false)}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:bg-gray-700/70 hover:text-white transition-all duration-200 mb-1"
+        >
+          <FiLock size={18} />
+          修改密码
+        </Link>
         <Link
           to="/"
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:bg-gray-700/70 hover:text-white transition-all duration-200 mb-1"

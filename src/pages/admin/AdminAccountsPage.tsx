@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { FiPlus, FiEdit2, FiTrash2, FiUsers, FiKey, FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiPlus, FiEdit2, FiTrash2, FiUsers, FiEye, FiEyeOff } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 import type { AdminAccount } from '../../api/client'
 
@@ -9,8 +9,8 @@ export const AdminAccountsPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [form, setForm] = useState({ name: '', key: '', role: 'staff' as 'super_admin' | 'staff' })
-  const [showKey, setShowKey] = useState(false)
+  const [form, setForm] = useState({ name: '', username: '', password: '', role: 'staff' as 'super_admin' | 'staff' })
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
 
   const fetchAccounts = async () => {
@@ -27,10 +27,10 @@ export const AdminAccountsPage: React.FC = () => {
   useEffect(() => { fetchAccounts() }, [])
 
   const resetForm = () => {
-    setForm({ name: '', key: '', role: 'staff' })
+    setForm({ name: '', username: '', password: '', role: 'staff' })
     setEditingId(null)
     setShowForm(false)
-    setShowKey(false)
+    setShowPassword(false)
     setError('')
   }
 
@@ -39,12 +39,13 @@ export const AdminAccountsPage: React.FC = () => {
     setError('')
     try {
       if (editingId) {
-        const update: Partial<{ name: string; key: string; role: 'super_admin' | 'staff' }> = { name: form.name, role: form.role }
-        if (form.key) update.key = form.key
+        const update: Partial<{ name: string; username: string; role: 'super_admin' | 'staff' }> = { name: form.name, role: form.role }
+        if (form.username) update.username = form.username
         await updateAccount(editingId, update)
       } else {
-        if (!form.key) { setError('请输入密钥'); return }
-        await createAccount(form)
+        if (!form.username) { setError('请输入用户名'); return }
+        if (!form.password) { setError('请输入初始密码'); return }
+        await createAccount({ name: form.name, username: form.username, password: form.password, role: form.role })
       }
       resetForm()
       await fetchAccounts()
@@ -54,7 +55,7 @@ export const AdminAccountsPage: React.FC = () => {
   }
 
   const handleEdit = (account: AdminAccount) => {
-    setForm({ name: account.name, key: '', role: account.role })
+    setForm({ name: account.name, username: account.username, password: '', role: account.role })
     setEditingId(account.id)
     setShowForm(true)
   }
@@ -121,28 +122,40 @@ export const AdminAccountsPage: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  密钥 {editingId && <span className="text-gray-400 font-normal">(留空不修改)</span>}
+                  用户名 {editingId && <span className="text-gray-400 font-normal">(留空不修改)</span>}
                 </label>
+                <input
+                  type="text"
+                  value={form.username}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  placeholder="登录用户名"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required={!editingId}
+                />
+              </div>
+            </div>
+            {!editingId && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">初始密码</label>
                 <div className="relative">
-                  <FiKey className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                   <input
-                    type={showKey ? 'text' : 'password'}
-                    value={form.key}
-                    onChange={(e) => setForm({ ...form, key: e.target.value })}
-                    placeholder="登录密钥"
-                    className="w-full pl-9 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required={!editingId}
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    placeholder="设置初始密码"
+                    className="w-full px-3 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   />
                   <button
                     type="button"
-                    onClick={() => setShowKey(!showKey)}
+                    onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    {showKey ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                   </button>
                 </div>
               </div>
-            </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">角色</label>
               <select
@@ -197,7 +210,7 @@ export const AdminAccountsPage: React.FC = () => {
                   <div>
                     <p className="font-medium text-gray-900">{account.name}</p>
                     <p className="text-xs text-gray-400">
-                      创建于 {new Date(account.createdAt).toLocaleString('zh-CN')}
+                      @{account.username} · 创建于 {new Date(account.createdAt).toLocaleString('zh-CN')}
                     </p>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${roleBadgeClass(account.role)}`}>

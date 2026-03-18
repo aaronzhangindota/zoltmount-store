@@ -33,11 +33,12 @@ export interface Order {
 
 interface AdminState {
   isLoggedIn: boolean
-  adminKey: string | null
+  adminToken: string | null
   adminAccount: AdminAccountInfo | null
 
-  login: (key: string) => Promise<boolean>
+  login: (username: string, password: string) => Promise<boolean>
   logout: () => void
+  changePassword: (oldPassword: string, newPassword: string) => Promise<void>
 
   addProduct: (product: Product) => Promise<void>
   updateProduct: (id: string, data: Partial<Product>) => Promise<void>
@@ -60,8 +61,8 @@ interface AdminState {
 
   // Account management (super_admin only)
   getAccounts: () => Promise<AdminAccount[]>
-  createAccount: (data: { name: string; key: string; role: 'super_admin' | 'staff' }) => Promise<AdminAccount>
-  updateAccount: (id: string, data: Partial<{ name: string; key: string; role: 'super_admin' | 'staff' }>) => Promise<AdminAccount>
+  createAccount: (data: { name: string; username: string; password: string; role: 'super_admin' | 'staff' }) => Promise<AdminAccount>
+  updateAccount: (id: string, data: Partial<{ name: string; username: string; role: 'super_admin' | 'staff' }>) => Promise<AdminAccount>
   deleteAccount: (id: string) => Promise<void>
 
   // Logs (super_admin only)
@@ -72,25 +73,28 @@ export const useAdminStore = create<AdminState>()(
   persist(
     (set, get) => ({
       isLoggedIn: false,
-      adminKey: null,
+      adminToken: null,
       adminAccount: null,
 
-      login: async (key) => {
-        api.setAdminKey(key)
+      login: async (username, password) => {
         try {
-          const { orders, account } = await api.getOrdersWithAccount()
-          set({ isLoggedIn: true, adminKey: key, adminAccount: account })
+          const { token, account } = await api.login(username, password)
+          api.setAdminToken(token)
+          set({ isLoggedIn: true, adminToken: token, adminAccount: account })
           useDataStore.getState().fetchOrders()
           return true
         } catch {
-          api.setAdminKey(null)
           return false
         }
       },
 
       logout: () => {
-        api.setAdminKey(null)
-        set({ isLoggedIn: false, adminKey: null, adminAccount: null })
+        api.setAdminToken(null)
+        set({ isLoggedIn: false, adminToken: null, adminAccount: null })
+      },
+
+      changePassword: async (oldPassword, newPassword) => {
+        await api.changePassword(oldPassword, newPassword)
       },
 
       // Products
@@ -206,12 +210,12 @@ export const useAdminStore = create<AdminState>()(
       name: 'admin-store',
       partialize: (state) => ({
         isLoggedIn: state.isLoggedIn,
-        adminKey: state.adminKey,
+        adminToken: state.adminToken,
         adminAccount: state.adminAccount,
       }),
       onRehydrateStorage: () => (state) => {
-        if (state?.adminKey) {
-          api.setAdminKey(state.adminKey)
+        if (state?.adminToken) {
+          api.setAdminToken(state.adminToken)
         }
       },
     }

@@ -8,8 +8,9 @@ export interface AdminAccountInfo {
 }
 
 export interface AdminAccount extends AdminAccountInfo {
+  username: string
+  isProtected: boolean
   createdAt: string
-  isProtected?: boolean
 }
 
 export interface AdminLog {
@@ -22,10 +23,10 @@ export interface AdminLog {
 }
 
 class ApiClient {
-  private adminKey: string | null = null
+  private adminToken: string | null = null
 
-  setAdminKey(key: string | null) {
-    this.adminKey = key
+  setAdminToken(token: string | null) {
+    this.adminToken = token
   }
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -33,8 +34,8 @@ class ApiClient {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> || {}),
     }
-    if (this.adminKey) {
-      headers['X-Admin-Key'] = this.adminKey
+    if (this.adminToken) {
+      headers['X-Admin-Token'] = this.adminToken
     }
 
     const res = await fetch(`/api${path}`, { ...options, headers })
@@ -45,23 +46,13 @@ class ApiClient {
     return res.json() as Promise<T>
   }
 
-  // Special request that also returns response headers
-  private async requestWithHeaders<T>(path: string, options: RequestInit = {}): Promise<{ data: T; headers: Headers }> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string> || {}),
-    }
-    if (this.adminKey) {
-      headers['X-Admin-Key'] = this.adminKey
-    }
+  // Auth
+  async login(username: string, password: string): Promise<{ token: string; account: AdminAccountInfo }> {
+    return this.request('/admin-auth', { method: 'POST', body: JSON.stringify({ username, password }) })
+  }
 
-    const res = await fetch(`/api${path}`, { ...options, headers })
-    if (!res.ok) {
-      const body = await res.text()
-      throw new Error(`API ${res.status}: ${body}`)
-    }
-    const data = await res.json() as T
-    return { data, headers: res.headers }
+  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    await this.request('/admin-auth', { method: 'PUT', body: JSON.stringify({ oldPassword, newPassword }) })
   }
 
   // Products
@@ -96,13 +87,6 @@ class ApiClient {
   async getOrders(): Promise<Order[]> {
     return this.request<Order[]>('/orders')
   }
-  // Login verification — returns orders + account info from header
-  async getOrdersWithAccount(): Promise<{ orders: Order[]; account: AdminAccountInfo }> {
-    const { data, headers } = await this.requestWithHeaders<Order[]>('/orders')
-    const accountHeader = headers.get('X-Admin-Account')
-    const account = accountHeader ? JSON.parse(accountHeader) as AdminAccountInfo : { id: 'unknown', name: '管理员', role: 'super_admin' as const }
-    return { orders: data, account }
-  }
   async createOrder(order: Order): Promise<Order> {
     return this.request<Order>('/orders', { method: 'POST', body: JSON.stringify(order) })
   }
@@ -136,10 +120,10 @@ class ApiClient {
   async getAdminAccounts(): Promise<AdminAccount[]> {
     return this.request<AdminAccount[]>('/admin-accounts')
   }
-  async createAdminAccount(data: { name: string; key: string; role: 'super_admin' | 'staff' }): Promise<AdminAccount> {
+  async createAdminAccount(data: { name: string; username: string; password: string; role: 'super_admin' | 'staff' }): Promise<AdminAccount> {
     return this.request<AdminAccount>('/admin-accounts', { method: 'POST', body: JSON.stringify(data) })
   }
-  async updateAdminAccount(id: string, data: Partial<{ name: string; key: string; role: 'super_admin' | 'staff' }>): Promise<AdminAccount> {
+  async updateAdminAccount(id: string, data: Partial<{ name: string; username: string; role: 'super_admin' | 'staff' }>): Promise<AdminAccount> {
     return this.request<AdminAccount>(`/admin-accounts/${id}`, { method: 'PUT', body: JSON.stringify(data) })
   }
   async deleteAdminAccount(id: string): Promise<void> {

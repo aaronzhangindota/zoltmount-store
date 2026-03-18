@@ -12,11 +12,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   if ('denied' in result) return result.denied
 
   const accounts = await getCollection<AdminAccount>(env.ZOLTMOUNT_KV, 'admin-accounts')
-  // Don't expose keys in response; mark initial super admin as protected
-  const safe = accounts.map(({ key, ...rest }) => ({
-    ...rest,
-    isProtected: key === env.ADMIN_API_KEY,
-  }))
+  // Don't expose password/token in response
+  const safe = accounts.map(({ password, token, ...rest }) => rest)
   return json(safe)
 }
 
@@ -25,23 +22,26 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const result = await requireSuperAdmin(request, env)
   if ('denied' in result) return result.denied
 
-  const body = await request.json() as { name: string; key: string; role: 'super_admin' | 'staff' }
-  if (!body.name || !body.key || !body.role) {
-    return json({ error: 'name, key, and role are required' }, 400)
+  const body = await request.json() as { name: string; username: string; password: string; role: 'super_admin' | 'staff' }
+  if (!body.name || !body.username || !body.password || !body.role) {
+    return json({ error: 'name, username, password, and role are required' }, 400)
   }
 
   const accounts = await getCollection<AdminAccount>(env.ZOLTMOUNT_KV, 'admin-accounts')
 
-  // Check key uniqueness
-  if (accounts.some((a) => a.key === body.key)) {
-    return json({ error: 'Key already exists' }, 409)
+  // Check username uniqueness
+  if (accounts.some((a) => a.username === body.username)) {
+    return json({ error: 'Username already exists' }, 409)
   }
 
   const account: AdminAccount = {
     id: 'admin-' + Date.now(),
     name: body.name,
-    key: body.key,
+    username: body.username,
+    password: body.password,
     role: body.role,
+    isProtected: false,
+    token: '',
     createdAt: new Date().toISOString(),
   }
   accounts.push(account)
@@ -49,6 +49,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   await writeLog(env.ZOLTMOUNT_KV, result.auth, `创建账号「${account.name}」(${account.role})`, 'accounts')
 
-  const { key, ...safe } = account
+  const { password, token, ...safe } = account
   return json(safe, 201)
 }
