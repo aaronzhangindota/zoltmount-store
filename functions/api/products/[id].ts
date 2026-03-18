@@ -14,7 +14,13 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
   const data = await request.json()
   const products = await getCollection<any>(env.ZOLTMOUNT_KV, 'products')
   const idx = products.findIndex((p: any) => p.id === id)
-  if (idx === -1) return json({ error: 'Not found' }, 404)
+  if (idx === -1) {
+    // Upsert: if not found, add it
+    const newProduct = { ...data, id }
+    products.push(newProduct)
+    await putCollection(env.ZOLTMOUNT_KV, 'products', products)
+    return json(newProduct, 201)
+  }
 
   products[idx] = { ...products[idx], ...data }
   await putCollection(env.ZOLTMOUNT_KV, 'products', products)

@@ -13,7 +13,12 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
   const data = await request.json()
   const methods = await getCollection<any>(env.ZOLTMOUNT_KV, 'payment-methods')
   const idx = methods.findIndex((m: any) => m.id === id)
-  if (idx === -1) return json({ error: 'Not found' }, 404)
+  if (idx === -1) {
+    const item = { ...data, id }
+    methods.push(item)
+    await putCollection(env.ZOLTMOUNT_KV, 'payment-methods', methods)
+    return json(item, 201)
+  }
 
   methods[idx] = { ...methods[idx], ...data }
   await putCollection(env.ZOLTMOUNT_KV, 'payment-methods', methods)
