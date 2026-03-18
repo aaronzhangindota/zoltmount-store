@@ -54,9 +54,12 @@ export const onRequest: PagesFunction<Env>[] = [
 ]
 
 // Helper: ensure initial super admin exists in KV
+// Also migrates old-format accounts (key field) to new format (username/password)
 export async function ensureInitialAdmin(kv: KVNamespace, env: Env): Promise<AdminAccount[]> {
   const accounts = await getCollection<AdminAccount>(kv, 'admin-accounts')
+
   if (accounts.length === 0) {
+    // No accounts at all — create initial super admin
     const superAdmin: AdminAccount = {
       id: 'admin-' + Date.now(),
       name: '超级管理员',
@@ -69,7 +72,48 @@ export async function ensureInitialAdmin(kv: KVNamespace, env: Env): Promise<Adm
     }
     accounts.push(superAdmin)
     await putCollection(kv, 'admin-accounts', accounts)
+    return accounts
   }
+
+  // Migrate old-format accounts: if any account lacks "username", it's old format
+  const needsMigration = accounts.some((a) => !a.username)
+  if (needsMigration) {
+    let hasProtected = false
+    for (const acc of accounts) {
+      if (!acc.username) {
+        const oldKey = (acc as any).key as string | undefined
+        // The account whose key matched ADMIN_API_KEY is the initial super admin
+        if (oldKey === env.ADMIN_API_KEY) {
+          acc.username = 'zszmily'
+          acc.password = env.ADMIN_API_KEY
+          acc.isProtected = true
+          hasProtected = true
+        } else {
+          // Other old accounts: use their name as username, key as password
+          acc.username = acc.name
+          acc.password = oldKey || 'changeme'
+          acc.isProtected = false
+        }
+        acc.token = acc.token || ''
+        delete (acc as any).key
+      }
+    }
+    // If no protected account was found, create the initial super admin
+    if (!hasProtected) {
+      accounts.unshift({
+        id: 'admin-' + Date.now(),
+        name: '超级管理员',
+        username: 'zszmily',
+        password: env.ADMIN_API_KEY,
+        role: 'super_admin',
+        isProtected: true,
+        token: '',
+        createdAt: new Date().toISOString(),
+      })
+    }
+    await putCollection(kv, 'admin-accounts', accounts)
+  }
+
   return accounts
 }
 
