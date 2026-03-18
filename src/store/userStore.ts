@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 
 export interface Address {
   id: string
@@ -227,8 +227,7 @@ export const useUserStore = create<UserState>()(
       },
     }),
     {
-      name: 'user-store-v2',
-      storage: createJSONStorage(() => localStorage),
+      name: 'user-store',
       partialize: (state) => ({
         currentUser: state.currentUser,
         users: state.users,
