@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiPackage } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
+import { useDataStore } from '../../store/dataStore'
 import type { Category } from '../../data/products'
 
 export const AdminCategoriesPage: React.FC = () => {
-  const categories = useAdminStore((s) => s.categories)
-  const products = useAdminStore((s) => s.products)
+  const categories = useDataStore((s) => s.categories)
+  const products = useDataStore((s) => s.products)
   const addCategory = useAdminStore((s) => s.addCategory)
   const updateCategory = useAdminStore((s) => s.updateCategory)
   const deleteCategory = useAdminStore((s) => s.deleteCategory)
@@ -26,27 +27,36 @@ export const AdminCategoriesPage: React.FC = () => {
     setModalOpen(true)
   }
 
-  const handleSave = () => {
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
     if (!form.name || !form.slug) return
 
-    if (editingId) {
-      updateCategory(editingId, {
-        name: form.name,
-        slug: form.slug,
-        description: form.description,
-        icon: form.icon,
-      })
-    } else {
-      addCategory({
-        id: Date.now().toString(),
-        name: form.name,
-        slug: form.slug,
-        description: form.description,
-        icon: form.icon || '📦',
-        count: 0,
-      })
+    setSaving(true)
+    try {
+      if (editingId) {
+        await updateCategory(editingId, {
+          name: form.name,
+          slug: form.slug,
+          description: form.description,
+          icon: form.icon,
+        })
+      } else {
+        await addCategory({
+          id: Date.now().toString(),
+          name: form.name,
+          slug: form.slug,
+          description: form.description,
+          icon: form.icon || '📦',
+          count: 0,
+        })
+      }
+      setModalOpen(false)
+    } catch (err) {
+      alert('保存失败：' + (err instanceof Error ? err.message : '未知错误'))
+    } finally {
+      setSaving(false)
     }
-    setModalOpen(false)
   }
 
   const getCatProductCount = (slug: string) =>

@@ -4,13 +4,14 @@ import { FiLock, FiArrowLeft, FiCheck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useCartStore } from '../store/cartStore'
 import { useAdminStore } from '../store/adminStore'
+import { useDataStore } from '../store/dataStore'
 import { useUserStore } from '../store/userStore'
 
 export const CheckoutPage: React.FC = () => {
   const { t } = useTranslation()
   const { items, subtotal, clearCart } = useCartStore()
   const addOrder = useAdminStore((s) => s.addOrder)
-  const paymentMethods = useAdminStore((s) => s.paymentMethods)
+  const paymentMethods = useDataStore((s) => s.paymentMethods)
   const enabledMethods = paymentMethods
     .filter((m) => m.enabled)
     .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -66,7 +67,9 @@ export const CheckoutPage: React.FC = () => {
 
   const [formErrors, setFormErrors] = useState<Record<string, boolean>>({})
 
-  const handlePlaceOrder = () => {
+  const [placing, setPlacing] = useState(false)
+
+  const handlePlaceOrder = async () => {
     // Validate required fields
     const errors: Record<string, boolean> = {}
     if (!email.trim()) errors.email = true
@@ -96,42 +99,51 @@ export const CheckoutPage: React.FC = () => {
 
     const earnedPoints = Math.floor(total)
 
-    addOrder({
-      id: orderId,
-      items: items.map((item) => ({
-        productId: item.product.id,
-        name: item.product.name,
-        price: item.product.price,
-        quantity: item.quantity,
-      })),
-      total,
-      status: 'pending',
-      customer: {
-        email: email || 'guest@example.com',
-        firstName: firstName || 'Guest',
-        lastName: lastName || '',
-      },
-      shippingAddress: {
-        address: address || '',
-        city: city || '',
-        state: state || '',
-        zip: zip || '',
-      },
-      createdAt: new Date().toISOString(),
-      userId: currentUser?.id,
-      pointsEarned: currentUser ? earnedPoints : undefined,
-      pointsUsed: pointsToUse > 0 ? pointsToUse : undefined,
-      discount: memberDiscountAmount > 0 ? memberDiscountAmount : undefined,
-    })
+    setPlacing(true)
+    try {
+      await addOrder({
+        id: orderId,
+        items: items.map((item) => ({
+          productId: item.product.id,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+        })),
+        total,
+        status: 'pending',
+        customer: {
+          email: email || 'guest@example.com',
+          firstName: firstName || 'Guest',
+          lastName: lastName || '',
+        },
+        shippingAddress: {
+          address: address || '',
+          city: city || '',
+          state: state || '',
+          zip: zip || '',
+        },
+        createdAt: new Date().toISOString(),
+        userId: currentUser?.id,
+        pointsEarned: currentUser ? earnedPoints : undefined,
+        pointsUsed: pointsToUse > 0 ? pointsToUse : undefined,
+        discount: memberDiscountAmount > 0 ? memberDiscountAmount : undefined,
+      })
 
-    // Handle points
-    if (currentUser) {
-      if (pointsToUse > 0) usePoints(pointsToUse)
-      if (earnedPoints > 0) addPoints(earnedPoints)
+      // Handle points
+      if (currentUser) {
+        if (pointsToUse > 0) usePoints(pointsToUse)
+        if (earnedPoints > 0) addPoints(earnedPoints)
+      }
+
+      setOrderPlaced(true)
+      clearCart()
+    } catch {
+      // If API fails, still place order locally for UX
+      setOrderPlaced(true)
+      clearCart()
+    } finally {
+      setPlacing(false)
     }
-
-    setOrderPlaced(true)
-    clearCart()
   }
 
   if (orderPlaced) {

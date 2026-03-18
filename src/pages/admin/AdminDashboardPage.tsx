@@ -1,12 +1,31 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FiPackage, FiShoppingCart, FiTag, FiDollarSign, FiPlus, FiList, FiGrid, FiAlertTriangle, FiTrendingUp, FiEdit2 } from 'react-icons/fi'
+import { FiPackage, FiShoppingCart, FiTag, FiDollarSign, FiPlus, FiList, FiGrid, FiAlertTriangle, FiTrendingUp, FiEdit2, FiDatabase } from 'react-icons/fi'
+import { useDataStore } from '../../store/dataStore'
 import { useAdminStore } from '../../store/adminStore'
 
 export const AdminDashboardPage: React.FC = () => {
-  const products = useAdminStore((s) => s.products)
-  const orders = useAdminStore((s) => s.orders)
-  const categories = useAdminStore((s) => s.categories)
+  const products = useDataStore((s) => s.products)
+  const orders = useDataStore((s) => s.orders)
+  const categories = useDataStore((s) => s.categories)
+  const seedData = useAdminStore((s) => s.seedData)
+  const [seeding, setSeeding] = useState(false)
+  const [seedMsg, setSeedMsg] = useState('')
+
+  const handleSeed = async () => {
+    if (!window.confirm('确定要用默认数据初始化 KV 吗？这将覆盖现有数据。')) return
+    setSeeding(true)
+    setSeedMsg('')
+    try {
+      await seedData()
+      setSeedMsg('初始化成功！')
+    } catch (err) {
+      setSeedMsg('初始化失败：' + (err instanceof Error ? err.message : '未知错误'))
+    } finally {
+      setSeeding(false)
+      setTimeout(() => setSeedMsg(''), 5000)
+    }
+  }
 
   const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0)
 
@@ -71,7 +90,24 @@ export const AdminDashboardPage: React.FC = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">仪表盘</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">仪表盘</h1>
+        <div className="flex items-center gap-3">
+          {seedMsg && (
+            <span className={`text-sm ${seedMsg.includes('成功') ? 'text-green-600' : 'text-red-500'}`}>
+              {seedMsg}
+            </span>
+          )}
+          <button
+            onClick={handleSeed}
+            disabled={seeding}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
+          >
+            <FiDatabase size={16} />
+            {seeding ? '初始化中...' : '初始化数据'}
+          </button>
+        </div>
+      </div>
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

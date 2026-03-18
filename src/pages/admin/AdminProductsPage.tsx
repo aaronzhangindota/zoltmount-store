@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiChevronLeft, FiChevronRight, FiFilter } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
+import { useDataStore } from '../../store/dataStore'
 
 const categoryLabels: Record<string, string> = {
   fixed: '固定支架',
@@ -17,7 +18,7 @@ const categoryLabels: Record<string, string> = {
 const ITEMS_PER_PAGE = 20
 
 export const AdminProductsPage: React.FC = () => {
-  const products = useAdminStore((s) => s.products)
+  const products = useDataStore((s) => s.products)
   const deleteProduct = useAdminStore((s) => s.deleteProduct)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')

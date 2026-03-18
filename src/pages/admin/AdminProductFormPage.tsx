@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { FiArrowLeft, FiSave, FiX, FiPlus, FiTrash2, FiAlertCircle, FiCheck, FiImage } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
+import { useDataStore } from '../../store/dataStore'
 import type { Product } from '../../data/products'
 
 const categoryOptions = [
@@ -38,9 +39,10 @@ const steps = [
 export const AdminProductFormPage: React.FC = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const products = useAdminStore((s) => s.products)
+  const products = useDataStore((s) => s.products)
   const addProduct = useAdminStore((s) => s.addProduct)
   const updateProduct = useAdminStore((s) => s.updateProduct)
+  const [saving, setSaving] = useState(false)
   const isEdit = !!id
 
   const existing = isEdit ? products.find((p) => p.id === id) : undefined
@@ -152,7 +154,7 @@ export const AdminProductFormPage: React.FC = () => {
     return errs
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const errs = validate()
     if (errs.length > 0) {
       setErrors(errs)
@@ -194,13 +196,20 @@ export const AdminProductFormPage: React.FC = () => {
       inStock: parseInt(stockCount) > 0,
     }
 
-    if (isEdit) {
-      updateProduct(id!, product)
-    } else {
-      addProduct(product)
+    setSaving(true)
+    try {
+      if (isEdit) {
+        await updateProduct(id!, product)
+      } else {
+        await addProduct(product)
+      }
+      navigate('/haijieaaronzhang/products')
+    } catch (err) {
+      setErrors(['保存失败：' + (err instanceof Error ? err.message : '未知错误')])
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } finally {
+      setSaving(false)
     }
-
-    navigate('/haijieaaronzhang/products')
   }
 
   const toggleVesa = (v: string) => {
@@ -799,10 +808,11 @@ export const AdminProductFormPage: React.FC = () => {
             <button
               type="button"
               onClick={handleSubmit}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm shadow-lg shadow-blue-600/20"
+              disabled={saving}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors text-sm shadow-lg shadow-blue-600/20"
             >
               <FiSave size={16} />
-              {isEdit ? '保存修改' : '添加商品'}
+              {saving ? '保存中...' : isEdit ? '保存修改' : '添加商品'}
             </button>
           </div>
         </div>

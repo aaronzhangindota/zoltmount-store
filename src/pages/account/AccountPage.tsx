@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { FiUser, FiMapPin, FiPackage, FiStar, FiPlus, FiEdit2, FiTrash2, FiCheck, FiChevronDown, FiChevronUp, FiTruck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useUserStore } from '../../store/userStore'
-import { useAdminStore } from '../../store/adminStore'
+import { useDataStore } from '../../store/dataStore'
 import type { Address } from '../../store/userStore'
 
 const tabs = ['profile', 'addresses', 'orders', 'points'] as const
@@ -365,7 +365,7 @@ const AddressesTab: React.FC = () => {
 const OrdersTab: React.FC = () => {
   const { t } = useTranslation()
   const currentUser = useUserStore((s) => s.currentUser)
-  const orders = useAdminStore((s) => s.orders)
+  const orders = useDataStore((s) => s.orders)
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const userOrders = orders.filter(

@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { DataLoader } from './components/DataLoader'
 import { StoreLayout } from './components/Layout/StoreLayout'
 import { AdminLayout } from './components/Admin/AdminLayout'
 import { AdminRoute } from './components/Admin/AdminRoute'
@@ -24,36 +25,38 @@ import { AdminPaymentPage } from './pages/admin/AdminPaymentPage'
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Store routes */}
-        <Route element={<StoreLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/products/:slug" element={<ProductDetailPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/account" element={<AccountPage />} />
+      <DataLoader>
+        <Routes>
+          {/* Store routes */}
+          <Route element={<StoreLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/products/:slug" element={<ProductDetailPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/account" element={<AccountPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Admin routes */}
-        <Route path="/haijieaaronzhang/login" element={<AdminLoginPage />} />
-        <Route element={<AdminRoute />}>
-          <Route element={<AdminLayout />}>
-            <Route path="/haijieaaronzhang" element={<AdminDashboardPage />} />
-            <Route path="/haijieaaronzhang/products" element={<AdminProductsPage />} />
-            <Route path="/haijieaaronzhang/products/new" element={<AdminProductFormPage />} />
-            <Route path="/haijieaaronzhang/products/edit/:id" element={<AdminProductFormPage />} />
-            <Route path="/haijieaaronzhang/categories" element={<AdminCategoriesPage />} />
-            <Route path="/haijieaaronzhang/orders" element={<AdminOrdersPage />} />
-            <Route path="/haijieaaronzhang/payment" element={<AdminPaymentPage />} />
+          {/* Admin routes */}
+          <Route path="/haijieaaronzhang/login" element={<AdminLoginPage />} />
+          <Route element={<AdminRoute />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/haijieaaronzhang" element={<AdminDashboardPage />} />
+              <Route path="/haijieaaronzhang/products" element={<AdminProductsPage />} />
+              <Route path="/haijieaaronzhang/products/new" element={<AdminProductFormPage />} />
+              <Route path="/haijieaaronzhang/products/edit/:id" element={<AdminProductFormPage />} />
+              <Route path="/haijieaaronzhang/categories" element={<AdminCategoriesPage />} />
+              <Route path="/haijieaaronzhang/orders" element={<AdminOrdersPage />} />
+              <Route path="/haijieaaronzhang/payment" element={<AdminPaymentPage />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
+        </Routes>
+      </DataLoader>
     </BrowserRouter>
   )
 }

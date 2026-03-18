@@ -6,16 +6,26 @@ import { useAdminStore } from '../../store/adminStore'
 export const AdminLoginPage: React.FC = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const login = useAdminStore((s) => s.login)
   const navigate = useNavigate()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (login(password)) {
-      navigate('/haijieaaronzhang')
-    } else {
-      setError('密码错误，请重试')
-      setPassword('')
+    setLoading(true)
+    setError('')
+    try {
+      const ok = await login(password)
+      if (ok) {
+        navigate('/haijieaaronzhang')
+      } else {
+        setError('密码错误，请重试')
+        setPassword('')
+      }
+    } catch {
+      setError('连接失败，请检查网络')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -27,13 +37,13 @@ export const AdminLoginPage: React.FC = () => {
             <span className="text-white font-bold text-2xl">Z</span>
           </div>
           <h1 className="text-2xl font-bold text-white">ZoltMount 管理后台</h1>
-          <p className="text-gray-400 text-sm mt-2">请输入管理员密码登录</p>
+          <p className="text-gray-400 text-sm mt-2">请输入管理员 API Key 登录</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-gray-800 rounded-2xl p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1.5">
-              管理员密码
+              Admin API Key
             </label>
             <div className="relative">
               <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
@@ -41,9 +51,10 @@ export const AdminLoginPage: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError('') }}
-                placeholder="请输入密码"
+                placeholder="请输入 API Key"
                 className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoFocus
+                disabled={loading}
               />
             </div>
             {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
@@ -51,9 +62,10 @@ export const AdminLoginPage: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors text-sm"
+            disabled={loading}
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors text-sm"
           >
-            登录
+            {loading ? '验证中...' : '登录'}
           </button>
         </form>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiCreditCard } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
+import { useDataStore } from '../../store/dataStore'
 import type { PaymentMethod } from '../../store/adminStore'
 
 const typeLabels: Record<PaymentMethod['type'], string> = {
@@ -33,7 +34,8 @@ const emptyForm: Omit<PaymentMethod, 'id'> = {
 }
 
 export const AdminPaymentPage: React.FC = () => {
-  const { paymentMethods, addPaymentMethod, updatePaymentMethod, deletePaymentMethod } = useAdminStore()
+  const paymentMethods = useDataStore((s) => s.paymentMethods)
+  const { addPaymentMethod, updatePaymentMethod, deletePaymentMethod } = useAdminStore()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
@@ -52,23 +54,31 @@ export const AdminPaymentPage: React.FC = () => {
     setModalOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name.trim()) return
-    if (editingId) {
-      updatePaymentMethod(editingId, form)
-    } else {
-      addPaymentMethod({ ...form, id: `pm-${Date.now()}` })
+    try {
+      if (editingId) {
+        await updatePaymentMethod(editingId, form)
+      } else {
+        await addPaymentMethod({ ...form, id: `pm-${Date.now()}` })
+      }
+      setModalOpen(false)
+    } catch (err) {
+      alert('保存失败：' + (err instanceof Error ? err.message : '未知错误'))
     }
-    setModalOpen(false)
   }
 
-  const handleDelete = (id: string) => {
-    deletePaymentMethod(id)
+  const handleDelete = async (id: string) => {
+    try {
+      await deletePaymentMethod(id)
+    } catch (err) {
+      alert('删除失败：' + (err instanceof Error ? err.message : '未知错误'))
+    }
     setDeleteConfirmId(null)
   }
 
-  const toggleEnabled = (method: PaymentMethod) => {
-    updatePaymentMethod(method.id, { enabled: !method.enabled })
+  const toggleEnabled = async (method: PaymentMethod) => {
+    await updatePaymentMethod(method.id, { enabled: !method.enabled })
   }
 
   const toggleCard = (card: string) => {

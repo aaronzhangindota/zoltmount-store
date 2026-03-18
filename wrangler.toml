@@ -1,0 +1,6 @@
+name = "tv-mount-store"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "ZOLTMOUNT_KV"
+id = "9c75035d0eb249f4bd3e262f261988bf"

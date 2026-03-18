@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { FiShoppingCart, FiSearch, FiMapPin, FiTruck, FiTrash2, FiCheck, FiX, FiPackage, FiChevronDown, FiChevronUp, FiSave } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
+import { useDataStore } from '../../store/dataStore'
 import type { Order } from '../../store/adminStore'
 
 const carrierOptions = [
@@ -46,7 +47,7 @@ const statusBarColors: Record<string, string> = {
 type TabStatus = 'all' | Order['status']
 
 export const AdminOrdersPage: React.FC = () => {
-  const orders = useAdminStore((s) => s.orders)
+  const orders = useDataStore((s) => s.orders)
   const updateOrderStatus = useAdminStore((s) => s.updateOrderStatus)
   const updateOrderTracking = useAdminStore((s) => s.updateOrderTracking)
   const deleteOrder = useAdminStore((s) => s.deleteOrder)

@@ -1,0 +1,24 @@
+import { requireAdmin, getCollection, putCollection, json } from '../_middleware'
+
+interface Env {
+  ZOLTMOUNT_KV: KVNamespace
+  ADMIN_API_KEY: string
+}
+
+// GET /api/orders — admin only
+export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+  const denied = requireAdmin(request, env)
+  if (denied) return denied
+
+  const orders = await getCollection(env.ZOLTMOUNT_KV, 'orders')
+  return json(orders)
+}
+
+// POST /api/orders — public (customer placing order)
+export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+  const order = await request.json()
+  const orders = await getCollection<any>(env.ZOLTMOUNT_KV, 'orders')
+  orders.unshift(order) // newest first
+  await putCollection(env.ZOLTMOUNT_KV, 'orders', orders)
+  return json(order, 201)
+}

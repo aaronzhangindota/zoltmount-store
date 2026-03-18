@@ -1,9 +1,9 @@
-import { useAdminStore } from '../store/adminStore'
+import { useDataStore } from '../store/dataStore'
 import type { Product, Category } from '../data/products'
 
 export function useProducts() {
-  const products = useAdminStore((s) => s.products)
-  const categories = useAdminStore((s) => s.categories)
+  const products = useDataStore((s) => s.products)
+  const categories = useDataStore((s) => s.categories)
 
   const getProductBySlug = (slug: string): Product | undefined =>
     products.find((p) => p.slug === slug)
