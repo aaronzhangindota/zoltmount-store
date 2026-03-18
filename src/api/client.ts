@@ -9,6 +9,7 @@ export interface AdminAccountInfo {
 
 export interface AdminAccount extends AdminAccountInfo {
   createdAt: string
+  isProtected?: boolean
 }
 
 export interface AdminLog {

@@ -12,8 +12,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   if ('denied' in result) return result.denied
 
   const accounts = await getCollection<AdminAccount>(env.ZOLTMOUNT_KV, 'admin-accounts')
-  // Don't expose keys in response
-  const safe = accounts.map(({ key, ...rest }) => rest)
+  // Don't expose keys in response; mark initial super admin as protected
+  const safe = accounts.map(({ key, ...rest }) => ({
+    ...rest,
+    isProtected: key === env.ADMIN_API_KEY,
+  }))
   return json(safe)
 }
 

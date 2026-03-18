@@ -203,6 +203,11 @@ export const AdminAccountsPage: React.FC = () => {
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${roleBadgeClass(account.role)}`}>
                     {roleLabel(account.role)}
                   </span>
+                  {account.isProtected && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                      初始账号
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -211,12 +216,14 @@ export const AdminAccountsPage: React.FC = () => {
                   >
                     <FiEdit2 size={16} />
                   </button>
-                  <button
-                    onClick={() => handleDelete(account)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <FiTrash2 size={16} />
-                  </button>
+                  {!account.isProtected && (
+                    <button
+                      onClick={() => handleDelete(account)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

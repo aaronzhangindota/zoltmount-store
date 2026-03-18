@@ -50,6 +50,11 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params
     return json({ error: 'Cannot delete your own account' }, 400)
   }
 
+  // Prevent deleting the initial super admin (key matches ADMIN_API_KEY)
+  if (account.key === env.ADMIN_API_KEY) {
+    return json({ error: 'Cannot delete the initial super admin' }, 400)
+  }
+
   const filtered = accounts.filter((a) => a.id !== id)
   await putCollection(env.ZOLTMOUNT_KV, 'admin-accounts', filtered)
   await writeLog(env.ZOLTMOUNT_KV, result.auth, `删除账号「${account.name}」`, 'accounts')
