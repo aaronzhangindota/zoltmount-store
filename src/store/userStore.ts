@@ -82,21 +82,7 @@ export const useUserStore = create<UserState>()(
       },
 
       login: (email, password) => {
-        let { users } = get()
-        // Fallback: if store hasn't hydrated yet, read directly from localStorage
-        if (users.length === 0) {
-          try {
-            const raw = localStorage.getItem('user-store')
-            if (raw) {
-              const parsed = JSON.parse(raw)
-              if (parsed?.state?.users?.length) {
-                users = parsed.state.users
-                // Also restore users into store
-                set({ users })
-              }
-            }
-          } catch { /* ignore */ }
-        }
+        const { users } = get()
         const user = users.find(
           (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
         )
@@ -241,16 +227,11 @@ export const useUserStore = create<UserState>()(
       },
     }),
     {
-      name: 'user-store',
-      version: 2,
+      name: 'user-store-v2',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         currentUser: state.currentUser,
         users: state.users,
-      }),
-      merge: (persisted, current) => ({
-        ...current,
-        ...(persisted as object),
       }),
     }
   )

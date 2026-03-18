@@ -137,20 +137,8 @@ export const useAdminStore = create<AdminState>()(
         set((s) => ({ paymentMethods: s.paymentMethods.filter((m) => m.id !== id) })),
     }),
     {
-      name: 'admin-store',
-      version: 2,
+      name: 'admin-store-v2',
       storage: createJSONStorage(() => localStorage),
-      migrate: (persisted, version) => {
-        // v0/v1 had Chinese status strings — reset orders
-        if (version < 2) {
-          return { ...(persisted as object), orders: [] }
-        }
-        return persisted as object
-      },
-      merge: (persisted, current) => ({
-        ...current,
-        ...(persisted as object),
-      }),
     }
   )
 )
