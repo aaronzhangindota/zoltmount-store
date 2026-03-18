@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { api } from '../api/client'
 import { useDataStore } from './dataStore'
 import type { Product, Category } from '../data/products'
+import type { AdminAccountInfo, AdminAccount, AdminLog } from '../api/client'
 
 export interface PaymentMethod {
   id: string
@@ -33,6 +34,7 @@ export interface Order {
 interface AdminState {
   isLoggedIn: boolean
   adminKey: string | null
+  adminAccount: AdminAccountInfo | null
 
   login: (key: string) => Promise<boolean>
   logout: () => void
@@ -55,6 +57,15 @@ interface AdminState {
   deletePaymentMethod: (id: string) => Promise<void>
 
   seedData: () => Promise<void>
+
+  // Account management (super_admin only)
+  getAccounts: () => Promise<AdminAccount[]>
+  createAccount: (data: { name: string; key: string; role: 'super_admin' | 'staff' }) => Promise<AdminAccount>
+  updateAccount: (id: string, data: Partial<{ name: string; key: string; role: 'super_admin' | 'staff' }>) => Promise<AdminAccount>
+  deleteAccount: (id: string) => Promise<void>
+
+  // Logs (super_admin only)
+  getLogs: () => Promise<AdminLog[]>
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -62,14 +73,13 @@ export const useAdminStore = create<AdminState>()(
     (set, get) => ({
       isLoggedIn: false,
       adminKey: null,
+      adminAccount: null,
 
       login: async (key) => {
-        // Set the key and try to verify by fetching orders (admin-only endpoint)
         api.setAdminKey(key)
         try {
-          await api.getOrders()
-          set({ isLoggedIn: true, adminKey: key })
-          // Fetch orders into dataStore now that we're authenticated
+          const { orders, account } = await api.getOrdersWithAccount()
+          set({ isLoggedIn: true, adminKey: key, adminAccount: account })
           useDataStore.getState().fetchOrders()
           return true
         } catch {
@@ -80,7 +90,7 @@ export const useAdminStore = create<AdminState>()(
 
       logout: () => {
         api.setAdminKey(null)
-        set({ isLoggedIn: false, adminKey: null })
+        set({ isLoggedIn: false, adminKey: null, adminAccount: null })
       },
 
       // Products
@@ -114,7 +124,6 @@ export const useAdminStore = create<AdminState>()(
       // Orders
       addOrder: async (order) => {
         await api.createOrder(order)
-        // Don't fetch orders here — non-admin users can't read orders
       },
       updateOrderStatus: async (id, status) => {
         await api.updateOrder(id, { status })
@@ -173,15 +182,34 @@ export const useAdminStore = create<AdminState>()(
         })
         await useDataStore.getState().fetchAll()
       },
+
+      // Account management
+      getAccounts: async () => {
+        return api.getAdminAccounts()
+      },
+      createAccount: async (data) => {
+        return api.createAdminAccount(data)
+      },
+      updateAccount: async (id, data) => {
+        return api.updateAdminAccount(id, data)
+      },
+      deleteAccount: async (id) => {
+        await api.deleteAdminAccount(id)
+      },
+
+      // Logs
+      getLogs: async () => {
+        return api.getAdminLogs()
+      },
     }),
     {
       name: 'admin-store',
       partialize: (state) => ({
         isLoggedIn: state.isLoggedIn,
         adminKey: state.adminKey,
+        adminAccount: state.adminAccount,
       }),
       onRehydrateStorage: () => (state) => {
-        // Restore API key after rehydration
         if (state?.adminKey) {
           api.setAdminKey(state.adminKey)
         }

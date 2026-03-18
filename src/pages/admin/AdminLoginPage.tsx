@@ -17,7 +17,12 @@ export const AdminLoginPage: React.FC = () => {
     try {
       const ok = await login(password)
       if (ok) {
-        navigate('/haijieaaronzhang')
+        const account = useAdminStore.getState().adminAccount
+        if (account?.role === 'staff') {
+          navigate('/haijieaaronzhang/products')
+        } else {
+          navigate('/haijieaaronzhang')
+        }
       } else {
         setError('密码错误，请重试')
         setPassword('')

@@ -5,13 +5,19 @@ interface Env {
   ADMIN_API_KEY: string
 }
 
-// GET /api/orders — admin only
+// GET /api/orders — admin only (returns account info in header for login)
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
-  const denied = requireAdmin(request, env)
-  if (denied) return denied
+  const result = await requireAdmin(request, env)
+  if ('denied' in result) return result.denied
 
   const orders = await getCollection(env.ZOLTMOUNT_KV, 'orders')
-  return json(orders)
+  const response = json(orders)
+  response.headers.set('X-Admin-Account', JSON.stringify({
+    id: result.auth.id,
+    name: result.auth.name,
+    role: result.auth.role,
+  }))
+  return response
 }
 
 // POST /api/orders — public (customer placing order)

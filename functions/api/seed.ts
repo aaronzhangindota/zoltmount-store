@@ -1,15 +1,15 @@
-import { requireAdmin, putCollection, json } from './_middleware'
+import { requireSuperAdmin, putCollection, json, writeLog } from './_middleware'
 
 interface Env {
   ZOLTMOUNT_KV: KVNamespace
   ADMIN_API_KEY: string
 }
 
-// POST /api/seed — admin only
+// POST /api/seed — super_admin only
 // Body: { products, categories, paymentMethods }
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  const denied = requireAdmin(request, env)
-  if (denied) return denied
+  const result = await requireSuperAdmin(request, env)
+  if ('denied' in result) return result.denied
 
   const body = await request.json() as {
     products?: any[]
@@ -29,5 +29,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   await Promise.all(writes)
+  await writeLog(env.ZOLTMOUNT_KV, result.auth, '初始化数据（seed）', 'seed')
   return json({ success: true, message: 'KV seeded successfully' })
 }

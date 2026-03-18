@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiX, FiChevronRight } from 'react-icons/fi'
+import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 
-const navItems = [
-  { path: '/haijieaaronzhang', icon: FiGrid, label: '仪表盘' },
-  { path: '/haijieaaronzhang/products', icon: FiPackage, label: '商品管理' },
-  { path: '/haijieaaronzhang/categories', icon: FiTag, label: '分类管理' },
-  { path: '/haijieaaronzhang/orders', icon: FiShoppingCart, label: '订单管理' },
-  { path: '/haijieaaronzhang/payment', icon: FiCreditCard, label: '支付设置' },
+const allNavItems = [
+  { path: '/haijieaaronzhang', icon: FiGrid, label: '仪表盘', superOnly: true },
+  { path: '/haijieaaronzhang/products', icon: FiPackage, label: '商品管理', superOnly: false },
+  { path: '/haijieaaronzhang/categories', icon: FiTag, label: '分类管理', superOnly: false },
+  { path: '/haijieaaronzhang/orders', icon: FiShoppingCart, label: '订单管理', superOnly: false },
+  { path: '/haijieaaronzhang/payment', icon: FiCreditCard, label: '支付设置', superOnly: true },
+  { path: '/haijieaaronzhang/accounts', icon: FiUsers, label: '账号管理', superOnly: true },
+  { path: '/haijieaaronzhang/logs', icon: FiFileText, label: '操作日志', superOnly: true },
 ]
 
 const breadcrumbMap: Record<string, string> = {
@@ -18,12 +20,18 @@ const breadcrumbMap: Record<string, string> = {
   '/haijieaaronzhang/categories': '分类管理',
   '/haijieaaronzhang/orders': '订单管理',
   '/haijieaaronzhang/payment': '支付设置',
+  '/haijieaaronzhang/accounts': '账号管理',
+  '/haijieaaronzhang/logs': '操作日志',
 }
 
 export const AdminLayout: React.FC = () => {
   const location = useLocation()
   const logout = useAdminStore((s) => s.logout)
+  const adminAccount = useAdminStore((s) => s.adminAccount)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const role = adminAccount?.role || 'staff'
+  const navItems = allNavItems.filter((item) => !item.superOnly || role === 'super_admin')
 
   const isActive = (path: string) =>
     path === '/haijieaaronzhang' ? location.pathname === '/haijieaaronzhang' : location.pathname.startsWith(path)
@@ -31,7 +39,7 @@ export const AdminLayout: React.FC = () => {
   // Build breadcrumbs
   const getBreadcrumbs = () => {
     const path = location.pathname
-    const crumbs: { label: string; path?: string }[] = [{ label: '首页', path: '/haijieaaronzhang' }]
+    const crumbs: { label: string; path?: string }[] = [{ label: '首页', path: role === 'super_admin' ? '/haijieaaronzhang' : '/haijieaaronzhang/products' }]
 
     // Check for edit product route
     if (path.startsWith('/haijieaaronzhang/products/edit/')) {
@@ -81,6 +89,15 @@ export const AdminLayout: React.FC = () => {
 
       {/* Bottom */}
       <div className="px-3 py-4 border-t border-gray-700">
+        {/* Current account info */}
+        {adminAccount && (
+          <div className="px-3 py-2 mb-2">
+            <p className="text-sm text-white font-medium truncate">{adminAccount.name}</p>
+            <p className="text-xs text-gray-400">
+              {adminAccount.role === 'super_admin' ? '超级管理员' : '员工'}
+            </p>
+          </div>
+        )}
         <Link
           to="/"
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:bg-gray-700/70 hover:text-white transition-all duration-200 mb-1"
@@ -143,7 +160,7 @@ export const AdminLayout: React.FC = () => {
             </nav>
           </div>
           <div className="text-xs text-gray-400">
-            ZoltMount 后台管理系统
+            {adminAccount?.name || 'ZoltMount 后台管理系统'}
           </div>
         </header>
 

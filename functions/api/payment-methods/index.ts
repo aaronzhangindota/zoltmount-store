@@ -1,4 +1,4 @@
-import { requireAdmin, getCollection, putCollection, json } from '../_middleware'
+import { requireSuperAdmin, getCollection, putCollection, json, writeLog } from '../_middleware'
 
 interface Env {
   ZOLTMOUNT_KV: KVNamespace
@@ -11,14 +11,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   return json(methods)
 }
 
-// POST /api/payment-methods — admin only
+// POST /api/payment-methods — super_admin only
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  const denied = requireAdmin(request, env)
-  if (denied) return denied
+  const result = await requireSuperAdmin(request, env)
+  if ('denied' in result) return result.denied
 
-  const method = await request.json()
+  const method = await request.json() as any
   const methods = await getCollection<any>(env.ZOLTMOUNT_KV, 'payment-methods')
   methods.push(method)
   await putCollection(env.ZOLTMOUNT_KV, 'payment-methods', methods)
+
+  await writeLog(env.ZOLTMOUNT_KV, result.auth, `创建支付方式「${method.name || method.id}」`, 'payment-methods')
   return json(method, 201)
 }

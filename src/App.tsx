@@ -22,6 +22,8 @@ import { AdminProductFormPage } from './pages/admin/AdminProductFormPage'
 import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage'
 import { AdminOrdersPage } from './pages/admin/AdminOrdersPage'
 import { AdminPaymentPage } from './pages/admin/AdminPaymentPage'
+import { AdminAccountsPage } from './pages/admin/AdminAccountsPage'
+import { AdminLogsPage } from './pages/admin/AdminLogsPage'
 
 const App: React.FC = () => {
   return (
@@ -55,6 +57,8 @@ const App: React.FC = () => {
               <Route path="/haijieaaronzhang/categories" element={<AdminCategoriesPage />} />
               <Route path="/haijieaaronzhang/orders" element={<AdminOrdersPage />} />
               <Route path="/haijieaaronzhang/payment" element={<AdminPaymentPage />} />
+              <Route path="/haijieaaronzhang/accounts" element={<AdminAccountsPage />} />
+              <Route path="/haijieaaronzhang/logs" element={<AdminLogsPage />} />
             </Route>
           </Route>
         </Routes>
