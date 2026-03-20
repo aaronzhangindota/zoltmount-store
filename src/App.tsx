@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { DataLoader } from './components/DataLoader'
 import { ScrollToTop } from './components/ScrollToTop'
 import { StoreLayout } from './components/Layout/StoreLayout'
@@ -28,9 +29,11 @@ import { AdminAccountsPage } from './pages/admin/AdminAccountsPage'
 import { AdminLogsPage } from './pages/admin/AdminLogsPage'
 import { AdminChangePasswordPage } from './pages/admin/AdminChangePasswordPage'
 import { AdminShippingPage } from './pages/admin/AdminShippingPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 
 const App: React.FC = () => {
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <ScrollToTop />
       <DataLoader>
@@ -69,9 +72,15 @@ const App: React.FC = () => {
               <Route path="/haijieaaronzhang/change-password" element={<AdminChangePasswordPage />} />
             </Route>
           </Route>
+
+          {/* 404 */}
+          <Route element={<StoreLayout />}>
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
         </Routes>
       </DataLoader>
     </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

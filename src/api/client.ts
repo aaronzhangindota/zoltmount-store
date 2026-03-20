@@ -248,6 +248,14 @@ class ApiClient {
   async getContactSubmissions(): Promise<any[]> {
     return this.request<any[]>('/contact-submissions')
   }
+
+  // Newsletter
+  async subscribeNewsletter(email: string): Promise<any> {
+    return this.request('/newsletter', { method: 'POST', body: JSON.stringify({ email }) })
+  }
+  async getNewsletterSubscribers(): Promise<any[]> {
+    return this.request<any[]>('/newsletter')
+  }
 }
 
 export const api = new ApiClient()

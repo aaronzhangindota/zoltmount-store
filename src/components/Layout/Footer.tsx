@@ -1,10 +1,28 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FiFacebook, FiInstagram, FiTwitter, FiYoutube, FiMail, FiPhone, FiMapPin } from 'react-icons/fi'
+import { FiFacebook, FiInstagram, FiTwitter, FiYoutube, FiMail, FiPhone, FiMapPin, FiCheck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { api } from '../../api/client'
 
 export const Footer: React.FC = () => {
   const { t } = useTranslation()
+  const [nlEmail, setNlEmail] = useState('')
+  const [nlDone, setNlDone] = useState(false)
+  const [nlLoading, setNlLoading] = useState(false)
+
+  const handleSubscribe = async () => {
+    if (!nlEmail.trim()) return
+    setNlLoading(true)
+    try {
+      await api.subscribeNewsletter(nlEmail)
+      setNlDone(true)
+      setNlEmail('')
+    } catch {
+      setNlDone(true)
+    } finally {
+      setNlLoading(false)
+    }
+  }
 
   const productLinks = [
     t('footer.fixedMounts'),
@@ -34,16 +52,30 @@ export const Footer: React.FC = () => {
               <h3 className="text-white text-xl font-bold">{t('footer.newsletter')}</h3>
               <p className="text-gray-400 text-sm mt-1">{t('footer.newsletterSub')}</p>
             </div>
-            <div className="flex w-full md:w-auto">
-              <input
-                type="email"
-                placeholder={t('footer.emailPlaceholder')}
-                className="flex-1 md:w-72 px-4 py-3 bg-white/10 border border-white/20 rounded-l-lg text-white placeholder-gray-400 text-sm focus:outline-none focus:border-accent-500"
-              />
-              <button className="px-6 py-3 bg-accent-500 hover:bg-accent-600 text-white font-semibold rounded-r-lg transition-colors text-sm whitespace-nowrap">
-                {t('footer.subscribe')}
-              </button>
-            </div>
+            {nlDone ? (
+              <div className="flex items-center gap-2 text-green-400 text-sm">
+                <FiCheck size={18} />
+                <span>{t('footer.subscribed', 'Subscribed! Thank you.')}</span>
+              </div>
+            ) : (
+              <div className="flex w-full md:w-auto">
+                <input
+                  type="email"
+                  value={nlEmail}
+                  onChange={(e) => setNlEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSubscribe()}
+                  placeholder={t('footer.emailPlaceholder')}
+                  className="flex-1 md:w-72 px-4 py-3 bg-white/10 border border-white/20 rounded-l-lg text-white placeholder-gray-400 text-sm focus:outline-none focus:border-accent-500"
+                />
+                <button
+                  onClick={handleSubscribe}
+                  disabled={nlLoading}
+                  className="px-6 py-3 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-500 text-white font-semibold rounded-r-lg transition-colors text-sm whitespace-nowrap"
+                >
+                  {nlLoading ? '...' : t('footer.subscribe')}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

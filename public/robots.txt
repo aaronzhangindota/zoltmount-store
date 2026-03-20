@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /haijieaaronzhang/
+Disallow: /api/
+
+Sitemap: https://zoltmount.com/sitemap.xml
