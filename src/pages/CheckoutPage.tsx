@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom'
 import { FiLock, FiArrowLeft, FiCheck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useCartStore } from '../store/cartStore'
-import { useAdminStore } from '../store/adminStore'
 import { useDataStore } from '../store/dataStore'
 import { useUserStore } from '../store/userStore'
+import { api } from '../api/client'
 
 export const CheckoutPage: React.FC = () => {
   const { t } = useTranslation()
   const { items, subtotal, clearCart } = useCartStore()
-  const addOrder = useAdminStore((s) => s.addOrder)
   const paymentMethods = useDataStore((s) => s.paymentMethods)
   const enabledMethods = paymentMethods
     .filter((m) => m.enabled)
@@ -126,7 +125,7 @@ export const CheckoutPage: React.FC = () => {
 
     setPlacing(true)
     try {
-      await addOrder({
+      await api.createOrder({
         id: orderId,
         items: items.map((item) => ({
           productId: item.product.id,

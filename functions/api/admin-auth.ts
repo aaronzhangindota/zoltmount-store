@@ -24,6 +24,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   account.token = crypto.randomUUID()
   await putCollection(env.ZOLTMOUNT_KV, 'admin-accounts', accounts)
 
+  // Log login event
+  await writeLog(env.ZOLTMOUNT_KV, { id: account.id, name: account.name, role: account.role }, '登录系统', 'auth')
+
   return json({
     token: account.token,
     account: { id: account.id, name: account.name, role: account.role },

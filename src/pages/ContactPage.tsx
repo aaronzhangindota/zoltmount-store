@@ -1,6 +1,7 @@
-import React from 'react'
-import { FiMail, FiPhone, FiMapPin, FiClock, FiMessageCircle } from 'react-icons/fi'
+import React, { useState } from 'react'
+import { FiMail, FiPhone, FiMapPin, FiClock, FiMessageCircle, FiCheck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { api } from '../api/client'
 
 export const ContactPage: React.FC = () => {
   const { t } = useTranslation()
@@ -12,6 +13,34 @@ export const ContactPage: React.FC = () => {
     { icon: FiMapPin, title: t('contact.officeTitle'), detail: t('contact.officeDetail'), sub: t('contact.officeSub') },
     { icon: FiClock, title: t('contact.hoursTitle'), detail: t('contact.hoursDetail'), sub: t('contact.hoursSub') },
   ]
+
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [subject, setSubject] = useState('General Inquiry')
+  const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !message.trim()) return
+    setSubmitting(true)
+    try {
+      await api.submitContactForm({ firstName, lastName, email, subject, message })
+      setSubmitted(true)
+      setFirstName('')
+      setLastName('')
+      setEmail('')
+      setSubject('General Inquiry')
+      setMessage('')
+    } catch {
+      // Still show success for UX
+      setSubmitted(true)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pt-28 pb-16">
@@ -45,52 +74,94 @@ export const ContactPage: React.FC = () => {
             <div className="bg-white rounded-2xl border border-gray-100 p-8">
               <h2 className="text-xl font-bold text-gray-900 mb-6">{t('contact.formTitle')}</h2>
 
-              <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formFirstName')}</label>
-                    <input type="text" className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
+              {submitted ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FiCheck className="text-green-600" size={28} />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formLastName')}</label>
-                    <input type="text" className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{t('contact.formSubmitted', 'Message Sent!')}</h3>
+                  <p className="text-gray-500 text-sm mb-4">{t('contact.formSubmittedDesc', 'We\'ll get back to you within 2 hours.')}</p>
+                  <button
+                    onClick={() => setSubmitted(false)}
+                    className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm transition-colors"
+                  >
+                    {t('contact.sendAnother', 'Send Another Message')}
+                  </button>
+                </div>
+              ) : (
+                <form className="space-y-5" onSubmit={handleSubmit}>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formFirstName')}</label>
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formLastName')}</label>
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formEmail')}</label>
-                  <input type="email" className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formEmail')}</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formSubject')}</label>
-                  <select className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-300">
-                    <option>{t('contact.subjectGeneral')}</option>
-                    <option>{t('contact.subjectInstallation')}</option>
-                    <option>{t('contact.subjectCompatibility')}</option>
-                    <option>{t('contact.subjectOrder')}</option>
-                    <option>{t('contact.subjectWarranty')}</option>
-                    <option>{t('contact.subjectWholesale')}</option>
-                    <option>{t('contact.subjectOther')}</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formSubject')}</label>
+                    <select
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-300"
+                    >
+                      <option value="General Inquiry">{t('contact.subjectGeneral')}</option>
+                      <option value="Installation Help">{t('contact.subjectInstallation')}</option>
+                      <option value="Product Compatibility">{t('contact.subjectCompatibility')}</option>
+                      <option value="Order Status">{t('contact.subjectOrder')}</option>
+                      <option value="Warranty Claim">{t('contact.subjectWarranty')}</option>
+                      <option value="Wholesale / B2B">{t('contact.subjectWholesale')}</option>
+                      <option value="Other">{t('contact.subjectOther')}</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formMessage')}</label>
-                  <textarea
-                    rows={5}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 resize-none"
-                    placeholder={t('contact.formPlaceholder')}
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.formMessage')}</label>
+                    <textarea
+                      rows={5}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 resize-none"
+                      placeholder={t('contact.formPlaceholder')}
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto px-8 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors text-sm shadow-lg shadow-brand-600/20"
-                >
-                  {t('contact.formSubmit')}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full sm:w-auto px-8 py-3.5 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-300 text-white font-bold rounded-xl transition-colors text-sm shadow-lg shadow-brand-600/20"
+                  >
+                    {submitting ? '...' : t('contact.formSubmit')}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>

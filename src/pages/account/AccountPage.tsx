@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { FiUser, FiMapPin, FiPackage, FiStar, FiPlus, FiEdit2, FiTrash2, FiCheck, FiChevronDown, FiChevronUp, FiTruck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useUserStore } from '../../store/userStore'
-import { useDataStore } from '../../store/dataStore'
+import { api } from '../../api/client'
+import type { Order } from '../../store/adminStore'
 import type { Address } from '../../store/userStore'
 
 const tabs = ['profile', 'addresses', 'orders', 'points'] as const
@@ -374,14 +375,19 @@ const AddressesTab: React.FC = () => {
 const OrdersTab: React.FC = () => {
   const { t } = useTranslation()
   const currentUser = useUserStore((s) => s.currentUser)
-  const orders = useDataStore((s) => s.orders)
+  const [userOrders, setUserOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  const userOrders = orders.filter(
-    (o) =>
-      o.userId === currentUser?.id ||
-      o.customer.email.toLowerCase() === currentUser?.email.toLowerCase()
-  )
+  useEffect(() => {
+    if (currentUser) {
+      setLoading(true)
+      api.getOrders()
+        .then((orders) => setUserOrders(orders))
+        .catch(() => setUserOrders([]))
+        .finally(() => setLoading(false))
+    }
+  }, [currentUser])
 
   const statusColors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-700',
@@ -389,6 +395,14 @@ const OrdersTab: React.FC = () => {
     shipped: 'bg-purple-100 text-purple-700',
     completed: 'bg-green-100 text-green-700',
     cancelled: 'bg-red-100 text-red-700',
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+        <div className="animate-spin w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full mx-auto mb-3" />
+      </div>
+    )
   }
 
   if (userOrders.length === 0) {

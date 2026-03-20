@@ -240,6 +240,14 @@ class ApiClient {
   async getAdminLogs(): Promise<AdminLog[]> {
     return this.request<AdminLog[]>('/admin-logs')
   }
+
+  // Contact Submissions
+  async submitContactForm(data: { firstName: string; lastName: string; email: string; subject: string; message: string }): Promise<any> {
+    return this.request('/contact-submissions', { method: 'POST', body: JSON.stringify(data) })
+  }
+  async getContactSubmissions(): Promise<any[]> {
+    return this.request<any[]>('/contact-submissions')
+  }
 }
 
 export const api = new ApiClient()
