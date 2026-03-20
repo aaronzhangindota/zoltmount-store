@@ -1,10 +1,19 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { FiArrowRight, FiShield, FiTruck, FiAward } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { useProducts } from '../../hooks/useProducts'
 
 export const HeroSection: React.FC = () => {
   const { t } = useTranslation()
+  const { products } = useProducts()
+
+  const { avgRating, minPrice } = useMemo(() => {
+    if (products.length === 0) return { avgRating: '4.9', minPrice: '29.99' }
+    const avg = (products.reduce((sum, p) => sum + p.rating, 0) / products.length).toFixed(1)
+    const min = Math.min(...products.map((p) => p.price)).toFixed(2)
+    return { avgRating: avg, minPrice: min }
+  }, [products])
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 min-h-[85vh] flex items-center">
@@ -82,11 +91,11 @@ export const HeroSection: React.FC = () => {
 
               {/* Floating badges */}
               <div className="absolute -left-8 top-1/4 bg-white rounded-xl shadow-xl p-3 animate-bounce" style={{ animationDuration: '3s' }}>
-                <p className="text-sm font-bold text-gray-900">4.9 ★</p>
+                <p className="text-sm font-bold text-gray-900">{avgRating} ★</p>
                 <p className="text-xs text-gray-500">{t('hero.rating')}</p>
               </div>
               <div className="absolute -right-8 bottom-1/4 bg-white rounded-xl shadow-xl p-3 animate-bounce" style={{ animationDuration: '4s' }}>
-                <p className="text-sm font-bold text-green-600">$29.99</p>
+                <p className="text-sm font-bold text-green-600">${minPrice}</p>
                 <p className="text-xs text-gray-500">{t('hero.startingAt')}</p>
               </div>
             </div>

@@ -241,6 +241,25 @@ const es = {
     deskMounts: 'De escritorio',
     outdoorMounts: 'Exteriores',
   },
+
+  // Common
+  common: {
+    loading: 'Cargando...',
+    retry: 'Reintentar',
+    cancel: 'Cancelar',
+  },
+
+  // Contact form
+  contact2: {
+    formSubmitted: '¡Mensaje enviado!',
+    formSubmittedDesc: 'Responderemos en 2 horas.',
+    sendAnother: 'Enviar otro mensaje',
+  },
+
+  // Footer
+  footer2: {
+    subscribed: '¡Suscrito! Gracias.',
+  },
 }
 
 export default es

@@ -241,6 +241,25 @@ const ru = {
     deskMounts: 'Для стола',
     outdoorMounts: 'Уличные',
   },
+
+  // Common
+  common: {
+    loading: 'Загрузка...',
+    retry: 'Повторить',
+    cancel: 'Отмена',
+  },
+
+  // Contact form
+  contact2: {
+    formSubmitted: 'Сообщение отправлено!',
+    formSubmittedDesc: 'Мы ответим в течение 2 часов.',
+    sendAnother: 'Отправить ещё',
+  },
+
+  // Footer
+  footer2: {
+    subscribed: 'Подписка оформлена! Спасибо.',
+  },
 }
 
 export default ru

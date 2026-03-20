@@ -2,39 +2,11 @@ import React from 'react'
 import { FiStar } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 
-const reviews = [
-  {
-    name: 'James Wilson',
-    location: 'Austin, TX',
-    rating: 5,
-    text: 'The ArcMotion full motion mount is incredible. Super easy to install and the smooth swivel motion is perfect for my corner setup. Holds my 65" LG without any issues.',
-    product: 'ArcMotion Full Motion',
-    verified: true,
-  },
-  {
-    name: 'Sarah Chen',
-    location: 'San Francisco, CA',
-    rating: 5,
-    text: 'I ordered 3 ProGrip fixed mounts for different rooms. The slim profile looks amazing — you can barely see the mount behind the TV. Great value for the price.',
-    product: 'ProGrip Fixed Mount',
-    verified: true,
-  },
-  {
-    name: 'Michael Rodriguez',
-    location: 'Miami, FL',
-    rating: 5,
-    text: 'As a professional installer, I recommend ZoltMount to all my clients. The build quality is on par with mounts twice the price. Lifetime warranty is the cherry on top.',
-    product: 'ArcMotion Pro Large',
-    verified: true,
-  },
-  {
-    name: 'Emily Thompson',
-    location: 'Seattle, WA',
-    rating: 5,
-    text: 'The DeskFlex dual monitor arm transformed my home office. Cable management is clean, and the gas spring makes repositioning effortless. Wish I bought this sooner!',
-    product: 'DeskFlex Dual Monitor',
-    verified: true,
-  },
+const reviewMeta = [
+  { name: 'James Wilson', location: 'Austin, TX', rating: 5, textKey: 'testimonials.review1', product: 'ArcMotion Full Motion' },
+  { name: 'Sarah Chen', location: 'San Francisco, CA', rating: 5, textKey: 'testimonials.review2', product: 'ProGrip Fixed Mount' },
+  { name: 'Michael Rodriguez', location: 'Miami, FL', rating: 5, textKey: 'testimonials.review3', product: 'ArcMotion Pro Large' },
+  { name: 'Emily Thompson', location: 'Seattle, WA', rating: 5, textKey: 'testimonials.review4', product: 'DeskFlex Dual Monitor' },
 ]
 
 export const Testimonials: React.FC = () => {
@@ -60,7 +32,7 @@ export const Testimonials: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {reviews.map((review) => (
+          {reviewMeta.map((review) => (
             <div
               key={review.name}
               className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors"
@@ -74,7 +46,7 @@ export const Testimonials: React.FC = () => {
                   />
                 ))}
               </div>
-              <p className="text-gray-300 text-sm leading-relaxed">"{review.text}"</p>
+              <p className="text-gray-300 text-sm leading-relaxed">"{t(review.textKey)}"</p>
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                 <div>
                   <p className="text-white font-semibold text-sm">{review.name}</p>
@@ -82,9 +54,7 @@ export const Testimonials: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-gray-400">{review.product}</p>
-                  {review.verified && (
-                    <span className="text-xs text-green-400 font-medium">✓ {t('testimonials.verifiedPurchase')}</span>
-                  )}
+                  <span className="text-xs text-green-400 font-medium">✓ {t('testimonials.verifiedPurchase')}</span>
                 </div>
               </div>
             </div>

@@ -58,8 +58,12 @@ export const CartDrawer: React.FC = () => {
                   key={item.product.id}
                   className="flex gap-4 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
                 >
-                  <div className="w-20 h-20 bg-gradient-to-br from-brand-100 to-brand-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl">📺</span>
+                  <div className="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {item.product.images.length > 0 ? (
+                      <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-contain p-1" />
+                    ) : (
+                      <span className="text-2xl">📺</span>
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">

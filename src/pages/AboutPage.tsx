@@ -6,10 +6,10 @@ export const AboutPage: React.FC = () => {
   const { t } = useTranslation()
 
   const stats = [
-    { value: '500K+', label: t('about.statCustomers') },
-    { value: '50+', label: t('about.statCountries') },
-    { value: '4.8★', label: t('about.statRating') },
-    { value: '10yr', label: t('about.statWarranty') },
+    { value: t('about.statCustomersValue'), label: t('about.statCustomers') },
+    { value: t('about.statCountriesValue'), label: t('about.statCountries') },
+    { value: t('about.statRatingValue'), label: t('about.statRating') },
+    { value: t('about.statWarrantyValue'), label: t('about.statWarranty') },
   ]
 
   return (

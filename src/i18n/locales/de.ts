@@ -241,6 +241,25 @@ const de = {
     deskMounts: 'Tischhalterungen',
     outdoorMounts: 'Außenhalterungen',
   },
+
+  // Common
+  common: {
+    loading: 'Laden...',
+    retry: 'Wiederholen',
+    cancel: 'Abbrechen',
+  },
+
+  // Contact form
+  contact2: {
+    formSubmitted: 'Nachricht gesendet!',
+    formSubmittedDesc: 'Wir antworten innerhalb von 2 Stunden.',
+    sendAnother: 'Weitere Nachricht senden',
+  },
+
+  // Footer
+  footer2: {
+    subscribed: 'Abonniert! Vielen Dank.',
+  },
 }
 
 export default de

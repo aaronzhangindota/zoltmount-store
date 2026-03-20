@@ -203,7 +203,11 @@ export const Navbar: React.FC = () => {
               )}
             </div>
 
-            <button className="p-2 text-gray-600 hover:text-brand-600 transition-colors hidden sm:block">
+            <button
+              onClick={() => navigate('/products')}
+              className="p-2 text-gray-600 hover:text-brand-600 transition-colors hidden sm:block"
+              title={t('nav.products')}
+            >
               <FiSearch size={20} />
             </button>
 

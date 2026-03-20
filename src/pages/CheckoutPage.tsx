@@ -468,10 +468,11 @@ export const CheckoutPage: React.FC = () => {
 
               <button
                 onClick={handlePlaceOrder}
-                className="w-full mt-6 py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-brand-600/20"
+                disabled={placing}
+                className="w-full mt-6 py-4 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-brand-600/20"
               >
                 <FiLock size={16} />
-                {t('checkout.placeOrder', { total: total.toFixed(2) })}
+                {placing ? t('common.loading') : t('checkout.placeOrder', { total: total.toFixed(2) })}
               </button>
 
               <p className="text-xs text-gray-400 text-center mt-3">

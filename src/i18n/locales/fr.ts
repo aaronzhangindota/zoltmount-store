@@ -241,6 +241,25 @@ const fr = {
     deskMounts: 'Bras bureau',
     outdoorMounts: 'Supports extérieurs',
   },
+
+  // Common
+  common: {
+    loading: 'Chargement...',
+    retry: 'Réessayer',
+    cancel: 'Annuler',
+  },
+
+  // Contact form
+  contact2: {
+    formSubmitted: 'Message envoyé !',
+    formSubmittedDesc: 'Nous vous répondrons sous 2 heures.',
+    sendAnother: 'Envoyer un autre message',
+  },
+
+  // Footer
+  footer2: {
+    subscribed: 'Inscrit ! Merci.',
+  },
 }
 
 export default fr

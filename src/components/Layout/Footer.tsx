@@ -55,7 +55,7 @@ export const Footer: React.FC = () => {
             {nlDone ? (
               <div className="flex items-center gap-2 text-green-400 text-sm">
                 <FiCheck size={18} />
-                <span>{t('footer.subscribed', 'Subscribed! Thank you.')}</span>
+                <span>{t('footer2.subscribed')}</span>
               </div>
             ) : (
               <div className="flex w-full md:w-auto">
@@ -95,14 +95,20 @@ export const Footer: React.FC = () => {
               {t('footer.brandDesc')}
             </p>
             <div className="flex gap-3 mt-5">
-              {[FiFacebook, FiInstagram, FiTwitter, FiYoutube].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
+              {[
+                { Icon: FiFacebook, label: 'Facebook' },
+                { Icon: FiInstagram, label: 'Instagram' },
+                { Icon: FiTwitter, label: 'Twitter' },
+                { Icon: FiYoutube, label: 'YouTube' },
+              ].map(({ Icon, label }) => (
+                <Link
+                  key={label}
+                  to="/contact"
+                  aria-label={label}
                   className="w-9 h-9 rounded-full bg-white/10 hover:bg-accent-500 flex items-center justify-center transition-colors"
                 >
                   <Icon size={16} />
-                </a>
+                </Link>
               ))}
             </div>
           </div>
@@ -137,15 +143,15 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-sm text-gray-400">
                 <FiMapPin className="mt-0.5 flex-shrink-0" size={16} />
-                <span>1234 Industrial Ave, Suite 200<br />Shenzhen, GD 518000</span>
+                <span>{t('contact.officeDetail')}<br />{t('contact.officeSub')}</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-gray-400">
                 <FiPhone size={16} className="flex-shrink-0" />
-                <span>+1 (888) 555-ZOLT</span>
+                <span>{t('contact.phoneDetail')}</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-gray-400">
                 <FiMail size={16} className="flex-shrink-0" />
-                <span>support@zoltmount.com</span>
+                <span>{t('contact.emailDetail')}</span>
               </li>
             </ul>
 
@@ -169,7 +175,7 @@ export const Footer: React.FC = () => {
           <div className="flex gap-5">
             <Link to="/privacy" className="hover:text-gray-300 transition-colors">{t('footer.privacy')}</Link>
             <Link to="/terms" className="hover:text-gray-300 transition-colors">{t('footer.terms')}</Link>
-            <a href="#" className="hover:text-gray-300 transition-colors">{t('footer.shippingPolicy')}</a>
+            <Link to="/contact" className="hover:text-gray-300 transition-colors">{t('footer.shippingPolicy')}</Link>
           </div>
         </div>
       </div>

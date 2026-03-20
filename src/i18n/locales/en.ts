@@ -84,6 +84,10 @@ const en = {
     title: 'What Our Customers Say',
     basedOn: 'based on 15,000+ reviews',
     verifiedPurchase: 'Verified Purchase',
+    review1: 'The ArcMotion full motion mount is incredible. Super easy to install and the smooth swivel motion is perfect for my corner setup. Holds my 65" LG without any issues.',
+    review2: 'I ordered 3 ProGrip fixed mounts for different rooms. The slim profile looks amazing — you can barely see the mount behind the TV. Great value for the price.',
+    review3: 'As a professional installer, I recommend ZoltMount to all my clients. The build quality is on par with mounts twice the price. Lifetime warranty is the cherry on top.',
+    review4: 'The DeskFlex dual monitor arm transformed my home office. Cable management is clean, and the gas spring makes repositioning effortless. Wish I bought this sooner!',
   },
 
   // CTA Banner
@@ -278,9 +282,13 @@ const en = {
     title: 'Our Story',
     subtitle: 'Founded by engineers who were frustrated with flimsy, overpriced TV mounts. We set out to create mounting solutions that are strong, simple, and affordable.',
     statCustomers: 'Happy Customers',
+    statCustomersValue: '500K+',
     statCountries: 'Countries Served',
+    statCountriesValue: '50+',
     statRating: 'Average Rating',
+    statRatingValue: '4.8★',
     statWarranty: 'Warranty Coverage',
+    statWarrantyValue: '10yr',
     missionTitle: 'Our Mission',
     missionText: "To make TV mounting accessible to everyone. We believe you shouldn't need a professional installer or expensive tools to create a clean, wall-mounted entertainment setup. Every ZoltMount product is designed for DIY installation with nothing more than a drill and 30 minutes of your time.",
     qualityTitle: 'Quality Promise',
@@ -370,6 +378,18 @@ const en = {
     loading: 'Loading...',
     retry: 'Retry',
     cancel: 'Cancel',
+  },
+
+  // Contact form
+  contact2: {
+    formSubmitted: 'Message Sent!',
+    formSubmittedDesc: 'We will reply within 2 hours.',
+    sendAnother: 'Send Another Message',
+  },
+
+  // Footer
+  footer2: {
+    subscribed: 'Subscribed! Thank you.',
   },
 }
 
