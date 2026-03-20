@@ -61,6 +61,7 @@ export const LoginPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t('auth.email')}
+                  autoComplete="email"
                   className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent"
                 />
               </div>
@@ -74,6 +75,7 @@ export const LoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t('auth.password')}
+                  autoComplete="current-password"
                   className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent"
                 />
               </div>
@@ -93,9 +95,9 @@ export const LoginPage: React.FC = () => {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            <button className="text-brand-600 hover:underline text-sm">
+            <Link to="/contact" className="text-brand-600 hover:underline text-sm">
               {t('auth.forgotPassword')}
-            </button>
+            </Link>
           </div>
 
           <div className="mt-4 text-center text-sm text-gray-500">

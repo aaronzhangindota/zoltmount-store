@@ -370,6 +370,25 @@ const zh = {
     completed: '已完成',
     cancelled: '已取消',
   },
+
+  // Common
+  common: {
+    loading: '加载中...',
+    retry: '重试',
+    cancel: '取消',
+  },
+
+  // Contact form
+  contact2: {
+    formSubmitted: '消息已发送！',
+    formSubmittedDesc: '我们将在 2 小时内回复您。',
+    sendAnother: '发送另一条消息',
+  },
+
+  // Footer
+  footer2: {
+    subscribed: '订阅成功！感谢您。',
+  },
 }
 
 export default zh

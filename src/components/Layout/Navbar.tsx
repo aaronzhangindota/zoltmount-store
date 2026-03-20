@@ -213,8 +213,8 @@ export const Navbar: React.FC = () => {
             >
               <FiShoppingCart size={20} />
               {totalItems() > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-accent-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                  {totalItems()}
+                <span className="absolute -top-0.5 -right-0.5 bg-accent-500 text-white text-xs min-w-5 h-5 px-1 rounded-full flex items-center justify-center font-bold">
+                  {totalItems() > 99 ? '99+' : totalItems()}
                 </span>
               )}
             </button>

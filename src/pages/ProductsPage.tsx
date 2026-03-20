@@ -102,9 +102,9 @@ export const ProductsPage: React.FC = () => {
               <div className="mt-6 pt-5 border-t border-gray-100">
                 <h3 className="font-bold text-gray-900 mb-3">{t('productsPage.priceRange')}</h3>
                 <div className="space-y-1 text-sm text-gray-600">
-                  <p>$9.99 – $199.99</p>
+                  <p>${Math.min(...filtered.map((p) => p.price)).toFixed(2)} – ${Math.max(...filtered.map((p) => p.price)).toFixed(2)}</p>
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                    <div className="bg-brand-500 h-1.5 rounded-full" style={{ width: '70%' }} />
+                    <div className="bg-brand-500 h-1.5 rounded-full" style={{ width: '100%' }} />
                   </div>
                 </div>
               </div>

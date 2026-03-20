@@ -314,7 +314,7 @@ const AddressesTab: React.FC = () => {
               onClick={resetForm}
               className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm transition-colors"
             >
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </button>
           </div>
         </div>
@@ -474,10 +474,10 @@ const OrdersTab: React.FC = () => {
                 ))}
               </div>
               {order.pointsEarned != null && order.pointsEarned > 0 && (
-                <p className="text-xs text-green-600 mt-2">+{order.pointsEarned} points earned</p>
+                <p className="text-xs text-green-600 mt-2">+{order.pointsEarned} {t('account.pointsUnit')}</p>
               )}
               {order.pointsUsed != null && order.pointsUsed > 0 && (
-                <p className="text-xs text-orange-600 mt-1">-{order.pointsUsed} points used</p>
+                <p className="text-xs text-orange-600 mt-1">-{order.pointsUsed} {t('account.pointsUnit')}</p>
               )}
             </div>
           )}

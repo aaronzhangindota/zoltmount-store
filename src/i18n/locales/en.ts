@@ -364,6 +364,13 @@ const en = {
     completed: 'Completed',
     cancelled: 'Cancelled',
   },
+
+  // Common
+  common: {
+    loading: 'Loading...',
+    retry: 'Retry',
+    cancel: 'Cancel',
+  },
 }
 
 export default en
