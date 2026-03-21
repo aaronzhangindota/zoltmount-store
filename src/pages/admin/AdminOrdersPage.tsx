@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { FiShoppingCart, FiSearch, FiMapPin, FiTruck, FiTrash2, FiCheck, FiX, FiPackage, FiChevronDown, FiChevronUp, FiSave, FiDownload, FiFilter } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 import { useDataStore } from '../../store/dataStore'
@@ -82,11 +83,13 @@ const statCardIcons: Record<string, React.ElementType> = {
 type TabStatus = 'all' | Order['status']
 
 export const AdminOrdersPage: React.FC = () => {
+  const [searchParams] = useSearchParams()
+  const initialTab = (searchParams.get('tab') as TabStatus) || 'pending'
   const orders = useDataStore((s) => s.orders)
   const updateOrderStatus = useAdminStore((s) => s.updateOrderStatus)
   const updateOrderTracking = useAdminStore((s) => s.updateOrderTracking)
   const deleteOrder = useAdminStore((s) => s.deleteOrder)
-  const [activeTab, setActiveTab] = useState<TabStatus>('pending')
+  const [activeTab, setActiveTab] = useState<TabStatus>(initialTab)
   const [search, setSearch] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(false)
@@ -150,10 +153,14 @@ export const AdminOrdersPage: React.FC = () => {
     }
   }
 
-  const handleDeleteOrder = (id: string) => {
+  const handleDeleteOrder = async (id: string) => {
     if (window.confirm('确定要删除此订单吗？删除后不可恢复。')) {
-      deleteOrder(id)
-      if (expandedId === id) setExpandedId(null)
+      try {
+        await deleteOrder(id)
+        if (expandedId === id) setExpandedId(null)
+      } catch (err) {
+        alert('删除失败：' + (err instanceof Error ? err.message : '权限不足或网络错误'))
+      }
     }
   }
 

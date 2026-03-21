@@ -22,7 +22,7 @@ export const AdminDashboardPage: React.FC = () => {
     api.getNewsletterSubscribers().then((subs) => setSubscriberCount(subs.length)).catch(() => setSubscriberCount(0))
   }, [])
 
-  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0)
+  const totalRevenue = orders.filter((o) => o.status === 'completed').reduce((sum, o) => sum + o.total, 0)
 
   const stats = [
     {
@@ -47,10 +47,10 @@ export const AdminDashboardPage: React.FC = () => {
       icon: FiDollarSign,
       label: '总营收',
       value: `$${totalRevenue.toFixed(2)}`,
-      desc: '累计收入',
+      desc: '已完成订单收入',
       gradient: 'from-orange-500 to-orange-600',
       shadow: 'shadow-orange-500/25',
-      link: '/haijieaaronzhang/orders',
+      link: '/haijieaaronzhang/orders?tab=completed',
     },
     {
       icon: FiUsers,
@@ -120,7 +120,7 @@ export const AdminDashboardPage: React.FC = () => {
         <div className="flex flex-wrap gap-3 mb-6">
           {pendingOrders > 0 && (
             <Link
-              to="/haijieaaronzhang/orders"
+              to="/haijieaaronzhang/orders?tab=pending"
               className="flex items-center gap-2 px-4 py-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700 hover:bg-yellow-100 transition-colors"
             >
               <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
@@ -129,7 +129,7 @@ export const AdminDashboardPage: React.FC = () => {
           )}
           {processingOrders > 0 && (
             <Link
-              to="/haijieaaronzhang/orders"
+              to="/haijieaaronzhang/orders?tab=processing"
               className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 hover:bg-blue-100 transition-colors"
             >
               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
