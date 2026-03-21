@@ -268,7 +268,7 @@ class ApiClient {
 
   // Admin: list all registered users
   async getAdminUsers(): Promise<ApiUser[]> {
-    return this.request<ApiUser[]>('/admin-users')
+    return this.request<ApiUser[]>('/user-auth?admin=1')
   }
 }
 

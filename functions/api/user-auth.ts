@@ -1,12 +1,13 @@
-import { getCollection, putCollection, json, requireUser, sanitizeUser } from './_middleware'
+import { getCollection, putCollection, json, requireUser, sanitizeUser, authenticateAdmin } from './_middleware'
 import type { UserRecord } from './_middleware'
 
 interface Env {
   ZOLTMOUNT_KV: KVNamespace
+  ADMIN_API_KEY: string
 }
 
 // POST: register / login (no auth required)
-// GET: get current user (requires X-User-Token)
+// GET: get current user (requires X-User-Token) OR admin list all users (requires X-Admin-Token + ?admin=1)
 // PUT: update profile / change password / add points / use points (requires X-User-Token)
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -71,6 +72,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 }
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
+  const url = new URL(context.request.url)
+
+  // Admin listing all users: GET /api/user-auth?admin=1
+  if (url.searchParams.get('admin') === '1') {
+    const adminAuth = await authenticateAdmin(context.request, context.env)
+    if (!adminAuth) {
+      return json({ error: 'Unauthorized' }, 401)
+    }
+    const users = await getCollection<UserRecord>(context.env.ZOLTMOUNT_KV, 'users')
+    const safeUsers = users.map((u) => sanitizeUser(u))
+    return json(safeUsers)
+  }
+
+  // Normal user: get own profile
   const result = await requireUser(context.request, context.env.ZOLTMOUNT_KV)
   if ('denied' in result) return result.denied
 
