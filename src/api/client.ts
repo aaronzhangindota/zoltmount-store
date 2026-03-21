@@ -284,6 +284,18 @@ class ApiClient {
   async deletePaymentGateway(id: string): Promise<void> {
     await this.request(`/payment-gateways?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
   }
+
+  // Stripe
+  async getStripeConfig(): Promise<{ publishableKey: string }> {
+    return this.request('/stripe?action=config')
+  }
+
+  async createPaymentIntent(amount: number, currency: string = 'usd'): Promise<{ clientSecret: string; paymentIntentId: string }> {
+    return this.request('/stripe', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'create-payment-intent', amount, currency }),
+    })
+  }
 }
 
 export const api = new ApiClient()

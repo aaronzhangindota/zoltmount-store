@@ -2,13 +2,15 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { FiLock, FiArrowLeft, FiCheck, FiX, FiExternalLink } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useCartStore } from '../store/cartStore'
 import { useDataStore } from '../store/dataStore'
 import { useUserStore } from '../store/userStore'
 import { api } from '../api/client'
 import { calculateShipping as calcShipping } from '../utils/shipping'
 
-export const CheckoutPage: React.FC = () => {
+const CheckoutForm: React.FC = () => {
   const { t } = useTranslation()
   const { items, subtotal, clearCart } = useCartStore()
   const paymentMethods = useDataStore((s) => s.paymentMethods)
@@ -27,9 +29,6 @@ export const CheckoutPage: React.FC = () => {
   const [state, setState] = useState('')
   const [zip, setZip] = useState('')
   const [country, setCountry] = useState('US')
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardExpiry, setCardExpiry] = useState('')
-  const [cardCvc, setCardCvc] = useState('')
 
   const currentUser = useUserStore((s) => s.currentUser)
   const getDefaultAddress = useUserStore((s) => s.getDefaultAddress)
@@ -76,6 +75,9 @@ export const CheckoutPage: React.FC = () => {
   const [paypalEmail, setPaypalEmail] = useState('')
   const [paypalEmailError, setPaypalEmailError] = useState(false)
   const [paymentStep, setPaymentStep] = useState<'input' | 'processing'>('input')
+  const stripe = useStripe()
+  const elements = useElements()
+  const [stripeError, setStripeError] = useState('')
 
   const handlePlaceOrder = async () => {
     // Validate required fields
@@ -88,13 +90,6 @@ export const CheckoutPage: React.FC = () => {
     if (!state.trim()) errors.state = true
     if (!zip.trim()) errors.zip = true
     if (!selectedPayment) errors.payment = true
-    // Validate credit card fields when credit card is selected
-    if (selectedMethod?.type === 'credit_card') {
-      if (!cardNumber.trim() || cardNumber.replace(/\s/g, '').length < 13) errors.cardNumber = true
-      if (!cardExpiry.trim() || !/^\d{2}\s*\/\s*\d{2}$/.test(cardExpiry.trim())) errors.cardExpiry = true
-      if (!cardCvc.trim() || cardCvc.trim().length < 3) errors.cardCvc = true
-    }
-
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors)
       // Scroll to the first error field
@@ -115,11 +110,42 @@ export const CheckoutPage: React.FC = () => {
       return
     }
 
-    // Credit card: proceed directly
+    // Credit card: use real Stripe payment
+    if (stripe && elements) {
+      setPlacing(true)
+      setStripeError('')
+      try {
+        const { clientSecret } = await api.createPaymentIntent(total)
+        const cardElement = elements.getElement(CardElement)
+        if (!cardElement) throw new Error('Card element not found')
+
+        const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: `${firstName} ${lastName}`.trim(),
+              email,
+              address: { line1: address, city, state, postal_code: zip, country },
+            },
+          },
+        })
+
+        if (error) throw new Error(error.message)
+        if (paymentIntent?.status === 'succeeded') {
+          await executeOrder('processing')
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Payment failed'
+        setStripeError(message)
+        setPlacing(false)
+      }
+      return
+    }
+    // Fallback when Stripe not loaded
     await executeOrder()
   }
 
-  const executeOrder = async () => {
+  const executeOrder = async (orderStatus: string = 'pending') => {
     const orderId = `MP-${Math.random().toString(36).substr(2, 8).toUpperCase()}`
     setOrderNumber(orderId)
 
@@ -136,7 +162,7 @@ export const CheckoutPage: React.FC = () => {
           quantity: item.quantity,
         })),
         total,
-        status: 'pending',
+        status: orderStatus as 'pending' | 'processing',
         customer: {
           email: email || 'guest@example.com',
           firstName: firstName || 'Guest',
@@ -367,11 +393,24 @@ export const CheckoutPage: React.FC = () => {
                           ))}
                         </div>
                       )}
-                      <input type="text" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setFormErrors((p) => ({ ...p, cardNumber: false })) }} placeholder={t('checkout.cardNumber') + ' *'} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardNumber ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
-                      <div className="grid grid-cols-2 gap-4">
-                        <input type="text" value={cardExpiry} onChange={(e) => { setCardExpiry(e.target.value); setFormErrors((p) => ({ ...p, cardExpiry: false })) }} placeholder={t('checkout.expiry') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardExpiry ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
-                        <input type="text" value={cardCvc} onChange={(e) => { setCardCvc(e.target.value); setFormErrors((p) => ({ ...p, cardCvc: false })) }} placeholder={t('checkout.cvc') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardCvc ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                      {stripe ? (
+                      <div>
+                        <div className="px-4 py-3.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white">
+                          <CardElement options={{
+                            style: {
+                              base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
+                              invalid: { color: '#ef4444' },
+                            },
+                          }} />
+                        </div>
+                        {stripeError && <p className="text-sm text-red-500 mt-2">{stripeError}</p>}
                       </div>
+                    ) : (
+                      <div className="px-4 py-6 bg-gray-50 rounded-xl text-center">
+                        <div className="w-6 h-6 border-2 border-gray-300 border-t-brand-600 rounded-full animate-spin mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">{t('common.loading')}</p>
+                      </div>
+                    )}
                     </div>
                   )}
 
@@ -691,5 +730,23 @@ export const CheckoutPage: React.FC = () => {
         </div>
       )}
     </div>
+  )
+}
+
+export const CheckoutPage: React.FC = () => {
+  const [stripePromise, setStripePromise] = useState<ReturnType<typeof loadStripe> | null>(null)
+
+  useEffect(() => {
+    api.getStripeConfig()
+      .then(({ publishableKey }) => {
+        setStripePromise(loadStripe(publishableKey))
+      })
+      .catch(() => {})
+  }, [])
+
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm />
+    </Elements>
   )
 }
