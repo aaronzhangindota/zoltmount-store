@@ -32,7 +32,7 @@ export interface AuthResult {
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token, X-User-Token',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token, X-User-Token, X-Chat-Session',
 }
 
 export const onRequest: PagesFunction<Env>[] = [

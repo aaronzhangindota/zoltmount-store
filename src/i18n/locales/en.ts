@@ -391,6 +391,21 @@ const en = {
   footer2: {
     subscribed: 'Subscribed! Thank you.',
   },
+
+  // Chat
+  chat: {
+    title: 'Customer Support',
+    online: 'Online - We typically reply in minutes',
+    guestInfo: 'Please enter your information to start chatting',
+    namePlaceholder: 'Your name',
+    emailPlaceholder: 'Your email',
+    messagePlaceholder: 'Type a message...',
+    sending: 'Sending...',
+    startChat: 'Start Chat',
+    welcomeMessage: 'Hi! How can we help you today?',
+    sessionClosed: 'This conversation has been closed',
+    startNew: 'Start a new conversation',
+  },
 }
 
 export default en

@@ -260,6 +260,21 @@ const fr = {
   footer2: {
     subscribed: 'Inscrit ! Merci.',
   },
+
+  // Chat
+  chat: {
+    title: 'Service Client',
+    online: 'En ligne - Réponse en quelques minutes',
+    guestInfo: 'Entrez vos informations pour démarrer le chat',
+    namePlaceholder: 'Votre nom',
+    emailPlaceholder: 'Votre email',
+    messagePlaceholder: 'Tapez un message...',
+    sending: 'Envoi en cours...',
+    startChat: 'Démarrer le Chat',
+    welcomeMessage: 'Bonjour ! Comment pouvons-nous vous aider ?',
+    sessionClosed: 'Cette conversation a été fermée',
+    startNew: 'Démarrer une nouvelle conversation',
+  },
 }
 
 export default fr

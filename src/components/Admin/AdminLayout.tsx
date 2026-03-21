@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText, FiLock, FiTruck, FiMessageSquare, FiUserCheck } from 'react-icons/fi'
+import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText, FiLock, FiTruck, FiMessageSquare, FiUserCheck, FiHeadphones } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
+import { useChatStore } from '../../store/chatStore'
 
 const allNavItems = [
   { path: '/haijieaaronzhang', icon: FiGrid, label: '仪表盘', superOnly: true },
@@ -10,6 +11,7 @@ const allNavItems = [
   { path: '/haijieaaronzhang/orders', icon: FiShoppingCart, label: '订单管理', superOnly: false },
   { path: '/haijieaaronzhang/customers', icon: FiUserCheck, label: '客户管理', superOnly: true },
   { path: '/haijieaaronzhang/messages', icon: FiMessageSquare, label: '消息管理', superOnly: false },
+  { path: '/haijieaaronzhang/chat', icon: FiHeadphones, label: '在线客服', superOnly: false },
   { path: '/haijieaaronzhang/payment', icon: FiCreditCard, label: '支付设置', superOnly: true },
   { path: '/haijieaaronzhang/shipping', icon: FiTruck, label: '物流运费', superOnly: true },
   { path: '/haijieaaronzhang/accounts', icon: FiUsers, label: '账号管理', superOnly: true },
@@ -24,6 +26,7 @@ const breadcrumbMap: Record<string, string> = {
   '/haijieaaronzhang/orders': '订单管理',
   '/haijieaaronzhang/customers': '客户管理',
   '/haijieaaronzhang/messages': '消息管理',
+  '/haijieaaronzhang/chat': '在线客服',
   '/haijieaaronzhang/payment': '支付设置',
   '/haijieaaronzhang/shipping': '物流运费',
   '/haijieaaronzhang/accounts': '账号管理',
@@ -36,6 +39,18 @@ export const AdminLayout: React.FC = () => {
   const logout = useAdminStore((s) => s.logout)
   const adminAccount = useAdminStore((s) => s.adminAccount)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const adminTotalUnread = useChatStore((s) => s.adminTotalUnread)
+  const fetchAdminUnreadTotal = useChatStore((s) => s.fetchAdminUnreadTotal)
+  const badgePollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Poll for unread chat count every 15 seconds
+  useEffect(() => {
+    fetchAdminUnreadTotal()
+    badgePollRef.current = setInterval(fetchAdminUnreadTotal, 15000)
+    return () => {
+      if (badgePollRef.current) clearInterval(badgePollRef.current)
+    }
+  }, [])
 
   const role = adminAccount?.role || 'staff'
   const navItems = allNavItems.filter((item) => !item.superOnly || role === 'super_admin')
@@ -90,6 +105,11 @@ export const AdminLayout: React.FC = () => {
           >
             <item.icon size={18} />
             {item.label}
+            {item.path === '/haijieaaronzhang/chat' && adminTotalUnread > 0 && (
+              <span className="ml-auto w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                {adminTotalUnread > 9 ? '9+' : adminTotalUnread}
+              </span>
+            )}
           </Link>
         ))}
       </nav>

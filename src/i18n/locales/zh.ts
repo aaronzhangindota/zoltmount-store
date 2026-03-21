@@ -397,6 +397,21 @@ const zh = {
   footer2: {
     subscribed: '订阅成功！感谢您。',
   },
+
+  // Chat
+  chat: {
+    title: '在线客服',
+    online: '在线 - 通常几分钟内回复',
+    guestInfo: '请输入您的信息以开始聊天',
+    namePlaceholder: '您的姓名',
+    emailPlaceholder: '您的邮箱',
+    messagePlaceholder: '输入消息...',
+    sending: '发送中...',
+    startChat: '开始聊天',
+    welcomeMessage: '您好！有什么可以帮您的吗？',
+    sessionClosed: '此对话已关闭',
+    startNew: '开始新对话',
+  },
 }
 
 export default zh

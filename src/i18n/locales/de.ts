@@ -260,6 +260,21 @@ const de = {
   footer2: {
     subscribed: 'Abonniert! Vielen Dank.',
   },
+
+  // Chat
+  chat: {
+    title: 'Kundensupport',
+    online: 'Online - Antwort in wenigen Minuten',
+    guestInfo: 'Bitte geben Sie Ihre Daten ein, um den Chat zu starten',
+    namePlaceholder: 'Ihr Name',
+    emailPlaceholder: 'Ihre E-Mail',
+    messagePlaceholder: 'Nachricht eingeben...',
+    sending: 'Wird gesendet...',
+    startChat: 'Chat starten',
+    welcomeMessage: 'Hallo! Wie können wir Ihnen helfen?',
+    sessionClosed: 'Dieses Gespräch wurde beendet',
+    startNew: 'Neues Gespräch starten',
+  },
 }
 
 export default de

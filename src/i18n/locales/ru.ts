@@ -260,6 +260,21 @@ const ru = {
   footer2: {
     subscribed: 'Подписка оформлена! Спасибо.',
   },
+
+  // Chat
+  chat: {
+    title: 'Поддержка',
+    online: 'Онлайн - Отвечаем за несколько минут',
+    guestInfo: 'Введите ваши данные для начала чата',
+    namePlaceholder: 'Ваше имя',
+    emailPlaceholder: 'Ваш email',
+    messagePlaceholder: 'Введите сообщение...',
+    sending: 'Отправка...',
+    startChat: 'Начать чат',
+    welcomeMessage: 'Здравствуйте! Чем мы можем помочь?',
+    sessionClosed: 'Этот разговор был завершён',
+    startNew: 'Начать новый разговор',
+  },
 }
 
 export default ru
