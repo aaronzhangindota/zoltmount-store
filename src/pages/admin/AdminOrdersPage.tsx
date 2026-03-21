@@ -22,14 +22,14 @@ const statusOptions: Order['status'][] = ['pending', 'processing', 'shipped', 'c
 
 const statusLabels: Record<string, string> = {
   pending: '待处理',
-  processing: '处理中',
+  processing: '待发货',
   shipped: '已发货',
   completed: '已完成',
   cancelled: '已取消',
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-700',
+  pending: 'bg-amber-100 text-amber-700',
   processing: 'bg-blue-100 text-blue-700',
   shipped: 'bg-purple-100 text-purple-700',
   completed: 'bg-green-100 text-green-700',
@@ -37,11 +37,46 @@ const statusColors: Record<string, string> = {
 }
 
 const statusBarColors: Record<string, string> = {
-  pending: 'bg-yellow-400',
+  pending: 'bg-amber-400',
   processing: 'bg-blue-500',
   shipped: 'bg-purple-500',
   completed: 'bg-green-500',
   cancelled: 'bg-red-400',
+}
+
+// Tab 样式：每个状态有独立的激活颜色
+const tabActiveColors: Record<string, string> = {
+  all: 'bg-gray-800 text-white',
+  pending: 'bg-amber-500 text-white',
+  processing: 'bg-blue-600 text-white',
+  shipped: 'bg-purple-600 text-white',
+  completed: 'bg-green-600 text-white',
+  cancelled: 'bg-red-500 text-white',
+}
+
+const tabDotColors: Record<string, string> = {
+  pending: 'bg-amber-400',
+  processing: 'bg-blue-400',
+  shipped: 'bg-purple-400',
+  completed: 'bg-green-400',
+  cancelled: 'bg-red-400',
+}
+
+// 统计卡片样式
+const statCardStyles: Record<string, { bg: string; border: string; icon: string; text: string }> = {
+  pending: { bg: 'bg-amber-50', border: 'border-amber-200', icon: 'text-amber-500', text: 'text-amber-700' },
+  processing: { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'text-blue-500', text: 'text-blue-700' },
+  shipped: { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'text-purple-500', text: 'text-purple-700' },
+  completed: { bg: 'bg-green-50', border: 'border-green-200', icon: 'text-green-500', text: 'text-green-700' },
+  cancelled: { bg: 'bg-red-50', border: 'border-red-200', icon: 'text-red-400', text: 'text-red-600' },
+}
+
+const statCardIcons: Record<string, React.ElementType> = {
+  pending: FiShoppingCart,
+  processing: FiPackage,
+  shipped: FiTruck,
+  completed: FiCheck,
+  cancelled: FiX,
 }
 
 type TabStatus = 'all' | Order['status']
@@ -51,7 +86,7 @@ export const AdminOrdersPage: React.FC = () => {
   const updateOrderStatus = useAdminStore((s) => s.updateOrderStatus)
   const updateOrderTracking = useAdminStore((s) => s.updateOrderTracking)
   const deleteOrder = useAdminStore((s) => s.deleteOrder)
-  const [activeTab, setActiveTab] = useState<TabStatus>('all')
+  const [activeTab, setActiveTab] = useState<TabStatus>('pending')
   const [search, setSearch] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(false)
@@ -210,13 +245,17 @@ export const AdminOrdersPage: React.FC = () => {
   }
 
   const tabItems: { key: TabStatus; label: string; count?: number }[] = [
+    { key: 'pending', label: '待处理', count: statusCounts['pending'] || 0 },
+    { key: 'processing', label: '待发货', count: statusCounts['processing'] || 0 },
+    { key: 'shipped', label: '已发货', count: statusCounts['shipped'] || 0 },
+    { key: 'completed', label: '已完成', count: statusCounts['completed'] || 0 },
+    { key: 'cancelled', label: '已取消', count: statusCounts['cancelled'] || 0 },
     { key: 'all', label: '全部', count: orders.length },
-    ...statusOptions.map((s) => ({ key: s as TabStatus, label: statusLabels[s] || s, count: statusCounts[s] || 0 })),
   ]
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5">
         <h1 className="text-2xl font-bold text-gray-900">订单管理</h1>
         <div className="flex items-center gap-2">
           <button
@@ -242,18 +281,51 @@ export const AdminOrdersPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Status summary cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+        {statusOptions.map((status) => {
+          const style = statCardStyles[status]
+          const Icon = statCardIcons[status]
+          const count = statusCounts[status] || 0
+          const isActive = activeTab === status
+          return (
+            <button
+              key={status}
+              onClick={() => setActiveTab(status)}
+              className={`relative p-4 rounded-xl border transition-all duration-200 text-left ${style.bg} ${style.border} ${
+                isActive ? 'ring-2 ring-offset-1 ring-current shadow-sm scale-[1.02]' : 'hover:shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Icon size={18} className={style.icon} />
+                {count > 0 && status === 'pending' && (
+                  <span className="w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse" />
+                )}
+              </div>
+              <p className={`text-2xl font-bold ${style.text}`}>{count}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{statusLabels[status]}</p>
+            </button>
+          )
+        })}
+      </div>
+
       {/* Status tab bar */}
-      <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1">
+      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1">
         {tabItems.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
               activeTab === tab.key
-                ? 'bg-blue-600 text-white'
+                ? tabActiveColors[tab.key]
                 : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
             }`}
           >
+            {tab.key !== 'all' && (
+              <span className={`w-2 h-2 rounded-full ${
+                activeTab === tab.key ? 'bg-white/50' : tabDotColors[tab.key] || 'bg-gray-300'
+              }`} />
+            )}
             {tab.label}
             {tab.count !== undefined && tab.count > 0 && (
               <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
