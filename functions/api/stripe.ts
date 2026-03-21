@@ -31,7 +31,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const gateway = await getStripeGateway(context.env.ZOLTMOUNT_KV)
     if (!gateway) return json({ error: 'Stripe not configured' }, 404)
 
-    const publishableKey = gateway.credentials.public_key
+    const publishableKey = gateway.credentials.publishableKey
     if (!publishableKey) return json({ error: 'Stripe publishable key not set' }, 400)
 
     return json({ publishableKey })
@@ -48,7 +48,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const gateway = await getStripeGateway(context.env.ZOLTMOUNT_KV)
     if (!gateway) return json({ error: 'Stripe not configured' }, 400)
 
-    const secretKey = gateway.credentials.secret_key
+    const secretKey = gateway.credentials.secretKey
     if (!secretKey) return json({ error: 'Stripe secret key not set' }, 400)
 
     const amount = body.amount as number

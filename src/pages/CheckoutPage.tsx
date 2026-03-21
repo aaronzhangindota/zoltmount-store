@@ -141,8 +141,9 @@ const CheckoutForm: React.FC = () => {
       }
       return
     }
-    // Fallback when Stripe not loaded
-    await executeOrder()
+    // Stripe not loaded — cannot process card payment
+    setStripeError('Payment system is still loading, please wait a moment and try again.')
+    return
   }
 
   const executeOrder = async (orderStatus: string = 'pending') => {
@@ -546,7 +547,7 @@ const CheckoutForm: React.FC = () => {
 
               <button
                 onClick={handlePlaceOrder}
-                disabled={placing}
+                disabled={placing || (selectedMethod?.type === 'credit_card' && !stripe)}
                 className="w-full mt-6 py-4 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-brand-600/20"
               >
                 <FiLock size={16} />
