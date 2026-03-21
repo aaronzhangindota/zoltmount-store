@@ -270,6 +270,20 @@ class ApiClient {
   async getAdminUsers(): Promise<ApiUser[]> {
     return this.request<ApiUser[]>('/user-auth?admin=1')
   }
+
+  // Payment Gateways
+  async getPaymentGateways(): Promise<any[]> {
+    return this.request<any[]>('/payment-gateways')
+  }
+  async createPaymentGateway(data: { provider: string; displayName: string; enabled: boolean; testMode: boolean; credentials: Record<string, string> }): Promise<any> {
+    return this.request('/payment-gateways', { method: 'POST', body: JSON.stringify(data) })
+  }
+  async updatePaymentGateway(id: string, data: Partial<{ displayName: string; enabled: boolean; testMode: boolean; credentials: Record<string, string> }>): Promise<any> {
+    return this.request('/payment-gateways', { method: 'PUT', body: JSON.stringify({ id, ...data }) })
+  }
+  async deletePaymentGateway(id: string): Promise<void> {
+    await this.request(`/payment-gateways?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+  }
 }
 
 export const api = new ApiClient()

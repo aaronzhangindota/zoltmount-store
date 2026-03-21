@@ -6,6 +6,7 @@ import { useAdminStore } from '../../store/adminStore'
 const superAdminPaths = [
   '/haijieaaronzhang/customers',
   '/haijieaaronzhang/payment',
+  '/haijieaaronzhang/payment-gateways',
   '/haijieaaronzhang/shipping',
   '/haijieaaronzhang/accounts',
   '/haijieaaronzhang/logs',

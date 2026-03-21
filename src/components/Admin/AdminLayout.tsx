@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText, FiLock, FiTruck, FiMessageSquare, FiUserCheck, FiHeadphones } from 'react-icons/fi'
+import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText, FiLock, FiTruck, FiMessageSquare, FiUserCheck, FiHeadphones, FiKey } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 import { useChatStore } from '../../store/chatStore'
 
@@ -13,6 +13,7 @@ const allNavItems = [
   { path: '/haijieaaronzhang/messages', icon: FiMessageSquare, label: '消息管理', superOnly: false },
   { path: '/haijieaaronzhang/chat', icon: FiHeadphones, label: '在线客服', superOnly: false },
   { path: '/haijieaaronzhang/payment', icon: FiCreditCard, label: '支付设置', superOnly: true },
+  { path: '/haijieaaronzhang/payment-gateways', icon: FiKey, label: '收款网关', superOnly: true },
   { path: '/haijieaaronzhang/shipping', icon: FiTruck, label: '物流运费', superOnly: true },
   { path: '/haijieaaronzhang/accounts', icon: FiUsers, label: '账号管理', superOnly: true },
   { path: '/haijieaaronzhang/logs', icon: FiFileText, label: '操作日志', superOnly: true },
@@ -28,6 +29,7 @@ const breadcrumbMap: Record<string, string> = {
   '/haijieaaronzhang/messages': '消息管理',
   '/haijieaaronzhang/chat': '在线客服',
   '/haijieaaronzhang/payment': '支付设置',
+  '/haijieaaronzhang/payment-gateways': '收款网关',
   '/haijieaaronzhang/shipping': '物流运费',
   '/haijieaaronzhang/accounts': '账号管理',
   '/haijieaaronzhang/logs': '操作日志',
