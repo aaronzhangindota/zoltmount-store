@@ -10,7 +10,7 @@ import { useUserStore } from '../store/userStore'
 import { api } from '../api/client'
 import { calculateShipping as calcShipping } from '../utils/shipping'
 
-const CheckoutForm: React.FC = () => {
+const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError = '' }) => {
   const { t } = useTranslation()
   const { items, subtotal, clearCart } = useCartStore()
   const paymentMethods = useDataStore((s) => s.paymentMethods)
@@ -406,6 +406,12 @@ const CheckoutForm: React.FC = () => {
                         </div>
                         {stripeError && <p className="text-sm text-red-500 mt-2">{stripeError}</p>}
                       </div>
+                    ) : stripeLoadError ? (
+                      <div className="px-4 py-4 bg-red-50 border border-red-200 rounded-xl text-center">
+                        <p className="text-sm text-red-600 font-medium">Payment system unavailable</p>
+                        <p className="text-xs text-red-500 mt-1">{stripeLoadError}</p>
+                        <p className="text-xs text-gray-400 mt-2">Please check Stripe configuration in admin settings, or choose another payment method.</p>
+                      </div>
                     ) : (
                       <div className="px-4 py-6 bg-gray-50 rounded-xl text-center">
                         <div className="w-6 h-6 border-2 border-gray-300 border-t-brand-600 rounded-full animate-spin mx-auto mb-2" />
@@ -736,18 +742,32 @@ const CheckoutForm: React.FC = () => {
 
 export const CheckoutPage: React.FC = () => {
   const [stripePromise, setStripePromise] = useState<ReturnType<typeof loadStripe> | null>(null)
+  const [stripeLoadError, setStripeLoadError] = useState('')
 
   useEffect(() => {
     api.getStripeConfig()
       .then(({ publishableKey }) => {
-        setStripePromise(loadStripe(publishableKey))
+        if (!publishableKey) {
+          setStripeLoadError('Stripe publishable key is empty')
+          return
+        }
+        const promise = loadStripe(publishableKey)
+        promise.then((stripe) => {
+          if (!stripe) {
+            setStripeLoadError('Failed to initialize Stripe. Please check your publishable key.')
+          }
+        })
+        setStripePromise(promise)
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.error('Stripe config error:', err)
+        setStripeLoadError(err instanceof Error ? err.message : 'Failed to load Stripe configuration')
+      })
   }, [])
 
   return (
     <Elements stripe={stripePromise}>
-      <CheckoutForm />
+      <CheckoutForm stripeLoadError={stripeLoadError} />
     </Elements>
   )
 }
