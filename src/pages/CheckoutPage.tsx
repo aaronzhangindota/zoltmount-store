@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { FiLock, FiArrowLeft, FiCheck } from 'react-icons/fi'
+import { FiLock, FiArrowLeft, FiCheck, FiX, FiExternalLink } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useCartStore } from '../store/cartStore'
 import { useDataStore } from '../store/dataStore'
@@ -90,8 +90,12 @@ export const CheckoutPage: React.FC = () => {
     : 0
 
   const [formErrors, setFormErrors] = useState<Record<string, boolean>>({})
+  const formRef = useRef<HTMLDivElement>(null)
 
   const [placing, setPlacing] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentSimulating, setPaymentSimulating] = useState(false)
+  const [paymentCountdown, setPaymentCountdown] = useState(0)
 
   const handlePlaceOrder = async () => {
     // Validate required fields
@@ -113,11 +117,29 @@ export const CheckoutPage: React.FC = () => {
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      // Scroll to the first error field
+      setTimeout(() => {
+        const firstErrorEl = formRef.current?.querySelector('.border-red-400') as HTMLElement
+        if (firstErrorEl) {
+          firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          firstErrorEl.focus()
+        }
+      }, 50)
       return
     }
     setFormErrors({})
 
+    // For third-party payments (non-credit-card), show payment simulation modal
+    if (selectedMethod && selectedMethod.type !== 'credit_card') {
+      setShowPaymentModal(true)
+      return
+    }
+
+    // Credit card: proceed directly
+    await executeOrder()
+  }
+
+  const executeOrder = async () => {
     const orderId = `MP-${Math.random().toString(36).substr(2, 8).toUpperCase()}`
     setOrderNumber(orderId)
 
@@ -166,7 +188,31 @@ export const CheckoutPage: React.FC = () => {
       clearCart()
     } finally {
       setPlacing(false)
+      setShowPaymentModal(false)
     }
+  }
+
+  // Simulate third-party payment process
+  const handleSimulatePayment = () => {
+    setPaymentSimulating(true)
+    setPaymentCountdown(3)
+    const timer = setInterval(() => {
+      setPaymentCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          setPaymentSimulating(false)
+          executeOrder()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
+  const handleCancelPayment = () => {
+    setShowPaymentModal(false)
+    setPaymentSimulating(false)
+    setPaymentCountdown(0)
   }
 
   if (orderPlaced) {
@@ -210,14 +256,14 @@ export const CheckoutPage: React.FC = () => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Form */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6" ref={formRef}>
             {/* Contact */}
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">{t('checkout.contactInfo')}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setFormErrors((p) => ({ ...p, email: false })) }} placeholder={t('checkout.email')} className={`col-span-2 px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent ${formErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
-                <input type="text" value={firstName} onChange={(e) => { setFirstName(e.target.value); setFormErrors((p) => ({ ...p, firstName: false })) }} placeholder={t('checkout.firstName')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.firstName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
-                <input type="text" value={lastName} onChange={(e) => { setLastName(e.target.value); setFormErrors((p) => ({ ...p, lastName: false })) }} placeholder={t('checkout.lastName')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.lastName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setFormErrors((p) => ({ ...p, email: false })) }} placeholder={t('checkout.email') + ' *'} className={`col-span-2 px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent ${formErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={firstName} onChange={(e) => { setFirstName(e.target.value); setFormErrors((p) => ({ ...p, firstName: false })) }} placeholder={t('checkout.firstName') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.firstName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={lastName} onChange={(e) => { setLastName(e.target.value); setFormErrors((p) => ({ ...p, lastName: false })) }} placeholder={t('checkout.lastName') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.lastName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
               </div>
             </div>
 
@@ -225,10 +271,10 @@ export const CheckoutPage: React.FC = () => {
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">{t('checkout.shippingAddress')}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                <input type="text" value={address} onChange={(e) => { setAddress(e.target.value); setFormErrors((p) => ({ ...p, address: false })) }} placeholder={t('checkout.address')} className={`col-span-2 px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.address ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
-                <input type="text" value={city} onChange={(e) => { setCity(e.target.value); setFormErrors((p) => ({ ...p, city: false })) }} placeholder={t('checkout.city')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.city ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
-                <input type="text" value={state} onChange={(e) => { setState(e.target.value); setFormErrors((p) => ({ ...p, state: false })) }} placeholder={t('checkout.state')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.state ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
-                <input type="text" value={zip} onChange={(e) => { setZip(e.target.value); setFormErrors((p) => ({ ...p, zip: false })) }} placeholder={t('checkout.zip')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.zip ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={address} onChange={(e) => { setAddress(e.target.value); setFormErrors((p) => ({ ...p, address: false })) }} placeholder={t('checkout.address') + ' *'} className={`col-span-2 px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.address ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={city} onChange={(e) => { setCity(e.target.value); setFormErrors((p) => ({ ...p, city: false })) }} placeholder={t('checkout.city') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.city ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={state} onChange={(e) => { setState(e.target.value); setFormErrors((p) => ({ ...p, state: false })) }} placeholder={t('checkout.state') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.state ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="text" value={zip} onChange={(e) => { setZip(e.target.value); setFormErrors((p) => ({ ...p, zip: false })) }} placeholder={t('checkout.zip') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.zip ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                 <select
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
@@ -328,10 +374,10 @@ export const CheckoutPage: React.FC = () => {
                           ))}
                         </div>
                       )}
-                      <input type="text" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setFormErrors((p) => ({ ...p, cardNumber: false })) }} placeholder={t('checkout.cardNumber')} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardNumber ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                      <input type="text" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setFormErrors((p) => ({ ...p, cardNumber: false })) }} placeholder={t('checkout.cardNumber') + ' *'} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardNumber ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                       <div className="grid grid-cols-2 gap-4">
-                        <input type="text" value={cardExpiry} onChange={(e) => { setCardExpiry(e.target.value); setFormErrors((p) => ({ ...p, cardExpiry: false })) }} placeholder={t('checkout.expiry')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardExpiry ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
-                        <input type="text" value={cardCvc} onChange={(e) => { setCardCvc(e.target.value); setFormErrors((p) => ({ ...p, cardCvc: false })) }} placeholder={t('checkout.cvc')} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardCvc ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                        <input type="text" value={cardExpiry} onChange={(e) => { setCardExpiry(e.target.value); setFormErrors((p) => ({ ...p, cardExpiry: false })) }} placeholder={t('checkout.expiry') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardExpiry ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                        <input type="text" value={cardCvc} onChange={(e) => { setCardCvc(e.target.value); setFormErrors((p) => ({ ...p, cardCvc: false })) }} placeholder={t('checkout.cvc') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.cardCvc ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                       </div>
                     </div>
                   )}
@@ -482,6 +528,92 @@ export const CheckoutPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Third-party payment simulation modal */}
+      {showPaymentModal && selectedMethod && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+            {/* Header */}
+            <div className={`px-6 py-4 flex items-center justify-between ${
+              selectedMethod.type === 'paypal' ? 'bg-[#003087]' :
+              selectedMethod.type === 'alipay' ? 'bg-[#1677FF]' :
+              selectedMethod.type === 'wechat' ? 'bg-[#07C160]' :
+              'bg-gray-800'
+            }`}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{selectedMethod.icon}</span>
+                <span className="text-white font-bold text-lg">
+                  {t('checkout.paymentMethod_' + selectedMethod.type)}
+                </span>
+              </div>
+              {!paymentSimulating && (
+                <button onClick={handleCancelPayment} className="text-white/70 hover:text-white transition-colors">
+                  <FiX size={20} />
+                </button>
+              )}
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-8 text-center">
+              {paymentSimulating ? (
+                <>
+                  <div className="w-16 h-16 border-4 border-gray-200 border-t-brand-600 rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-lg font-bold text-gray-900">
+                    {t('checkout.processingPayment', 'Processing payment...')}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    {t('checkout.redirectingIn', 'Completing in {{seconds}}s...').replace('{{seconds}}', String(paymentCountdown))}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FiExternalLink size={28} className="text-gray-500" />
+                  </div>
+                  <p className="text-lg font-bold text-gray-900">
+                    {t('checkout.paymentAmount', 'Payment Amount')}
+                  </p>
+                  <p className="text-3xl font-extrabold text-brand-600 mt-2">${total.toFixed(2)}</p>
+                  <p className="text-sm text-gray-500 mt-3">
+                    {selectedMethod.type === 'paypal'
+                      ? t('checkout.paypalSimNote', 'In production, you will be redirected to PayPal to complete payment.')
+                      : selectedMethod.type === 'alipay'
+                      ? t('checkout.alipaySimNote', 'In production, you will be redirected to Alipay to complete payment.')
+                      : selectedMethod.type === 'wechat'
+                      ? t('checkout.wechatSimNote', 'In production, a WeChat Pay QR code will be displayed here.')
+                      : selectedMethod.type === 'bank_transfer'
+                      ? t('checkout.bankSimNote', 'In production, bank transfer details will be displayed here.')
+                      : t('checkout.otherSimNote', 'In production, you will be guided to complete payment.')}
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* Actions */}
+            {!paymentSimulating && (
+              <div className="px-6 pb-6 flex gap-3">
+                <button
+                  onClick={handleCancelPayment}
+                  className="flex-1 py-3 border border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition-colors text-sm"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={handleSimulatePayment}
+                  className={`flex-1 py-3 text-white font-bold rounded-xl transition-colors text-sm ${
+                    selectedMethod.type === 'paypal' ? 'bg-[#003087] hover:bg-[#001f5c]' :
+                    selectedMethod.type === 'alipay' ? 'bg-[#1677FF] hover:bg-[#0d5bdb]' :
+                    selectedMethod.type === 'wechat' ? 'bg-[#07C160] hover:bg-[#06a050]' :
+                    'bg-brand-600 hover:bg-brand-700'
+                  }`}
+                >
+                  {t('checkout.confirmPayment', 'Confirm Payment')}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
