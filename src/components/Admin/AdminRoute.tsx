@@ -4,6 +4,7 @@ import { useAdminStore } from '../../store/adminStore'
 
 // Routes that require super_admin role
 const superAdminPaths = [
+  '/haijieaaronzhang/customers',
   '/haijieaaronzhang/payment',
   '/haijieaaronzhang/shipping',
   '/haijieaaronzhang/accounts',

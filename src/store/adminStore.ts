@@ -244,6 +244,8 @@ export const useAdminStore = create<AdminState>()(
       onRehydrateStorage: () => (state) => {
         if (state?.adminToken) {
           api.setAdminToken(state.adminToken)
+          // After page refresh, re-fetch orders for admin dashboard
+          useDataStore.getState().fetchOrders()
         }
       },
     }

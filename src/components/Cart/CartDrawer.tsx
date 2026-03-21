@@ -3,10 +3,17 @@ import { Link } from 'react-router-dom'
 import { FiX, FiMinus, FiPlus, FiTrash2, FiShoppingBag } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useCartStore } from '../../store/cartStore'
+import { useDataStore } from '../../store/dataStore'
+import { calculateShipping } from '../../utils/shipping'
 
 export const CartDrawer: React.FC = () => {
   const { t } = useTranslation()
   const { items, isOpen, closeCart, removeItem, updateQuantity, subtotal, totalItems } = useCartStore()
+  const shippingZones = useDataStore((s) => s.shippingZones)
+  const products = useDataStore((s) => s.products)
+
+  const subtotalAmount = subtotal()
+  const shipping = calculateShipping(items, products, shippingZones, 'US', subtotalAmount)
 
   if (!isOpen) return null
 
@@ -110,19 +117,17 @@ export const CartDrawer: React.FC = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-gray-500">
                 <span>{t('cart.subtotal')}</span>
-                <span>${subtotal().toFixed(2)}</span>
+                <span>${subtotalAmount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm text-gray-500">
                 <span>{t('cart.shipping')}</span>
-                <span className="text-green-600 font-medium">
-                  {subtotal() >= 49 ? t('cart.free') : '$9.99'}
+                <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>
+                  {shipping === 0 ? t('cart.free') : `$${shipping.toFixed(2)}`}
                 </span>
               </div>
               <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
                 <span>{t('cart.total')}</span>
-                <span>
-                  ${(subtotal() + (subtotal() >= 49 ? 0 : 9.99)).toFixed(2)}
-                </span>
+                <span>${(subtotalAmount + shipping).toFixed(2)}</span>
               </div>
             </div>
 

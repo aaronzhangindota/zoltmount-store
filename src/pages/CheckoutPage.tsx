@@ -6,6 +6,7 @@ import { useCartStore } from '../store/cartStore'
 import { useDataStore } from '../store/dataStore'
 import { useUserStore } from '../store/userStore'
 import { api } from '../api/client'
+import { calculateShipping as calcShipping } from '../utils/shipping'
 
 export const CheckoutPage: React.FC = () => {
   const { t } = useTranslation()
@@ -56,32 +57,8 @@ export const CheckoutPage: React.FC = () => {
   const shippingZones = useDataStore((s) => s.shippingZones)
   const products = useDataStore((s) => s.products)
 
-  // Calculate shipping based on country and product weights
-  const calculateShipping = () => {
-    if (shippingZones.length === 0) return 0
-
-    // Find the zone matching selected country
-    let zone = shippingZones.find((z) => z.countries.includes(country))
-    if (!zone) {
-      // Fallback to zone with highest sortOrder
-      zone = [...shippingZones].sort((a, b) => b.sortOrder - a.sortOrder)[0]
-    }
-    if (!zone) return 0
-
-    // Calculate total weight
-    const totalWeight = items.reduce((sum, item) => {
-      const product = products.find((p) => p.id === item.product.id)
-      const weight = product?.shippingWeight ?? 5
-      return sum + weight * item.quantity
-    }, 0)
-
-    // Formula: [initialPrice + max(totalWeight - 1, 0) * incrementalPrice] * (1 + fuelSurchargeRate)
-    const base = zone.initialPrice + Math.max(totalWeight - 1, 0) * zone.incrementalPrice
-    return Math.round(base * (1 + zone.fuelSurchargeRate) * 100) / 100
-  }
-
   const rawSubtotal = subtotal()
-  const shipping = calculateShipping()
+  const shipping = calcShipping(items, products, shippingZones, country, rawSubtotal)
   const pointsDiscountAmount = pointsToUse / 100
   const total = rawSubtotal - pointsDiscountAmount + shipping
 
