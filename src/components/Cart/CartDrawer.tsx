@@ -13,7 +13,7 @@ export const CartDrawer: React.FC = () => {
   const products = useDataStore((s) => s.products)
 
   const subtotalAmount = subtotal()
-  const shipping = calculateShipping(items, products, shippingZones, 'US', subtotalAmount)
+  const shipping = calculateShipping(items, products, shippingZones, 'US')
 
   if (!isOpen) return null
 

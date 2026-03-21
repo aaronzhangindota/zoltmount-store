@@ -58,7 +58,7 @@ export const CheckoutPage: React.FC = () => {
   const products = useDataStore((s) => s.products)
 
   const rawSubtotal = subtotal()
-  const shipping = calcShipping(items, products, shippingZones, country, rawSubtotal)
+  const shipping = calcShipping(items, products, shippingZones, country)
   const pointsDiscountAmount = pointsToUse / 100
   const total = rawSubtotal - pointsDiscountAmount + shipping
 
@@ -73,6 +73,9 @@ export const CheckoutPage: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentSimulating, setPaymentSimulating] = useState(false)
   const [paymentCountdown, setPaymentCountdown] = useState(0)
+  const [paypalEmail, setPaypalEmail] = useState('')
+  const [paypalEmailError, setPaypalEmailError] = useState(false)
+  const [paymentStep, setPaymentStep] = useState<'input' | 'processing'>('input')
 
   const handlePlaceOrder = async () => {
     // Validate required fields
@@ -169,8 +172,18 @@ export const CheckoutPage: React.FC = () => {
     }
   }
 
-  // Simulate third-party payment process
-  const handleSimulatePayment = () => {
+  // Handle "Confirm Payment" in the modal — validates input then processes
+  const handleConfirmThirdPartyPayment = () => {
+    // PayPal requires email
+    if (selectedMethod?.type === 'paypal') {
+      if (!paypalEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail.trim())) {
+        setPaypalEmailError(true)
+        return
+      }
+    }
+
+    // Start processing
+    setPaymentStep('processing')
     setPaymentSimulating(true)
     setPaymentCountdown(3)
     const timer = setInterval(() => {
@@ -190,6 +203,9 @@ export const CheckoutPage: React.FC = () => {
     setShowPaymentModal(false)
     setPaymentSimulating(false)
     setPaymentCountdown(0)
+    setPaymentStep('input')
+    setPaypalEmail('')
+    setPaypalEmailError(false)
   }
 
   if (orderPlaced) {
@@ -506,7 +522,7 @@ export const CheckoutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Third-party payment simulation modal */}
+      {/* Third-party payment modal */}
       {showPaymentModal && selectedMethod && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
@@ -531,9 +547,9 @@ export const CheckoutPage: React.FC = () => {
             </div>
 
             {/* Body */}
-            <div className="px-6 py-8 text-center">
-              {paymentSimulating ? (
-                <>
+            <div className="px-6 py-6">
+              {paymentStep === 'processing' ? (
+                <div className="text-center py-4">
                   <div className="w-16 h-16 border-4 border-gray-200 border-t-brand-600 rounded-full animate-spin mx-auto mb-4" />
                   <p className="text-lg font-bold text-gray-900">
                     {t('checkout.processingPayment', 'Processing payment...')}
@@ -541,33 +557,108 @@ export const CheckoutPage: React.FC = () => {
                   <p className="text-sm text-gray-500 mt-2">
                     {t('checkout.redirectingIn', 'Completing in {{seconds}}s...').replace('{{seconds}}', String(paymentCountdown))}
                   </p>
-                </>
+                </div>
               ) : (
                 <>
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FiExternalLink size={28} className="text-gray-500" />
+                  {/* Amount display */}
+                  <div className="text-center mb-6">
+                    <p className="text-sm text-gray-500">{t('checkout.paymentAmount', 'Payment Amount')}</p>
+                    <p className="text-3xl font-extrabold text-gray-900 mt-1">${total.toFixed(2)}</p>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">
-                    {t('checkout.paymentAmount', 'Payment Amount')}
-                  </p>
-                  <p className="text-3xl font-extrabold text-brand-600 mt-2">${total.toFixed(2)}</p>
-                  <p className="text-sm text-gray-500 mt-3">
-                    {selectedMethod.type === 'paypal'
-                      ? t('checkout.paypalSimNote', 'In production, you will be redirected to PayPal to complete payment.')
-                      : selectedMethod.type === 'alipay'
-                      ? t('checkout.alipaySimNote', 'In production, you will be redirected to Alipay to complete payment.')
-                      : selectedMethod.type === 'wechat'
-                      ? t('checkout.wechatSimNote', 'In production, a WeChat Pay QR code will be displayed here.')
-                      : selectedMethod.type === 'bank_transfer'
-                      ? t('checkout.bankSimNote', 'In production, bank transfer details will be displayed here.')
-                      : t('checkout.otherSimNote', 'In production, you will be guided to complete payment.')}
-                  </p>
+
+                  {/* PayPal: email input */}
+                  {selectedMethod.type === 'paypal' && (
+                    <div className="space-y-3">
+                      <div className="bg-blue-50 rounded-xl p-4">
+                        <p className="text-sm text-gray-600 mb-3">
+                          {t('checkout.paypalLoginPrompt', 'Log in to your PayPal account to complete the payment.')}
+                        </p>
+                        <div>
+                          <label className="text-xs text-gray-500 block mb-1">PayPal Email *</label>
+                          <input
+                            type="email"
+                            value={paypalEmail}
+                            onChange={(e) => { setPaypalEmail(e.target.value); setPaypalEmailError(false) }}
+                            placeholder="your@email.com"
+                            className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 ${paypalEmailError ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white'}`}
+                          />
+                          {paypalEmailError && (
+                            <p className="text-xs text-red-500 mt-1">{t('checkout.paypalEmailRequired', 'Please enter a valid PayPal email address.')}</p>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-400 text-center">
+                        {t('checkout.paypalNote', 'In production, you will be redirected to PayPal to authorize this payment.')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Alipay: scan prompt */}
+                  {selectedMethod.type === 'alipay' && (
+                    <div className="space-y-3">
+                      <div className="bg-blue-50 rounded-xl p-6 text-center">
+                        <div className="w-32 h-32 bg-white rounded-xl mx-auto mb-3 flex items-center justify-center border-2 border-dashed border-blue-200">
+                          <span className="text-5xl">💰</span>
+                        </div>
+                        <p className="text-sm text-gray-600">{t('checkout.alipayPrompt', 'Scan with Alipay to complete payment')}</p>
+                      </div>
+                      <p className="text-xs text-gray-400 text-center">
+                        {t('checkout.alipayNote', 'In production, a real Alipay QR code will be displayed here.')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* WeChat: QR prompt */}
+                  {selectedMethod.type === 'wechat' && (
+                    <div className="space-y-3">
+                      <div className="bg-green-50 rounded-xl p-6 text-center">
+                        <div className="w-32 h-32 bg-white rounded-xl mx-auto mb-3 flex items-center justify-center border-2 border-dashed border-green-200">
+                          <span className="text-5xl">💬</span>
+                        </div>
+                        <p className="text-sm text-gray-600">{t('checkout.wechatPrompt', 'Scan with WeChat to complete payment')}</p>
+                      </div>
+                      <p className="text-xs text-gray-400 text-center">
+                        {t('checkout.wechatNote', 'In production, a real WeChat Pay QR code will be displayed here.')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Bank transfer: details */}
+                  {selectedMethod.type === 'bank_transfer' && (
+                    <div className="space-y-3">
+                      <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+                        <p className="font-medium text-gray-900">{t('checkout.bankDetails', 'Bank Transfer Details')}</p>
+                        <div className="space-y-1 text-gray-600">
+                          <p>Bank: HSBC Hong Kong</p>
+                          <p>Account: ZoltMount Trading Ltd</p>
+                          <p>Account #: **** **** 8821</p>
+                          <p>SWIFT: HSBCHKHH</p>
+                          <p className="text-xs text-orange-600 mt-2">
+                            {t('checkout.bankRef', 'Please include your order reference in the transfer memo.')}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-400 text-center">
+                        {t('checkout.bankNote', 'Click below after you have completed the bank transfer.')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Other payment */}
+                  {selectedMethod.type === 'other' && (
+                    <div className="bg-gray-50 rounded-xl p-6 text-center">
+                      <p className="text-4xl mb-3">{selectedMethod.icon}</p>
+                      <p className="text-sm text-gray-600">
+                        {t('checkout.otherPrompt', 'Follow the payment provider instructions to complete your payment.')}
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
             </div>
 
             {/* Actions */}
-            {!paymentSimulating && (
+            {paymentStep === 'input' && (
               <div className="px-6 pb-6 flex gap-3">
                 <button
                   onClick={handleCancelPayment}
@@ -576,7 +667,7 @@ export const CheckoutPage: React.FC = () => {
                   {t('common.cancel')}
                 </button>
                 <button
-                  onClick={handleSimulatePayment}
+                  onClick={handleConfirmThirdPartyPayment}
                   className={`flex-1 py-3 text-white font-bold rounded-xl transition-colors text-sm ${
                     selectedMethod.type === 'paypal' ? 'bg-[#003087] hover:bg-[#001f5c]' :
                     selectedMethod.type === 'alipay' ? 'bg-[#1677FF] hover:bg-[#0d5bdb]' :
@@ -584,7 +675,15 @@ export const CheckoutPage: React.FC = () => {
                     'bg-brand-600 hover:bg-brand-700'
                   }`}
                 >
-                  {t('checkout.confirmPayment', 'Confirm Payment')}
+                  {selectedMethod.type === 'paypal'
+                    ? t('checkout.payWithPaypal', 'Pay with PayPal')
+                    : selectedMethod.type === 'alipay'
+                    ? t('checkout.payWithAlipay', 'I\'ve Paid via Alipay')
+                    : selectedMethod.type === 'wechat'
+                    ? t('checkout.payWithWechat', 'I\'ve Paid via WeChat')
+                    : selectedMethod.type === 'bank_transfer'
+                    ? t('checkout.confirmTransfer', 'I\'ve Completed Transfer')
+                    : t('checkout.confirmPayment', 'Confirm Payment')}
                 </button>
               </div>
             )}
