@@ -1,31 +1,26 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FiPackage, FiShoppingCart, FiTag, FiDollarSign, FiPlus, FiList, FiGrid, FiAlertTriangle, FiTrendingUp, FiEdit2, FiDatabase } from 'react-icons/fi'
+import { FiPackage, FiShoppingCart, FiTag, FiDollarSign, FiPlus, FiList, FiGrid, FiAlertTriangle, FiTrendingUp, FiEdit2, FiUsers, FiMessageSquare, FiRefreshCw } from 'react-icons/fi'
 import { useDataStore } from '../../store/dataStore'
-import { useAdminStore } from '../../store/adminStore'
+import { api } from '../../api/client'
 
 export const AdminDashboardPage: React.FC = () => {
   const products = useDataStore((s) => s.products)
   const orders = useDataStore((s) => s.orders)
   const categories = useDataStore((s) => s.categories)
-  const seedData = useAdminStore((s) => s.seedData)
-  const [seeding, setSeeding] = useState(false)
-  const [seedMsg, setSeedMsg] = useState('')
 
-  const handleSeed = async () => {
-    if (!window.confirm('确定要用默认数据初始化 KV 吗？这将覆盖现有数据。')) return
-    setSeeding(true)
-    setSeedMsg('')
-    try {
-      await seedData()
-      setSeedMsg('初始化成功！')
-    } catch (err) {
-      setSeedMsg('初始化失败：' + (err instanceof Error ? err.message : '未知错误'))
-    } finally {
-      setSeeding(false)
-      setTimeout(() => setSeedMsg(''), 5000)
-    }
-  }
+  const [customerCount, setCustomerCount] = useState<number | null>(null)
+  const [unreadMessages, setUnreadMessages] = useState<number | null>(null)
+  const [subscriberCount, setSubscriberCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    // Fetch customer and message counts in background
+    api.getAdminUsers().then((users) => setCustomerCount(users.length)).catch(() => setCustomerCount(0))
+    api.getContactSubmissions().then((msgs) => {
+      setUnreadMessages(msgs.filter((m: any) => !m.read).length)
+    }).catch(() => setUnreadMessages(0))
+    api.getNewsletterSubscribers().then((subs) => setSubscriberCount(subs.length)).catch(() => setSubscriberCount(0))
+  }, [])
 
   const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0)
 
@@ -49,6 +44,24 @@ export const AdminDashboardPage: React.FC = () => {
       link: '/haijieaaronzhang/orders',
     },
     {
+      icon: FiDollarSign,
+      label: '总营收',
+      value: `$${totalRevenue.toFixed(2)}`,
+      desc: '累计收入',
+      gradient: 'from-orange-500 to-orange-600',
+      shadow: 'shadow-orange-500/25',
+      link: '/haijieaaronzhang/orders',
+    },
+    {
+      icon: FiUsers,
+      label: '注册客户',
+      value: customerCount !== null ? customerCount : '...',
+      desc: '注册用户',
+      gradient: 'from-pink-500 to-pink-600',
+      shadow: 'shadow-pink-500/25',
+      link: '/haijieaaronzhang/customers',
+    },
+    {
       icon: FiTag,
       label: '分类数量',
       value: categories.length,
@@ -58,13 +71,13 @@ export const AdminDashboardPage: React.FC = () => {
       link: '/haijieaaronzhang/categories',
     },
     {
-      icon: FiDollarSign,
-      label: '总营收',
-      value: `$${totalRevenue.toFixed(2)}`,
-      desc: '累计收入',
-      gradient: 'from-orange-500 to-orange-600',
-      shadow: 'shadow-orange-500/25',
-      link: '/haijieaaronzhang/orders',
+      icon: FiMessageSquare,
+      label: '未读消息',
+      value: unreadMessages !== null ? unreadMessages : '...',
+      desc: subscriberCount !== null ? `${subscriberCount} 位订阅者` : '加载中',
+      gradient: 'from-cyan-500 to-cyan-600',
+      shadow: 'shadow-cyan-500/25',
+      link: '/haijieaaronzhang/messages',
     },
   ]
 
@@ -88,29 +101,55 @@ export const AdminDashboardPage: React.FC = () => {
 
   const recentOrders = orders.slice(0, 5)
 
+  // Order status distribution
+  const pendingOrders = orders.filter((o) => o.status === 'pending').length
+  const processingOrders = orders.filter((o) => o.status === 'processing').length
+  const shippedOrders = orders.filter((o) => o.status === 'shipped').length
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">仪表盘</h1>
-        <div className="flex items-center gap-3">
-          {seedMsg && (
-            <span className={`text-sm ${seedMsg.includes('成功') ? 'text-green-600' : 'text-red-500'}`}>
-              {seedMsg}
-            </span>
-          )}
-          <button
-            onClick={handleSeed}
-            disabled={seeding}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
-          >
-            <FiDatabase size={16} />
-            {seeding ? '初始化中...' : '初始化数据'}
-          </button>
+        <div className="text-xs text-gray-400">
+          {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
         </div>
       </div>
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Order status alerts */}
+      {(pendingOrders > 0 || processingOrders > 0) && (
+        <div className="flex flex-wrap gap-3 mb-6">
+          {pendingOrders > 0 && (
+            <Link
+              to="/haijieaaronzhang/orders"
+              className="flex items-center gap-2 px-4 py-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700 hover:bg-yellow-100 transition-colors"
+            >
+              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+              {pendingOrders} 个订单待处理
+            </Link>
+          )}
+          {processingOrders > 0 && (
+            <Link
+              to="/haijieaaronzhang/orders"
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 hover:bg-blue-100 transition-colors"
+            >
+              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              {processingOrders} 个订单处理中
+            </Link>
+          )}
+          {unreadMessages !== null && unreadMessages > 0 && (
+            <Link
+              to="/haijieaaronzhang/messages"
+              className="flex items-center gap-2 px-4 py-2.5 bg-cyan-50 border border-cyan-200 rounded-lg text-sm text-cyan-700 hover:bg-cyan-100 transition-colors"
+            >
+              <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
+              {unreadMessages} 条未读消息
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Stats cards — 6 cards in 2 rows */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {stats.map((stat) => (
           <Link
             key={stat.label}
@@ -158,15 +197,15 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </Link>
         <Link
-          to="/haijieaaronzhang/categories"
-          className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-purple-200 transition-all duration-200 group"
+          to="/haijieaaronzhang/messages"
+          className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-cyan-200 transition-all duration-200 group"
         >
-          <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center group-hover:bg-purple-100 transition-colors">
-            <FiGrid className="text-purple-600" size={22} />
+          <div className="w-12 h-12 bg-cyan-50 rounded-xl flex items-center justify-center group-hover:bg-cyan-100 transition-colors">
+            <FiMessageSquare className="text-cyan-600" size={22} />
           </div>
           <div>
-            <p className="font-semibold text-gray-900">管理分类</p>
-            <p className="text-xs text-gray-400">编辑商品分类</p>
+            <p className="font-semibold text-gray-900">查看消息</p>
+            <p className="text-xs text-gray-400">联系留言和订阅管理</p>
           </div>
         </Link>
       </div>

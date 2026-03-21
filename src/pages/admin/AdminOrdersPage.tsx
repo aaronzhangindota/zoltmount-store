@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { FiShoppingCart, FiSearch, FiMapPin, FiTruck, FiTrash2, FiCheck, FiX, FiPackage, FiChevronDown, FiChevronUp, FiSave } from 'react-icons/fi'
+import { FiShoppingCart, FiSearch, FiMapPin, FiTruck, FiTrash2, FiCheck, FiX, FiPackage, FiChevronDown, FiChevronUp, FiSave, FiDownload, FiFilter } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 import { useDataStore } from '../../store/dataStore'
 import type { Order } from '../../store/adminStore'
@@ -54,6 +54,11 @@ export const AdminOrdersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabStatus>('all')
   const [search, setSearch] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [showFilters, setShowFilters] = useState(false)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [amountMin, setAmountMin] = useState('')
+  const [amountMax, setAmountMax] = useState('')
 
   // Local tracking edits (only save on button click)
   const [editingTracking, setEditingTracking] = useState<Record<string, { carrier: string; trackingNumber: string }>>({})
@@ -141,12 +146,68 @@ export const AdminOrdersPage: React.FC = () => {
           o.id.toLowerCase().includes(q) ||
           o.customer.firstName.toLowerCase().includes(q) ||
           o.customer.lastName.toLowerCase().includes(q) ||
-          `${o.customer.firstName} ${o.customer.lastName}`.toLowerCase().includes(q)
+          `${o.customer.firstName} ${o.customer.lastName}`.toLowerCase().includes(q) ||
+          o.customer.email.toLowerCase().includes(q)
       )
     }
 
+    if (dateFrom) {
+      const from = new Date(dateFrom).getTime()
+      result = result.filter((o) => new Date(o.createdAt).getTime() >= from)
+    }
+    if (dateTo) {
+      const to = new Date(dateTo).getTime() + 86400000 // include the whole day
+      result = result.filter((o) => new Date(o.createdAt).getTime() < to)
+    }
+    if (amountMin) {
+      const min = parseFloat(amountMin)
+      if (!isNaN(min)) result = result.filter((o) => o.total >= min)
+    }
+    if (amountMax) {
+      const max = parseFloat(amountMax)
+      if (!isNaN(max)) result = result.filter((o) => o.total <= max)
+    }
+
     return result
-  }, [orders, activeTab, search])
+  }, [orders, activeTab, search, dateFrom, dateTo, amountMin, amountMax])
+
+  const hasActiveFilters = dateFrom || dateTo || amountMin || amountMax
+
+  const clearFilters = () => {
+    setDateFrom('')
+    setDateTo('')
+    setAmountMin('')
+    setAmountMax('')
+  }
+
+  // CSV export
+  const handleExportCSV = () => {
+    const header = ['订单号', '客户姓名', '邮箱', '金额($)', '状态', '快递公司', '快递单号', '下单时间', '商品']
+    const rows = filtered.map((o) => [
+      o.id,
+      `${o.customer.firstName} ${o.customer.lastName}`,
+      o.customer.email,
+      o.total.toFixed(2),
+      statusLabels[o.status] || o.status,
+      o.carrier || '',
+      o.trackingNumber || '',
+      new Date(o.createdAt).toLocaleString('zh-CN'),
+      o.items.map((item) => `${item.name}x${item.quantity}`).join('; '),
+    ])
+
+    const csvContent = [header, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `订单导出_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const tabItems: { key: TabStatus; label: string; count?: number }[] = [
     { key: 'all', label: '全部', count: orders.length },
@@ -155,7 +216,31 @@ export const AdminOrdersPage: React.FC = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">订单管理</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">订单管理</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+              showFilters || hasActiveFilters
+                ? 'bg-blue-50 border-blue-200 text-blue-700'
+                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <FiFilter size={14} />
+            筛选
+            {hasActiveFilters && <span className="w-2 h-2 bg-blue-500 rounded-full" />}
+          </button>
+          <button
+            onClick={handleExportCSV}
+            disabled={filtered.length === 0}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <FiDownload size={14} />
+            导出 CSV
+          </button>
+        </div>
+      </div>
 
       {/* Status tab bar */}
       <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1">
@@ -194,6 +279,60 @@ export const AdminOrdersPage: React.FC = () => {
           className="w-full sm:w-80 pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
         />
       </div>
+
+      {/* Advanced filters */}
+      {showFilters && (
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+          <div className="flex flex-wrap gap-4 items-end">
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">开始日期</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">结束日期</label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">最小金额 ($)</label>
+              <input
+                type="number"
+                value={amountMin}
+                onChange={(e) => setAmountMin(e.target.value)}
+                placeholder="0"
+                className="w-28 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">最大金额 ($)</label>
+              <input
+                type="number"
+                value={amountMax}
+                onChange={(e) => setAmountMax(e.target.value)}
+                placeholder="∞"
+                className="w-28 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                清除筛选
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-16 text-center text-gray-400">

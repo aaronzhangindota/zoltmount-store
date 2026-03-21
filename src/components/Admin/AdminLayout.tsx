@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText, FiLock, FiTruck } from 'react-icons/fi'
+import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText, FiLock, FiTruck, FiMessageSquare, FiUserCheck } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 
 const allNavItems = [
@@ -8,6 +8,8 @@ const allNavItems = [
   { path: '/haijieaaronzhang/products', icon: FiPackage, label: '商品管理', superOnly: false },
   { path: '/haijieaaronzhang/categories', icon: FiTag, label: '分类管理', superOnly: false },
   { path: '/haijieaaronzhang/orders', icon: FiShoppingCart, label: '订单管理', superOnly: false },
+  { path: '/haijieaaronzhang/customers', icon: FiUserCheck, label: '客户管理', superOnly: true },
+  { path: '/haijieaaronzhang/messages', icon: FiMessageSquare, label: '消息管理', superOnly: false },
   { path: '/haijieaaronzhang/payment', icon: FiCreditCard, label: '支付设置', superOnly: true },
   { path: '/haijieaaronzhang/shipping', icon: FiTruck, label: '物流运费', superOnly: true },
   { path: '/haijieaaronzhang/accounts', icon: FiUsers, label: '账号管理', superOnly: true },
@@ -20,6 +22,8 @@ const breadcrumbMap: Record<string, string> = {
   '/haijieaaronzhang/products/new': '添加商品',
   '/haijieaaronzhang/categories': '分类管理',
   '/haijieaaronzhang/orders': '订单管理',
+  '/haijieaaronzhang/customers': '客户管理',
+  '/haijieaaronzhang/messages': '消息管理',
   '/haijieaaronzhang/payment': '支付设置',
   '/haijieaaronzhang/shipping': '物流运费',
   '/haijieaaronzhang/accounts': '账号管理',

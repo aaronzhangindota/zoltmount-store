@@ -248,6 +248,12 @@ class ApiClient {
   async getContactSubmissions(): Promise<any[]> {
     return this.request<any[]>('/contact-submissions')
   }
+  async markContactRead(id: string): Promise<void> {
+    await this.request('/contact-submissions', { method: 'PUT', body: JSON.stringify({ id }) })
+  }
+  async deleteContactSubmission(id: string): Promise<void> {
+    await this.request(`/contact-submissions?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+  }
 
   // Newsletter
   async subscribeNewsletter(email: string): Promise<any> {
@@ -255,6 +261,14 @@ class ApiClient {
   }
   async getNewsletterSubscribers(): Promise<any[]> {
     return this.request<any[]>('/newsletter')
+  }
+  async deleteNewsletterSubscriber(id: string): Promise<void> {
+    await this.request(`/newsletter?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+  }
+
+  // Admin: list all registered users
+  async getAdminUsers(): Promise<ApiUser[]> {
+    return this.request<ApiUser[]>('/admin-users')
   }
 }
 

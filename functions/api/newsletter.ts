@@ -20,6 +20,21 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   return json(subscribers)
 }
 
+// DELETE /api/newsletter — admin: delete subscriber
+export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
+  const result = await requireAdmin(request, env)
+  if ('denied' in result) return result.denied
+
+  const url = new URL(request.url)
+  const id = url.searchParams.get('id')
+  if (!id) return json({ error: 'Missing id' }, 400)
+
+  let subscribers = await getCollection<Subscriber>(env.ZOLTMOUNT_KV, 'newsletter')
+  subscribers = subscribers.filter((s) => s.id !== id)
+  await putCollection(env.ZOLTMOUNT_KV, 'newsletter', subscribers)
+  return json({ success: true })
+}
+
 // POST /api/newsletter — public
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const data = await request.json() as any
