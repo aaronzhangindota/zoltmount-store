@@ -78,6 +78,8 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
   const stripe = useStripe()
   const elements = useElements()
   const [stripeError, setStripeError] = useState('')
+  const [cardComplete, setCardComplete] = useState({ number: false, expiry: false, cvc: false })
+  const isCardComplete = cardComplete.number && cardComplete.expiry && cardComplete.cvc
 
   const handlePlaceOrder = async () => {
     // Validate required fields
@@ -107,6 +109,12 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
     // For third-party payments (non-credit-card), show payment simulation modal
     if (selectedMethod && selectedMethod.type !== 'credit_card') {
       setShowPaymentModal(true)
+      return
+    }
+
+    // Credit card: validate completeness first
+    if (selectedMethod?.type === 'credit_card' && !isCardComplete) {
+      setStripeError('Please fill in all card fields (card number, expiry date, and CVC).')
       return
     }
 
@@ -397,38 +405,47 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
                       {stripe ? (
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Card Number</label>
-                          <div className="px-4 py-3.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white">
-                            <CardNumberElement options={{
-                              style: {
-                                base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
-                                invalid: { color: '#ef4444' },
-                              },
-                              showIcon: true,
-                            }} />
+                          <label className="block text-xs text-gray-500 mb-1">{t('checkout.cardNumber', 'Card Number')} <span className="text-red-500">*</span></label>
+                          <div className={`px-4 py-3.5 border rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white ${!cardComplete.number && stripeError ? 'border-red-300' : 'border-gray-200'}`}>
+                            <CardNumberElement
+                              options={{
+                                style: {
+                                  base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
+                                  invalid: { color: '#ef4444' },
+                                },
+                                showIcon: true,
+                              }}
+                              onChange={(e) => { setCardComplete((s) => ({ ...s, number: e.complete })); if (e.complete) setStripeError('') }}
+                            />
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">Expiry Date</label>
-                            <div className="px-4 py-3.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white">
-                              <CardExpiryElement options={{
-                                style: {
-                                  base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
-                                  invalid: { color: '#ef4444' },
-                                },
-                              }} />
+                            <label className="block text-xs text-gray-500 mb-1">{t('checkout.expiryDate', 'Expiry Date')} <span className="text-red-500">*</span></label>
+                            <div className={`px-4 py-3.5 border rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white ${!cardComplete.expiry && stripeError ? 'border-red-300' : 'border-gray-200'}`}>
+                              <CardExpiryElement
+                                options={{
+                                  style: {
+                                    base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
+                                    invalid: { color: '#ef4444' },
+                                  },
+                                }}
+                                onChange={(e) => { setCardComplete((s) => ({ ...s, expiry: e.complete })); if (e.complete) setStripeError('') }}
+                              />
                             </div>
                           </div>
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">CVC</label>
-                            <div className="px-4 py-3.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white">
-                              <CardCvcElement options={{
-                                style: {
-                                  base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
-                                  invalid: { color: '#ef4444' },
-                                },
-                              }} />
+                            <label className="block text-xs text-gray-500 mb-1">CVC <span className="text-red-500">*</span></label>
+                            <div className={`px-4 py-3.5 border rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white ${!cardComplete.cvc && stripeError ? 'border-red-300' : 'border-gray-200'}`}>
+                              <CardCvcElement
+                                options={{
+                                  style: {
+                                    base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
+                                    invalid: { color: '#ef4444' },
+                                  },
+                                }}
+                                onChange={(e) => { setCardComplete((s) => ({ ...s, cvc: e.complete })); if (e.complete) setStripeError('') }}
+                              />
                             </div>
                           </div>
                         </div>
@@ -768,9 +785,19 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
   )
 }
 
+// Map i18n language codes to Stripe locale codes
+const stripeLocaleMap: Record<string, string> = {
+  en: 'en', zh: 'zh', es: 'es', fr: 'fr', de: 'de', ja: 'ja', ko: 'ko',
+  pt: 'pt', it: 'it', nl: 'nl', ru: 'ru', ar: 'ar', th: 'th', vi: 'vi',
+}
+
 export const CheckoutPage: React.FC = () => {
+  const { i18n } = useTranslation()
   const [stripePromise, setStripePromise] = useState<ReturnType<typeof loadStripe> | null>(null)
   const [stripeLoadError, setStripeLoadError] = useState('')
+
+  const lang = i18n.language?.split('-')[0] || 'en'
+  const stripeLocale = (stripeLocaleMap[lang] || 'en') as 'en'
 
   useEffect(() => {
     api.getStripeConfig()
@@ -779,7 +806,7 @@ export const CheckoutPage: React.FC = () => {
           setStripeLoadError('Stripe publishable key is empty')
           return
         }
-        const promise = loadStripe(publishableKey)
+        const promise = loadStripe(publishableKey, { locale: stripeLocale })
         promise.then((stripe) => {
           if (!stripe) {
             setStripeLoadError('Failed to initialize Stripe. Please check your publishable key.')
@@ -791,7 +818,7 @@ export const CheckoutPage: React.FC = () => {
         console.error('Stripe config error:', err)
         setStripeLoadError(err instanceof Error ? err.message : 'Failed to load Stripe configuration')
       })
-  }, [])
+  }, [stripeLocale])
 
   return (
     <Elements stripe={stripePromise}>
