@@ -118,6 +118,7 @@ const emptyForm: FormState = {
 export const AdminPaymentGatewaysPage: React.FC = () => {
   const [gateways, setGateways] = useState<PaymentGateway[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
@@ -128,9 +129,14 @@ export const AdminPaymentGatewaysPage: React.FC = () => {
 
   const fetchGateways = async () => {
     try {
+      setFetchError('')
       const data = await api.getPaymentGateways()
       setGateways(data)
-    } catch { /* ignore */ }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '加载失败'
+      setFetchError(msg)
+      console.error('Failed to fetch payment gateways:', err)
+    }
     setLoading(false)
   }
 
@@ -301,7 +307,23 @@ export const AdminPaymentGatewaysPage: React.FC = () => {
         </div>
       </div>
 
-      {sorted.length === 0 ? (
+      {fetchError && (
+        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl mb-6">
+          <FiAlertTriangle size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-red-800">加载收款网关失败</p>
+            <p className="text-xs text-red-600 mt-1">{fetchError}</p>
+            <button
+              onClick={() => { setLoading(true); fetchGateways() }}
+              className="text-xs text-blue-600 hover:underline mt-2"
+            >
+              点击重试
+            </button>
+          </div>
+        </div>
+      )}
+
+      {sorted.length === 0 && !fetchError ? (
         <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FiKey size={28} className="text-gray-400" />
