@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { FiLock, FiArrowLeft, FiCheck, FiX, FiExternalLink } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { loadStripe } from '@stripe/stripe-js'
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useCartStore } from '../store/cartStore'
 import { useDataStore } from '../store/dataStore'
 import { useUserStore } from '../store/userStore'
@@ -116,7 +116,7 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
       setStripeError('')
       try {
         const { clientSecret } = await api.createPaymentIntent(total)
-        const cardElement = elements.getElement(CardElement)
+        const cardElement = elements.getElement(CardNumberElement)
         if (!cardElement) throw new Error('Card element not found')
 
         const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
@@ -395,14 +395,42 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
                         </div>
                       )}
                       {stripe ? (
-                      <div>
-                        <div className="px-4 py-3.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white">
-                          <CardElement options={{
-                            style: {
-                              base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
-                              invalid: { color: '#ef4444' },
-                            },
-                          }} />
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Card Number</label>
+                          <div className="px-4 py-3.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white">
+                            <CardNumberElement options={{
+                              style: {
+                                base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
+                                invalid: { color: '#ef4444' },
+                              },
+                              showIcon: true,
+                            }} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">Expiry Date</label>
+                            <div className="px-4 py-3.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white">
+                              <CardExpiryElement options={{
+                                style: {
+                                  base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
+                                  invalid: { color: '#ef4444' },
+                                },
+                              }} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">CVC</label>
+                            <div className="px-4 py-3.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-brand-300 focus-within:border-transparent bg-white">
+                              <CardCvcElement options={{
+                                style: {
+                                  base: { fontSize: '14px', color: '#1f2937', '::placeholder': { color: '#9ca3af' } },
+                                  invalid: { color: '#ef4444' },
+                                },
+                              }} />
+                            </div>
+                          </div>
                         </div>
                         {stripeError && <p className="text-sm text-red-500 mt-2">{stripeError}</p>}
                       </div>
