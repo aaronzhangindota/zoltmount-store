@@ -185,6 +185,8 @@ const en = {
     total: 'Total',
     placeOrder: 'Place Order — ${{total}}',
     securePayment: 'Your payment information is encrypted and secure.',
+    cardFieldsRequired: 'Please fill in all card fields (card number, expiry date, and CVC).',
+    stripeLoading: 'Payment system is still loading, please wait a moment and try again.',
     orderConfirmed: 'Order Confirmed!',
     orderThankYou: 'Thank you for your purchase. You will receive a confirmation email shortly.',
     orderNumber: 'Order #{{number}}',

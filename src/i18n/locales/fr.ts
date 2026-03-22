@@ -156,6 +156,8 @@ const fr = {
     total: 'Total',
     placeOrder: 'Commander — ${{total}}',
     securePayment: 'Vos informations de paiement sont cryptées et sécurisées.',
+    cardFieldsRequired: 'Veuillez remplir tous les champs de la carte (numéro, date d\'expiration et CVC).',
+    stripeLoading: 'Le système de paiement est en cours de chargement, veuillez patienter et réessayer.',
     orderConfirmed: 'Commande confirmée !',
     orderThankYou: 'Merci pour votre achat. Vous recevrez un email de confirmation.',
     orderNumber: 'Commande #{{number}}',

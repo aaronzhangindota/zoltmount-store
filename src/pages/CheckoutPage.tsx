@@ -114,7 +114,7 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
 
     // Credit card: validate completeness first
     if (selectedMethod?.type === 'credit_card' && !isCardComplete) {
-      setStripeError('Please fill in all card fields (card number, expiry date, and CVC).')
+      setStripeError(t('checkout.cardFieldsRequired', 'Please fill in all card fields (card number, expiry date, and CVC).'))
       return
     }
 
@@ -150,7 +150,7 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
       return
     }
     // Stripe not loaded — cannot process card payment
-    setStripeError('Payment system is still loading, please wait a moment and try again.')
+    setStripeError(t('checkout.stripeLoading', 'Payment system is still loading, please wait a moment and try again.'))
     return
   }
 

@@ -156,6 +156,8 @@ const es = {
     total: 'Total',
     placeOrder: 'Realizar pedido — ${{total}}',
     securePayment: 'Tu información de pago está encriptada y segura.',
+    cardFieldsRequired: 'Por favor, complete todos los campos de la tarjeta (número, fecha de vencimiento y CVC).',
+    stripeLoading: 'El sistema de pago se está cargando, por favor espere un momento e intente de nuevo.',
     orderConfirmed: '¡Pedido confirmado!',
     orderThankYou: 'Gracias por tu compra. Recibirás un correo de confirmación.',
     orderNumber: 'Pedido #{{number}}',

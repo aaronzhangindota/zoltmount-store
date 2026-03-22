@@ -185,6 +185,8 @@ const zh = {
     total: '合计',
     placeOrder: '提交订单 — ${{total}}',
     securePayment: '您的支付信息已加密，安全可靠。',
+    cardFieldsRequired: '请填写完整的银行卡信息（卡号、有效期和安全码）。',
+    stripeLoading: '支付系统正在加载，请稍候再试。',
     orderConfirmed: '订单已确认！',
     orderThankYou: '感谢您的购买，确认邮件将很快发送至您的邮箱。',
     orderNumber: '订单号 #{{number}}',
