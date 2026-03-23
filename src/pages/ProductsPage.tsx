@@ -23,6 +23,7 @@ export const ProductsPage: React.FC = () => {
   const { products, categories } = useProducts()
   const [searchParams, setSearchParams] = useSearchParams()
   const categoryFilter = searchParams.get('category') || 'all'
+  const searchQuery = searchParams.get('q') || ''
   const [sort, setSort] = useState<SortOption>('featured')
   const [showFilters, setShowFilters] = useState(false)
 
@@ -30,6 +31,17 @@ export const ProductsPage: React.FC = () => {
     let result = categoryFilter === 'all'
       ? [...products]
       : products.filter((p) => p.category === categoryFilter)
+
+    // Apply search query filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        Object.values(p.specs).some((v) => v.toLowerCase().includes(q))
+      )
+    }
 
     switch (sort) {
       case 'price-low':
@@ -46,7 +58,7 @@ export const ProductsPage: React.FC = () => {
         break
     }
     return result
-  }, [products, categoryFilter, sort])
+  }, [products, categoryFilter, searchQuery, sort])
 
   const getCatProductCount = (slug: string) =>
     products.filter((p) => p.category === slug).length

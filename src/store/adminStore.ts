@@ -37,6 +37,8 @@ export interface Order {
   pointsEarned?: number
   pointsUsed?: number
   discount?: number
+  promoCode?: string
+  promoDiscount?: number
   trackingNumber?: string
   carrier?: string
 }

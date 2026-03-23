@@ -255,6 +255,22 @@ class ApiClient {
     await this.request(`/contact-submissions?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
   }
 
+  // Reviews
+  async getReviews(productId: string): Promise<any[]> {
+    return this.request<any[]>(`/reviews?productId=${encodeURIComponent(productId)}`)
+  }
+  async submitReview(data: { productId: string; userId?: string; name: string; rating: number; title: string; content: string; verified: boolean }): Promise<any> {
+    return this.request('/reviews', { method: 'POST', body: JSON.stringify(data) })
+  }
+
+  // Promo Codes
+  async validatePromoCode(code: string): Promise<{ valid: boolean; code?: string; discountPercent?: number; minOrderAmount?: number; error?: string }> {
+    return this.request('/promo-codes', { method: 'POST', body: JSON.stringify({ code }) })
+  }
+  async incrementPromoUsage(code: string): Promise<void> {
+    await this.request('/promo-codes', { method: 'PATCH', body: JSON.stringify({ code }) })
+  }
+
   // Newsletter
   async subscribeNewsletter(email: string): Promise<any> {
     return this.request('/newsletter', { method: 'POST', body: JSON.stringify({ email }) })

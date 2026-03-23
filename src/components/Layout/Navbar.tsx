@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { FiShoppingCart, FiMenu, FiX, FiSearch, FiGlobe, FiChevronDown, FiUser, FiPackage, FiStar, FiLogOut } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useCartStore } from '../../store/cartStore'
+import { useDataStore } from '../../store/dataStore'
 import { useUserStore } from '../../store/userStore'
 
 const languages = [
@@ -21,8 +22,13 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const langRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const products = useDataStore((s) => s.products)
   const location = useLocation()
   const totalItems = useCartStore((s) => s.totalItems)
   const toggleCart = useCartStore((s) => s.toggleCart)
@@ -43,6 +49,7 @@ export const Navbar: React.FC = () => {
     const handleClick = (e: MouseEvent) => {
       if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false)
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false)
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) { setSearchOpen(false); setSearchQuery('') }
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
@@ -203,13 +210,87 @@ export const Navbar: React.FC = () => {
               )}
             </div>
 
-            <button
-              onClick={() => navigate('/products')}
-              className="p-2 text-gray-600 hover:text-brand-600 transition-colors hidden sm:block"
-              title={t('nav.products')}
-            >
-              <FiSearch size={20} />
-            </button>
+            {/* Search */}
+            <div ref={searchRef} className="relative">
+              {searchOpen ? (
+                <div className="flex items-center">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchQuery.trim()) {
+                        navigate(`/products?q=${encodeURIComponent(searchQuery.trim())}`)
+                        setSearchOpen(false); setSearchQuery('')
+                      }
+                      if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery('') }
+                    }}
+                    placeholder={t('nav.searchPlaceholder', 'Search products...')}
+                    className="w-40 sm:w-56 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 bg-gray-50"
+                    autoFocus
+                  />
+                  <button onClick={() => { setSearchOpen(false); setSearchQuery('') }} className="p-1.5 text-gray-400 hover:text-gray-600 ml-1">
+                    <FiX size={16} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 50) }}
+                  className="p-2 text-gray-600 hover:text-brand-600 transition-colors"
+                  title={t('nav.searchPlaceholder', 'Search products...')}
+                >
+                  <FiSearch size={20} />
+                </button>
+              )}
+
+              {/* Search results dropdown */}
+              {searchOpen && searchQuery.trim().length >= 2 && (() => {
+                const q = searchQuery.toLowerCase()
+                const results = products.filter((p) =>
+                  p.name.toLowerCase().includes(q) ||
+                  p.category.toLowerCase().includes(q) ||
+                  p.description.toLowerCase().includes(q) ||
+                  Object.values(p.specs).some((v) => v.toLowerCase().includes(q))
+                ).slice(0, 6)
+                return results.length > 0 ? (
+                  <div className="absolute right-0 top-full mt-1 w-72 sm:w-80 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 max-h-80 overflow-y-auto">
+                    {results.map((p) => (
+                      <Link
+                        key={p.id}
+                        to={`/products/${p.slug}`}
+                        onClick={() => { setSearchOpen(false); setSearchQuery('') }}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                          {p.images[0] ? (
+                            <img src={p.images[0]} alt="" className="w-8 h-8 object-contain" />
+                          ) : (
+                            <span className="text-sm">📺</span>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gray-900 truncate">{p.name}</p>
+                          <p className="text-xs text-gray-400 capitalize">{p.category}</p>
+                        </div>
+                        <span className="text-sm font-bold text-brand-700 shrink-0">${p.price.toFixed(2)}</span>
+                      </Link>
+                    ))}
+                    <Link
+                      to={`/products?q=${encodeURIComponent(searchQuery.trim())}`}
+                      onClick={() => { setSearchOpen(false); setSearchQuery('') }}
+                      className="block px-4 py-2 text-center text-sm text-brand-600 hover:bg-brand-50 border-t border-gray-100 mt-1 font-medium"
+                    >
+                      {t('nav.viewAll', 'View all results')}
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="absolute right-0 top-full mt-1 w-72 sm:w-80 bg-white rounded-xl shadow-xl border border-gray-100 py-6 z-50 text-center">
+                    <p className="text-sm text-gray-400">{t('nav.noResults', 'No products found')}</p>
+                  </div>
+                )
+              })()}
+            </div>
 
             <button
               onClick={toggleCart}

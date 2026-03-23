@@ -149,6 +149,8 @@ const ru = {
     qty: 'Кол-во: {{count}}',
     promoCode: 'Промокод',
     apply: 'Применить',
+    promoDiscount: 'Промокод ({{code}})',
+    promoMinOrder: 'Минимальная сумма заказа ${{amount}}',
     subtotal: 'Подытог',
     shipping: 'Доставка',
     tax: 'Налог',

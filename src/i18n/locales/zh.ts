@@ -178,6 +178,8 @@ const zh = {
     qty: '数量：{{count}}',
     promoCode: '优惠码',
     apply: '使用',
+    promoDiscount: '优惠码 ({{code}})',
+    promoMinOrder: '最低消费 ${{amount}} 才可使用',
     subtotal: '小计',
     shipping: '运费',
     tax: '税费',

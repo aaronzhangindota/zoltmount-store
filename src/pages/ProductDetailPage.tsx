@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { FiStar, FiShoppingCart, FiTruck, FiShield, FiRefreshCw, FiCheck, FiMinus, FiPlus, FiChevronRight } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useProducts } from '../hooks/useProducts'
 import { useCartStore } from '../store/cartStore'
+import { useUserStore } from '../store/userStore'
+import { api } from '../api/client'
 import { ProductCard } from '../components/Common/ProductCard'
 
 export const ProductDetailPage: React.FC = () => {
@@ -12,9 +14,60 @@ export const ProductDetailPage: React.FC = () => {
   const { products, getProductBySlug } = useProducts()
   const product = getProductBySlug(slug || '')
   const addItem = useCartStore((s) => s.addItem)
+  const currentUser = useUserStore((s) => s.currentUser)
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState<'features' | 'specs'>('features')
   const [selectedImage, setSelectedImage] = useState(0)
+
+  // Reviews state
+  const [reviews, setReviews] = useState<any[]>([])
+  const [reviewsLoading, setReviewsLoading] = useState(false)
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [reviewName, setReviewName] = useState('')
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewTitle, setReviewTitle] = useState('')
+  const [reviewContent, setReviewContent] = useState('')
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
+  const [reviewSubmitted, setReviewSubmitted] = useState(false)
+
+  useEffect(() => {
+    if (slug && product) {
+      setReviewsLoading(true)
+      api.getReviews(product.id)
+        .then((r) => setReviews(r))
+        .catch(() => setReviews([]))
+        .finally(() => setReviewsLoading(false))
+    }
+  }, [slug, product?.id])
+
+  useEffect(() => {
+    if (currentUser) setReviewName(`${currentUser.firstName} ${currentUser.lastName}`.trim())
+  }, [currentUser])
+
+  const handleSubmitReview = async () => {
+    if (!reviewName.trim() || !reviewContent.trim() || !product) return
+    setReviewSubmitting(true)
+    try {
+      const res = await api.submitReview({
+        productId: product.id,
+        userId: currentUser?.id,
+        name: reviewName.trim(),
+        rating: reviewRating,
+        title: reviewTitle.trim(),
+        content: reviewContent.trim(),
+        verified: !!currentUser,
+      })
+      if (res.review) setReviews((prev) => [res.review, ...prev])
+      setReviewSubmitted(true)
+      setShowReviewForm(false)
+      setReviewTitle('')
+      setReviewContent('')
+      setReviewRating(5)
+    } catch { /* ignore */ }
+    finally { setReviewSubmitting(false) }
+  }
+
+  const avgRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0
 
   if (!product) {
     return (
@@ -201,6 +254,131 @@ export const ProductDetailPage: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Customer Reviews */}
+        <div className="mt-16 border-t border-gray-100 pt-12">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-extrabold text-gray-900">{t('detail.reviews', 'Customer Reviews')}</h2>
+              {reviews.length > 0 && (
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <FiStar key={s} size={16} className={s <= Math.round(avgRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'} />
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-500">{avgRating.toFixed(1)} ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})</span>
+                </div>
+              )}
+            </div>
+            {!showReviewForm && !reviewSubmitted && (
+              <button
+                onClick={() => setShowReviewForm(true)}
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                {t('detail.writeReview', 'Write a Review')}
+              </button>
+            )}
+          </div>
+
+          {/* Review form */}
+          {showReviewForm && (
+            <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+              <h3 className="font-bold text-gray-900 mb-4">{t('detail.writeReview', 'Write a Review')}</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600 w-16">{t('detail.rating', 'Rating')}:</span>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button key={s} onClick={() => setReviewRating(s)} className="p-0.5">
+                        <FiStar size={22} className={s <= reviewRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={reviewName}
+                  onChange={(e) => setReviewName(e.target.value)}
+                  placeholder={t('detail.reviewName', 'Your name')}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
+                />
+                <input
+                  type="text"
+                  value={reviewTitle}
+                  onChange={(e) => setReviewTitle(e.target.value)}
+                  placeholder={t('detail.reviewTitle', 'Review title (optional)')}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
+                />
+                <textarea
+                  rows={4}
+                  value={reviewContent}
+                  onChange={(e) => setReviewContent(e.target.value)}
+                  placeholder={t('detail.reviewContent', 'Share your experience with this product...')}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 resize-none"
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={reviewSubmitting || !reviewName.trim() || !reviewContent.trim()}
+                    className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-300 text-white text-sm font-semibold rounded-xl transition-colors"
+                  >
+                    {reviewSubmitting ? '...' : t('detail.submitReview', 'Submit Review')}
+                  </button>
+                  <button
+                    onClick={() => setShowReviewForm(false)}
+                    className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-xl transition-colors"
+                  >
+                    {t('detail.cancel', 'Cancel')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {reviewSubmitted && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-8 flex items-center gap-3">
+              <FiCheck className="text-green-600 shrink-0" size={18} />
+              <p className="text-sm text-green-700">{t('detail.reviewThanks', 'Thank you for your review!')}</p>
+            </div>
+          )}
+
+          {/* Reviews list */}
+          {reviewsLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full mx-auto" />
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-2xl">
+              <p className="text-gray-400 text-sm">{t('detail.noReviews', 'No reviews yet. Be the first to review this product!')}</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {reviews.map((r) => (
+                <div key={r.id} className="border-b border-gray-100 pb-6 last:border-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <FiStar key={s} size={14} className={s <= r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'} />
+                      ))}
+                    </div>
+                    {r.title && <span className="font-semibold text-gray-900 text-sm">{r.title}</span>}
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{r.content}</p>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <span className="font-medium text-gray-500">{r.name}</span>
+                    {r.verified && (
+                      <span className="flex items-center gap-1 text-green-600">
+                        <FiCheck size={12} /> {t('detail.verified', 'Verified Purchase')}
+                      </span>
+                    )}
+                    <span>{new Date(r.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Related products */}

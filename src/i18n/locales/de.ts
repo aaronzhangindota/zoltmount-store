@@ -149,6 +149,8 @@ const de = {
     qty: 'Menge: {{count}}',
     promoCode: 'Gutscheincode',
     apply: 'Einlösen',
+    promoDiscount: 'Gutschein ({{code}})',
+    promoMinOrder: 'Mindestbestellwert ${{amount}} erforderlich',
     subtotal: 'Zwischensumme',
     shipping: 'Versand',
     tax: 'Steuer',

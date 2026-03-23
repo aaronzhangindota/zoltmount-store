@@ -37,6 +37,36 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
 
   const [pointsToUse, setPointsToUse] = useState(0)
 
+  // Promo code state
+  const [promoInput, setPromoInput] = useState('')
+  const [promoApplied, setPromoApplied] = useState<{ code: string; discountPercent: number } | null>(null)
+  const [promoError, setPromoError] = useState('')
+  const [promoLoading, setPromoLoading] = useState(false)
+
+  const handleApplyPromo = async () => {
+    const code = promoInput.trim()
+    if (!code) return
+    setPromoError('')
+    setPromoLoading(true)
+    try {
+      const result = await api.validatePromoCode(code)
+      if (result.valid && result.discountPercent) {
+        if (result.minOrderAmount && rawSubtotal < result.minOrderAmount) {
+          setPromoError(t('checkout.promoMinOrder', { amount: result.minOrderAmount.toFixed(2) }))
+        } else {
+          setPromoApplied({ code: result.code!, discountPercent: result.discountPercent })
+          setPromoError('')
+        }
+      } else {
+        setPromoError(result.error || 'Invalid promo code')
+      }
+    } catch {
+      setPromoError('Failed to validate promo code')
+    } finally {
+      setPromoLoading(false)
+    }
+  }
+
   // Auto-fill for logged-in users
   useEffect(() => {
     if (currentUser) {
@@ -59,7 +89,8 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
   const rawSubtotal = subtotal()
   const shipping = calcShipping(items, products, shippingZones, country)
   const pointsDiscountAmount = pointsToUse / 100
-  const total = rawSubtotal - pointsDiscountAmount + shipping
+  const promoDiscountAmount = promoApplied ? +(rawSubtotal * promoApplied.discountPercent / 100).toFixed(2) : 0
+  const total = rawSubtotal - pointsDiscountAmount - promoDiscountAmount + shipping
 
   const maxPointsUsable = currentUser
     ? Math.min(currentUser.points, Math.floor(rawSubtotal * 100))
@@ -187,12 +218,19 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
         userId: currentUser?.id,
         pointsEarned: currentUser ? earnedPoints : undefined,
         pointsUsed: pointsToUse > 0 ? pointsToUse : undefined,
+        promoCode: promoApplied?.code,
+        promoDiscount: promoDiscountAmount > 0 ? promoDiscountAmount : undefined,
       })
 
       // Handle points
       if (currentUser) {
         if (pointsToUse > 0) await usePoints(pointsToUse)
         if (earnedPoints > 0) await addPoints(earnedPoints, total)
+      }
+
+      // Increment promo code usage
+      if (promoApplied) {
+        api.incrementPromoUsage(promoApplied.code).catch(() => {})
       }
 
       setOrderPlaced(true)
@@ -533,10 +571,39 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
               </div>
 
               {/* Promo code */}
-              <div className="flex gap-2 mb-5">
-                <input type="text" placeholder={t('checkout.promoCode')} className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
-                <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-sm font-medium rounded-lg transition-colors">{t('checkout.apply')}</button>
-              </div>
+              {promoApplied ? (
+                <div className="flex items-center justify-between mb-5 p-3 bg-green-50 rounded-xl border border-green-200">
+                  <div className="flex items-center gap-2 text-sm">
+                    <FiCheck className="text-green-600" size={16} />
+                    <span className="font-semibold text-green-700">{promoApplied.code}</span>
+                    <span className="text-green-600">-{promoApplied.discountPercent}%</span>
+                  </div>
+                  <button onClick={() => { setPromoApplied(null); setPromoInput('') }} className="text-gray-400 hover:text-red-500 transition-colors">
+                    <FiX size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="mb-5">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={promoInput}
+                      onChange={(e) => { setPromoInput(e.target.value); setPromoError('') }}
+                      onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
+                      placeholder={t('checkout.promoCode')}
+                      className={`flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${promoError ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
+                    />
+                    <button
+                      onClick={handleApplyPromo}
+                      disabled={promoLoading || !promoInput.trim()}
+                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-sm font-medium rounded-lg transition-colors"
+                    >
+                      {promoLoading ? '...' : t('checkout.apply')}
+                    </button>
+                  </div>
+                  {promoError && <p className="text-xs text-red-500 mt-1">{promoError}</p>}
+                </div>
+              )}
 
               {/* Points redemption */}
               {currentUser && currentUser.points > 0 && (
@@ -569,6 +636,14 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
                   <span>{t('checkout.subtotal')}</span>
                   <span>${rawSubtotal.toFixed(2)}</span>
                 </div>
+
+                {/* Promo discount line */}
+                {promoApplied && promoDiscountAmount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>{t('checkout.promoDiscount', { code: promoApplied.code })}</span>
+                    <span>-${promoDiscountAmount.toFixed(2)}</span>
+                  </div>
+                )}
 
                 {/* Points discount line */}
                 {pointsToUse > 0 && (

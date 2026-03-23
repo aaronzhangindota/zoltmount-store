@@ -178,6 +178,8 @@ const en = {
     qty: 'Qty: {{count}}',
     promoCode: 'Promo code',
     apply: 'Apply',
+    promoDiscount: 'Promo ({{code}})',
+    promoMinOrder: 'Minimum order ${{amount}} required',
     subtotal: 'Subtotal',
     shipping: 'Shipping',
     tax: 'Tax',

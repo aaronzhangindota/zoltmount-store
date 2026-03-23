@@ -18,6 +18,7 @@ export const ContactPage: React.FC = () => {
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [subject, setSubject] = useState('General Inquiry')
+  const [orderNumber, setOrderNumber] = useState('')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -27,12 +28,14 @@ export const ContactPage: React.FC = () => {
     if (!firstName.trim() || !lastName.trim() || !email.trim() || !message.trim()) return
     setSubmitting(true)
     try {
-      await api.submitContactForm({ firstName, lastName, email, subject, message })
+      const fullMessage = orderNumber.trim() ? `[Order #${orderNumber.trim()}]\n\n${message}` : message
+      await api.submitContactForm({ firstName, lastName, email, subject, message: fullMessage })
       setSubmitted(true)
       setFirstName('')
       setLastName('')
       setEmail('')
       setSubject('General Inquiry')
+      setOrderNumber('')
       setMessage('')
     } catch {
       // Still show success for UX
@@ -139,6 +142,19 @@ export const ContactPage: React.FC = () => {
                       <option value="Wholesale / B2B">{t('contact.subjectWholesale')}</option>
                       <option value="Other">{t('contact.subjectOther')}</option>
                     </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      {t('contact.formOrderNumber', 'Order Number')} <span className="text-gray-400 font-normal">({t('contact.optional', 'Optional')})</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={orderNumber}
+                      onChange={(e) => setOrderNumber(e.target.value)}
+                      placeholder="e.g. MP-A1B2C3D4"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
+                    />
                   </div>
 
                   <div>

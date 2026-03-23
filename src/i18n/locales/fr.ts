@@ -149,6 +149,8 @@ const fr = {
     qty: 'Qté : {{count}}',
     promoCode: 'Code promo',
     apply: 'Appliquer',
+    promoDiscount: 'Promo ({{code}})',
+    promoMinOrder: 'Commande minimum de ${{amount}} requise',
     subtotal: 'Sous-total',
     shipping: 'Livraison',
     tax: 'Taxe',
