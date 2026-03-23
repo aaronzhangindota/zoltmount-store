@@ -140,7 +140,7 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
 
         if (error) throw new Error(error.message)
         if (paymentIntent?.status === 'succeeded') {
-          await executeOrder('processing')
+          await executeOrder('pending')
         }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Payment failed'
