@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { FiUser, FiMapPin, FiPackage, FiStar, FiPlus, FiEdit2, FiTrash2, FiCheck, FiChevronDown, FiChevronUp, FiTruck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useUserStore } from '../../store/userStore'
+import { useDataStore } from '../../store/dataStore'
 import { api } from '../../api/client'
 import type { Order } from '../../store/adminStore'
 import type { Address } from '../../store/userStore'
@@ -371,10 +372,56 @@ const AddressesTab: React.FC = () => {
   )
 }
 
+/* ─── Order Progress Steps ─── */
+const ORDER_STEPS = ['pending', 'processing', 'shipped', 'completed'] as const
+const STEP_LABELS: Record<string, string> = {
+  pending: 'Order Placed',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  completed: 'Delivered',
+}
+
+const OrderProgress: React.FC<{ status: Order['status'] }> = ({ status }) => {
+  if (status === 'cancelled') {
+    return (
+      <div className="flex items-center justify-center gap-2 py-3">
+        <span className="w-7 h-7 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-sm font-bold">✕</span>
+        <span className="text-sm font-semibold text-red-600">Order Cancelled</span>
+      </div>
+    )
+  }
+
+  const currentIdx = ORDER_STEPS.indexOf(status as typeof ORDER_STEPS[number])
+
+  return (
+    <div className="flex items-center w-full py-3">
+      {ORDER_STEPS.map((step, i) => {
+        const done = i <= currentIdx
+        return (
+          <React.Fragment key={step}>
+            <div className="flex flex-col items-center gap-1 min-w-0">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${done ? 'bg-brand-600 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                {done ? <FiCheck size={14} /> : i + 1}
+              </div>
+              <span className={`text-[11px] leading-tight text-center ${done ? 'text-brand-700 font-semibold' : 'text-gray-400'}`}>
+                {STEP_LABELS[step]}
+              </span>
+            </div>
+            {i < ORDER_STEPS.length - 1 && (
+              <div className={`flex-1 h-0.5 mx-1 mt-[-18px] ${i < currentIdx ? 'bg-brand-600' : 'bg-gray-200'}`} />
+            )}
+          </React.Fragment>
+        )
+      })}
+    </div>
+  )
+}
+
 /* ─── Orders Tab ─── */
 const OrdersTab: React.FC = () => {
   const { t } = useTranslation()
   const currentUser = useUserStore((s) => s.currentUser)
+  const products = useDataStore((s) => s.products)
   const [userOrders, setUserOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -395,6 +442,11 @@ const OrdersTab: React.FC = () => {
     shipped: 'bg-purple-100 text-purple-700',
     completed: 'bg-green-100 text-green-700',
     cancelled: 'bg-red-100 text-red-700',
+  }
+
+  const getProductSlug = (productId: string) => {
+    const product = products.find((p) => p.id === productId)
+    return product?.slug
   }
 
   if (loading) {
@@ -419,70 +471,157 @@ const OrdersTab: React.FC = () => {
 
   return (
     <div className="space-y-3">
-      {userOrders.map((order) => (
-        <div key={order.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <button
-            onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
-            className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center gap-4 text-sm">
-              <span className="font-semibold text-gray-900">{order.id}</span>
-              <span className="text-gray-400">
-                {new Date(order.createdAt).toLocaleDateString()}
-              </span>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColors[order.status] || 'bg-gray-100 text-gray-600'}`}>
-                {t(`orderStatus.${order.status}`)}
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-gray-900 text-sm">${order.total.toFixed(2)}</span>
-              {expandedId === order.id ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-            </div>
-          </button>
+      {userOrders.map((order) => {
+        const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        const pointsDiscount = order.pointsUsed ? order.pointsUsed : 0
+        const shippingCost = +(order.total - subtotal + pointsDiscount).toFixed(2)
+        const addr = order.shippingAddress
 
-          {expandedId === order.id && (
-            <div className="px-5 pb-4 border-t border-gray-50">
-              {/* Tracking info */}
-              {order.trackingNumber && (
-                <div className="mt-3 mb-3 p-3 bg-blue-50 rounded-lg flex flex-wrap items-center gap-3">
-                  <FiTruck className="text-blue-600" size={16} />
-                  <div className="text-sm">
-                    <span className="text-gray-600">{order.carrier || t('account.orderStatus')}: </span>
-                    <span className="font-medium text-gray-900">{order.trackingNumber}</span>
-                  </div>
-                  <a
-                    href={`https://www.17track.net/en/track#nums=${order.trackingNumber}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-auto px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    {t('account.trackPackage')}
-                  </a>
+        return (
+          <div key={order.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            {/* Collapsed header — 移动端友好两行布局 */}
+            <button
+              onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
+              className="w-full px-5 py-4 hover:bg-gray-50 transition-colors text-left"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm min-w-0">
+                  <span className="font-semibold text-gray-900">{order.id}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${statusColors[order.status] || 'bg-gray-100 text-gray-600'}`}>
+                    {t(`orderStatus.${order.status}`)}
+                  </span>
                 </div>
-              )}
-
-              <div className="space-y-2 mt-3">
-                {order.items.map((item, i) => (
-                  <div key={i} className="flex justify-between text-sm">
-                    <span className="text-gray-600">
-                      {item.name} x {item.quantity}
-                    </span>
-                    <span className="text-gray-900 font-medium">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
+                <div className="flex items-center gap-2 shrink-0 ml-3">
+                  <span className="font-bold text-gray-900 text-sm">${order.total.toFixed(2)}</span>
+                  {expandedId === order.id ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
+                </div>
               </div>
-              {order.pointsEarned != null && order.pointsEarned > 0 && (
-                <p className="text-xs text-green-600 mt-2">+{order.pointsEarned} {t('account.pointsUnit')}</p>
-              )}
-              {order.pointsUsed != null && order.pointsUsed > 0 && (
-                <p className="text-xs text-orange-600 mt-1">-{order.pointsUsed} {t('account.pointsUnit')}</p>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
+              <div className="text-xs text-gray-400 mt-1">
+                {new Date(order.createdAt).toLocaleString()} · {order.items.length} item{order.items.length > 1 ? 's' : ''}
+              </div>
+            </button>
+
+            {/* Expanded details */}
+            {expandedId === order.id && (
+              <div className="px-5 pb-5 border-t border-gray-100 space-y-4">
+
+                {/* 1. 订单进度条 */}
+                <OrderProgress status={order.status} />
+
+                {/* 2. 物流追踪卡片 */}
+                {order.trackingNumber ? (
+                  <div className="p-3 bg-blue-50 rounded-lg flex flex-wrap items-center gap-3">
+                    <FiTruck className="text-blue-600 shrink-0" size={16} />
+                    <div className="text-sm min-w-0">
+                      <span className="text-gray-600">{order.carrier || 'Carrier'}: </span>
+                      <span className="font-medium text-gray-900 break-all">{order.trackingNumber}</span>
+                    </div>
+                    <a
+                      href={`https://www.17track.net/en/track#nums=${order.trackingNumber}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      {t('account.trackPackage')}
+                    </a>
+                  </div>
+                ) : order.status !== 'completed' && order.status !== 'cancelled' ? (
+                  <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-3 text-sm text-gray-400">
+                    <FiTruck size={16} className="shrink-0" />
+                    <span>Awaiting shipment</span>
+                  </div>
+                ) : null}
+
+                {/* 3. 商品列表 */}
+                <div className="space-y-2">
+                  {order.items.map((item, i) => {
+                    const slug = getProductSlug(item.productId)
+                    return (
+                      <div key={i} className="flex items-center gap-3 text-sm py-1">
+                        <span className="shrink-0">📺</span>
+                        <div className="min-w-0 flex-1">
+                          {slug ? (
+                            <Link to={`/products/${slug}`} className="text-brand-600 hover:underline font-medium truncate block">
+                              {item.name}
+                            </Link>
+                          ) : (
+                            <span className="text-gray-800 font-medium truncate block">{item.name}</span>
+                          )}
+                        </div>
+                        <span className="text-gray-400 shrink-0 text-xs">
+                          ${item.price.toFixed(2)} × {item.quantity}
+                        </span>
+                        <span className="font-medium text-gray-900 shrink-0 w-20 text-right">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* 4. 金额汇总 */}
+                <div className="border-t border-gray-100 pt-3 space-y-1 text-sm">
+                  <div className="flex justify-between text-gray-500">
+                    <span>Subtotal</span>
+                    <span>${subtotal.toFixed(2)}</span>
+                  </div>
+                  {pointsDiscount > 0 && (
+                    <div className="flex justify-between text-orange-600">
+                      <span>Points Discount</span>
+                      <span>-${pointsDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {shippingCost > 0 && (
+                    <div className="flex justify-between text-gray-500">
+                      <span>Shipping</span>
+                      <span>${shippingCost.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-gray-900 pt-1 border-t border-gray-100">
+                    <span>Total</span>
+                    <span>${order.total.toFixed(2)}</span>
+                  </div>
+                  {order.pointsEarned != null && order.pointsEarned > 0 && (
+                    <p className="text-xs text-green-600 text-right">+{order.pointsEarned} {t('account.pointsUnit')}</p>
+                  )}
+                </div>
+
+                {/* 5. 订单信息 + 收货地址（两列，移动端堆叠） */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-100 pt-4 text-sm">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Order Info</h4>
+                    <dl className="space-y-1 text-gray-500">
+                      <div className="flex gap-2">
+                        <dt className="text-gray-400 shrink-0">Order #</dt>
+                        <dd className="font-medium text-gray-700">{order.id}</dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt className="text-gray-400 shrink-0">Date</dt>
+                        <dd className="text-gray-700">{new Date(order.createdAt).toLocaleString()}</dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt className="text-gray-400 shrink-0">Email</dt>
+                        <dd className="text-gray-700 break-all">{order.customer.email}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  {addr && (addr.address || addr.city) && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2">Shipping Address</h4>
+                      <p className="text-gray-600 leading-relaxed">
+                        {order.customer.firstName} {order.customer.lastName}<br />
+                        {addr.address}<br />
+                        {addr.city}{addr.state ? `, ${addr.state}` : ''} {addr.zip}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
