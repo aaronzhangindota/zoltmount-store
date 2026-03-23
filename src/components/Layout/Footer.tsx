@@ -34,12 +34,12 @@ export const Footer: React.FC = () => {
   ]
 
   const supportLinks = [
-    t('footer.installGuides'),
-    t('footer.vesaCompat'),
-    t('footer.warrantyPolicy'),
-    t('footer.returnsRefunds'),
-    t('footer.faq'),
-    t('footer.contactUs'),
+    { label: t('footer.installGuides'), to: '/install' },
+    { label: t('footer.vesaCompat'), to: '/vesa' },
+    { label: t('footer.warrantyPolicy'), to: '/warranty' },
+    { label: t('footer.returnsRefunds'), to: '/returns' },
+    { label: t('footer.faq'), to: '/faq' },
+    { label: t('footer.contactUs'), to: '/contact' },
   ]
 
   return (
@@ -130,8 +130,8 @@ export const Footer: React.FC = () => {
             <h4 className="text-white font-semibold mb-4">{t('footer.supportTitle')}</h4>
             <ul className="space-y-2.5">
               {supportLinks.map((item) => (
-                <li key={item}>
-                  <Link to="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">{item}</Link>
+                <li key={item.to}>
+                  <Link to={item.to} className="text-gray-400 hover:text-white text-sm transition-colors">{item.label}</Link>
                 </li>
               ))}
             </ul>

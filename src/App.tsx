@@ -15,6 +15,11 @@ import { AboutPage } from './pages/AboutPage'
 import { ContactPage } from './pages/ContactPage'
 import { TermsPage } from './pages/TermsPage'
 import { PrivacyPage } from './pages/PrivacyPage'
+import { InstallGuidePage } from './pages/InstallGuidePage'
+import { VesaCompatPage } from './pages/VesaCompatPage'
+import { WarrantyPage } from './pages/WarrantyPage'
+import { ReturnsPage } from './pages/ReturnsPage'
+import { FaqPage } from './pages/FaqPage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { AccountPage } from './pages/account/AccountPage'
@@ -52,6 +57,11 @@ const App: React.FC = () => {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/install" element={<InstallGuidePage />} />
+            <Route path="/vesa" element={<VesaCompatPage />} />
+            <Route path="/warranty" element={<WarrantyPage />} />
+            <Route path="/returns" element={<ReturnsPage />} />
+            <Route path="/faq" element={<FaqPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route element={<ProtectedRoute />}>
