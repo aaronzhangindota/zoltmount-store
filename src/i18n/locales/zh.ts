@@ -315,7 +315,7 @@ const zh = {
     emailDetail: 'support@zoltmount.com',
     emailSub: '2 小时内回复',
     phoneTitle: '电话',
-    phoneDetail: '+1 (888) 555-ZOLT',
+    phoneDetail: 'WhatsApp: +852 6150 9207',
     phoneSub: '周一至周五 9am-6pm（美东时间）',
     chatTitle: '在线客服',
     chatDetail: '全天候在线',

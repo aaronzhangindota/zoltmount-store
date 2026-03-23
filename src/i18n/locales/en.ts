@@ -309,7 +309,7 @@ const en = {
     emailDetail: 'support@zoltmount.com',
     emailSub: 'We reply within 2 hours',
     phoneTitle: 'Phone',
-    phoneDetail: '+1 (888) 555-ZOLT',
+    phoneDetail: 'WhatsApp: +852 6150 9207',
     phoneSub: 'Mon-Fri 9am-6pm EST',
     chatTitle: 'Live Chat',
     chatDetail: 'Available 24/7',

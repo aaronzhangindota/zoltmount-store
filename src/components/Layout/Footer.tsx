@@ -147,7 +147,7 @@ export const Footer: React.FC = () => {
               </li>
               <li className="flex items-center gap-3 text-sm text-gray-400">
                 <FiPhone size={16} className="flex-shrink-0" />
-                <span>{t('contact.phoneDetail')}</span>
+                <a href="https://wa.me/85261509207" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{t('contact.phoneDetail')}</a>
               </li>
               <li className="flex items-center gap-3 text-sm text-gray-400">
                 <FiMail size={16} className="flex-shrink-0" />

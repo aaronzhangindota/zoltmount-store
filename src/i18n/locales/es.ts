@@ -189,7 +189,7 @@ const es = {
     emailDetail: 'support@zoltmount.com',
     emailSub: 'Respondemos en 2 horas',
     phoneTitle: 'Teléfono',
-    phoneDetail: '+1 (888) 555-ZOLT',
+    phoneDetail: 'WhatsApp: +852 6150 9207',
     phoneSub: 'Lun-Vie 9am-6pm EST',
     chatTitle: 'Chat en vivo',
     chatDetail: 'Disponible 24/7',
