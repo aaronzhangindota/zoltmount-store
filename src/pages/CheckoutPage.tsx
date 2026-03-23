@@ -197,10 +197,12 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
 
       setOrderPlaced(true)
       clearCart()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch {
       // If API fails, still place order locally for UX
       setOrderPlaced(true)
       clearCart()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setPlacing(false)
       setShowPaymentModal(false)
