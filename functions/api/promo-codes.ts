@@ -22,16 +22,28 @@ const KV_KEY = 'promo-codes'
 async function ensureDefaults(kv: KVNamespace): Promise<PromoCode[]> {
   let codes = await getCollection<PromoCode>(kv, KV_KEY)
   if (codes.length === 0) {
-    codes = [{
-      id: 'pc-zolt15',
-      code: 'ZOLT15',
-      discountPercent: 15,
-      active: true,
-      usageLimit: null,
-      usedCount: 0,
-      minOrderAmount: 0,
-      createdAt: new Date().toISOString(),
-    }]
+    codes = [
+      {
+        id: 'pc-zolt15',
+        code: 'ZOLT15',
+        discountPercent: 15,
+        active: true,
+        usageLimit: null,
+        usedCount: 0,
+        minOrderAmount: 0,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'pc-welcome10',
+        code: 'WELCOME10',
+        discountPercent: 10,
+        active: true,
+        usageLimit: null,
+        usedCount: 0,
+        minOrderAmount: 0,
+        createdAt: new Date().toISOString(),
+      },
+    ]
     await putCollection(kv, KV_KEY, codes)
   }
   return codes
