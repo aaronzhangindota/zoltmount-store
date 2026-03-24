@@ -719,6 +719,16 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
               <p className="text-xs text-gray-400 text-center mt-3">
                 {t('checkout.securePayment')}
               </p>
+
+              {/* Trust badges */}
+              <div className="mt-4 pt-4 border-t border-gray-100 text-center space-y-1.5">
+                <p className="text-xs font-semibold text-gray-600">
+                  ✅ {t('checkout.trustedBuyers')}
+                </p>
+                <p className="text-[11px] text-gray-400">
+                  🔒 256-bit SSL · 🅿️ PayPal (Hong Kong) · 🛡️ {t('checkout.trustBadges')}
+                </p>
+              </div>
             </div>
           </div>
         </div>
