@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FiPackage, FiShoppingCart, FiTag, FiDollarSign, FiPlus, FiList, FiGrid, FiAlertTriangle, FiTrendingUp, FiEdit2, FiUsers, FiMessageSquare, FiRefreshCw } from 'react-icons/fi'
+import { FiPackage, FiShoppingCart, FiTag, FiDollarSign, FiPlus, FiList, FiGrid, FiAlertTriangle, FiTrendingUp, FiEdit2, FiUsers, FiMessageSquare, FiRefreshCw, FiMail } from 'react-icons/fi'
 import { useDataStore } from '../../store/dataStore'
 import { api } from '../../api/client'
 
@@ -285,6 +285,58 @@ export const AdminDashboardPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Email Recovery Stats — Abandoned Cart → ZOLT10 conversions */}
+      {(() => {
+        const promoOrders = orders.filter((o) => o.promoCode?.toUpperCase() === 'ZOLT10')
+        const promoCompleted = promoOrders.filter((o) => o.status === 'completed')
+        const promoRevenue = promoCompleted.reduce((sum, o) => sum + o.total, 0)
+        const promoDiscount = promoOrders.reduce((sum, o) => sum + (o.promoDiscount || 0), 0)
+        return (
+          <div className="bg-white rounded-xl border border-gray-200 mb-6">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+              <FiMail size={16} className="text-rose-500" />
+              <h2 className="font-bold text-gray-900">邮件回流转化（ZOLT10）</h2>
+              <span className="ml-auto text-xs text-gray-400">Abandoned Cart 邮件追踪</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-900">{promoOrders.length}</p>
+                <p className="text-xs text-gray-500 mt-1">使用优惠码订单</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600">{promoCompleted.length}</p>
+                <p className="text-xs text-gray-500 mt-1">已完成订单</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-900">${promoRevenue.toFixed(2)}</p>
+                <p className="text-xs text-gray-500 mt-1">回流营收</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-orange-500">${promoDiscount.toFixed(2)}</p>
+                <p className="text-xs text-gray-500 mt-1">优惠码折扣</p>
+              </div>
+            </div>
+            {promoOrders.length > 0 && (
+              <div className="px-5 pb-4">
+                <div className="text-xs text-gray-400 space-y-1">
+                  {promoOrders.slice(0, 3).map((o) => (
+                    <div key={o.id} className="flex justify-between">
+                      <span>{o.customer.firstName} {o.customer.lastName} · {o.id}</span>
+                      <span className="font-medium text-gray-600">${o.total.toFixed(2)}</span>
+                    </div>
+                  ))}
+                  {promoOrders.length > 3 && (
+                    <Link to="/haijieaaronzhang/orders" className="text-blue-600 hover:underline">
+                      查看全部 {promoOrders.length} 笔 →
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Recent orders */}
       <div className="bg-white rounded-xl border border-gray-200">

@@ -25,7 +25,7 @@ const badgeOptions = [
 
 const tvSizes = ['14"', '17"', '19"', '22"', '24"', '26"', '27"', '32"', '37"', '40"', '42"', '43"', '49"', '50"', '55"', '60"', '65"', '70"', '75"', '80"', '82"', '85"', '86"', '90"', '100"']
 const vesaOptions = ['75x75', '100x100', '200x100', '200x200', '300x300', '400x200', '400x400', '600x400']
-const materialOptions = ['Heavy-duty Steel', 'Aluminum Alloy', 'Cold-rolled Steel', 'Carbon Steel']
+const materialOptions = ['Heavy-duty Steel', 'Stainless Steel', 'Cold-rolled Steel', 'Carbon Steel']
 const colorOptions = ['Black', 'White', 'Silver', 'Grey']
 const warrantyOptions = ['1 Year', '3 Years', '5 Years', '10 Years', 'Lifetime']
 
