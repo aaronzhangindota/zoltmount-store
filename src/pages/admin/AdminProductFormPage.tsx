@@ -27,7 +27,7 @@ const tvSizes = ['14"', '17"', '19"', '22"', '24"', '26"', '27"', '32"', '37"', 
 const vesaOptions = ['75x75', '100x100', '200x100', '200x200', '300x300', '400x200', '400x400', '600x400']
 const materialOptions = ['Heavy-duty Steel', 'Stainless Steel', 'Cold-rolled Steel', 'Carbon Steel']
 const colorOptions = ['Black', 'White', 'Silver', 'Grey']
-const warrantyOptions = ['1 Year', '3 Years', '5 Years', '10 Years', 'Lifetime']
+const warrantyOptions = ['1 Year', '3 Years', '5 Years']
 
 const steps = [
   { id: 0, label: '基本信息', desc: '名称、分类、描述' },

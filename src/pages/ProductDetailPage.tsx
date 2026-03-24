@@ -201,7 +201,7 @@ export const ProductDetailPage: React.FC = () => {
             <div className="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-gray-100">
               {[
                 { icon: FiTruck, text: t('detail.freeShipping'), sub: t('detail.over49') },
-                { icon: FiShield, text: product.specs['Warranty'] || '10 Year', sub: t('detail.warranty') },
+                { icon: FiShield, text: product.specs['Warranty'] || '5 Year', sub: t('detail.warranty') },
                 { icon: FiRefreshCw, text: t('detail.thirtyDay'), sub: t('detail.freeReturns') },
               ].map(({ icon: Icon, text, sub }) => (
                 <div key={text} className="text-center">

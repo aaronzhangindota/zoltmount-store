@@ -22,7 +22,7 @@ const faqData: FaqCategory[] = [
       },
       {
         q: 'How much does shipping cost?',
-        a: 'We offer free standard shipping on all orders over $49 within the continental US. For orders under $49, a flat rate of $5.99 applies. International shipping rates are calculated at checkout based on destination and package weight.',
+        a: 'Shipping costs are calculated at checkout based on your destination and package weight. We ship to over 50 countries worldwide. Most international orders arrive within 7-12 business days.',
       },
       {
         q: 'How can I track my order?',

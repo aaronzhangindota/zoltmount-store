@@ -15,7 +15,7 @@ export const PrivacyPage: React.FC = () => {
       {/* Content */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 prose prose-gray prose-sm max-w-none">
         <p className="text-gray-600 leading-relaxed">
-          ZoltMount LLC ("ZoltMount", "we", "us", or "our") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and share your information when you visit our website at <strong>zoltmount.com</strong> (the "Site"), create an account, or purchase our products.
+          VELL EDUCATION GROUP LIMITED ("ZoltMount", "we", "us", or "our") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and share your information when you visit our website at <strong>zoltmount.com</strong> (the "Site"), create an account, or purchase our products.
         </p>
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">1. Information We Collect</h2>
@@ -143,8 +143,8 @@ export const PrivacyPage: React.FC = () => {
         </p>
         <ul className="list-none pl-0 text-gray-600 space-y-1.5 mt-2">
           <li><strong>Email:</strong> <a href="mailto:support@zoltmount.com" className="text-brand-600 hover:underline">support@zoltmount.com</a></li>
-          <li><strong>Phone:</strong> +1 (888) 555-ZOLT</li>
-          <li><strong>Address:</strong> 1234 Industrial Ave, Suite 200, Shenzhen, GD 518000</li>
+          <li><strong>WhatsApp:</strong> +852 6150 9207</li>
+          <li><strong>Address:</strong> Room C10, 4/F, Block C2, Hang Wai Industrial Centre, No. 6 Kin Tai Street, Tuen Mun, Hong Kong</li>
         </ul>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">

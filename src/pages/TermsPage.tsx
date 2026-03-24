@@ -20,7 +20,7 @@ export const TermsPage: React.FC = () => {
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">1. Company Information</h2>
         <p className="text-gray-600 leading-relaxed">
-          ZoltMount is operated by ZoltMount LLC ("we", "us", or "our"), with its principal place of business at 1234 Industrial Ave, Suite 200, Shenzhen, GD 518000. For questions about these Terms, contact us at <a href="mailto:support@zoltmount.com" className="text-brand-600 hover:underline">support@zoltmount.com</a> or +1 (888) 555-ZOLT.
+          ZoltMount is operated by VELL EDUCATION GROUP LIMITED ("we", "us", or "our"), a company registered in Hong Kong, with its principal place of business at Room C10, 4/F, Block C2, Hang Wai Industrial Centre, No. 6 Kin Tai Street, Tuen Mun, Hong Kong. For questions about these Terms, contact us at <a href="mailto:support@zoltmount.com" className="text-brand-600 hover:underline">support@zoltmount.com</a> or WhatsApp: +852 6150 9207.
         </p>
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">2. Account Registration</h2>
@@ -72,7 +72,7 @@ export const TermsPage: React.FC = () => {
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">7. Warranty</h2>
         <p className="text-gray-600 leading-relaxed">
-          ZoltMount products are backed by a 10-year limited warranty against defects in materials and workmanship under normal use. Select products may carry a lifetime warranty as indicated on the product page. This warranty does not cover damage resulting from misuse, improper installation, unauthorized modifications, or normal wear and tear.
+          ZoltMount products are backed by a 5-year limited warranty on structural components and a 1-year warranty on moving parts and accessories, covering defects in materials and workmanship under normal use. This warranty does not cover damage resulting from misuse, improper installation, unauthorized modifications, or normal wear and tear.
         </p>
         <p className="text-gray-600 leading-relaxed mt-3">
           To make a warranty claim, please contact our support team with your order number and a description of the issue. We will, at our discretion, repair, replace, or refund the defective product.
@@ -85,7 +85,7 @@ export const TermsPage: React.FC = () => {
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">9. Intellectual Property</h2>
         <p className="text-gray-600 leading-relaxed">
-          All content on the Site, including but not limited to text, graphics, logos, images, product designs, software, and the "ZoltMount" trademark, is the property of ZoltMount LLC or its licensors and is protected by copyright, trademark, and other intellectual property laws. You may not reproduce, distribute, modify, or create derivative works from any content on the Site without our prior written consent.
+          All content on the Site, including but not limited to text, graphics, logos, images, product designs, software, and the "ZoltMount" trademark, is the property of VELL EDUCATION GROUP LIMITED or its licensors and is protected by copyright, trademark, and other intellectual property laws. You may not reproduce, distribute, modify, or create derivative works from any content on the Site without our prior written consent.
         </p>
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">10. User Conduct</h2>
@@ -103,17 +103,17 @@ export const TermsPage: React.FC = () => {
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">11. Limitation of Liability</h2>
         <p className="text-gray-600 leading-relaxed">
-          To the fullest extent permitted by applicable law, ZoltMount LLC and its officers, directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Site or purchase of products, even if we have been advised of the possibility of such damages. Our total liability for any claim arising under these Terms shall not exceed the amount you paid for the specific product giving rise to the claim.
+          To the fullest extent permitted by applicable law, VELL EDUCATION GROUP LIMITED and its officers, directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Site or purchase of products, even if we have been advised of the possibility of such damages. Our total liability for any claim arising under these Terms shall not exceed the amount you paid for the specific product giving rise to the claim.
         </p>
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">12. Indemnification</h2>
         <p className="text-gray-600 leading-relaxed">
-          You agree to indemnify, defend, and hold harmless ZoltMount LLC, its affiliates, and their respective officers, directors, employees, and agents from any claims, liabilities, damages, losses, or expenses (including reasonable attorneys' fees) arising out of or in connection with your use of the Site, violation of these Terms, or violation of any rights of a third party.
+          You agree to indemnify, defend, and hold harmless VELL EDUCATION GROUP LIMITED, its affiliates, and their respective officers, directors, employees, and agents from any claims, liabilities, damages, losses, or expenses (including reasonable attorneys' fees) arising out of or in connection with your use of the Site, violation of these Terms, or violation of any rights of a third party.
         </p>
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">13. Governing Law</h2>
         <p className="text-gray-600 leading-relaxed">
-          These Terms shall be governed by and construed in accordance with the laws of the People's Republic of China, without regard to its conflict of law provisions. Any disputes arising under or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts located in Shenzhen, Guangdong Province, China.
+          These Terms shall be governed by and construed in accordance with the laws of the Hong Kong Special Administrative Region, without regard to its conflict of law provisions. Any disputes arising under or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts of Hong Kong.
         </p>
 
         <h2 className="text-xl font-bold text-gray-900 mt-10 mb-4">14. Changes to Terms</h2>
@@ -127,8 +127,8 @@ export const TermsPage: React.FC = () => {
         </p>
         <ul className="list-none pl-0 text-gray-600 space-y-1.5 mt-2">
           <li><strong>Email:</strong> <a href="mailto:support@zoltmount.com" className="text-brand-600 hover:underline">support@zoltmount.com</a></li>
-          <li><strong>Phone:</strong> +1 (888) 555-ZOLT</li>
-          <li><strong>Address:</strong> 1234 Industrial Ave, Suite 200, Shenzhen, GD 518000</li>
+          <li><strong>WhatsApp:</strong> +852 6150 9207</li>
+          <li><strong>Address:</strong> Room C10, 4/F, Block C2, Hang Wai Industrial Centre, No. 6 Kin Tai Street, Tuen Mun, Hong Kong</li>
         </ul>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
