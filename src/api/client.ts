@@ -312,6 +312,21 @@ class ApiClient {
       body: JSON.stringify({ action: 'create-payment-intent', amount, currency }),
     })
   }
+
+  // MailerLite Abandoned Cart
+  async sendAbandonedCart(data: {
+    email: string
+    firstName: string
+    lastName: string
+    cartItems: { name: string; price: number; quantity: number; productId: string }[]
+    cartTotal: number
+  }): Promise<{ mlOrderId?: string }> {
+    return this.request('/mailerlite', { method: 'POST', body: JSON.stringify(data) })
+  }
+
+  async completeMailerLiteOrder(mlOrderId: string): Promise<void> {
+    await this.request('/mailerlite', { method: 'PUT', body: JSON.stringify({ orderId: mlOrderId }) })
+  }
 }
 
 export const api = new ApiClient()

@@ -1,6 +1,7 @@
 interface Env {
   ZOLTMOUNT_KV: KVNamespace
   ADMIN_API_KEY: string
+  MAILERLITE_API_TOKEN: string
 }
 
 export interface AdminAccount {

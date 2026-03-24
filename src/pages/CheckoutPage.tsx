@@ -96,6 +96,35 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
     ? Math.min(currentUser.points, Math.floor(rawSubtotal * 100))
     : 0
 
+  // MailerLite abandoned cart state
+  const [mlOrderId, setMlOrderId] = useState<string | null>(null)
+  const abandonedCartSent = useRef(false)
+
+  const handleEmailBlur = async () => {
+    if (abandonedCartSent.current) return
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
+    if (items.length === 0) return
+
+    abandonedCartSent.current = true
+    try {
+      const result = await api.sendAbandonedCart({
+        email: email.trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        cartItems: items.map((i) => ({
+          name: i.product.name,
+          price: i.product.price,
+          quantity: i.quantity,
+          productId: i.product.id,
+        })),
+        cartTotal: rawSubtotal,
+      })
+      if (result.mlOrderId) setMlOrderId(result.mlOrderId)
+    } catch {
+      // Silent failure — do not affect checkout flow
+    }
+  }
+
   const [formErrors, setFormErrors] = useState<Record<string, boolean>>({})
   const formRef = useRef<HTMLDivElement>(null)
 
@@ -233,6 +262,11 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
         api.incrementPromoUsage(promoApplied.code).catch(() => {})
       }
 
+      // Mark MailerLite order as complete (cancels abandoned cart automation)
+      if (mlOrderId) {
+        api.completeMailerLiteOrder(mlOrderId).catch(() => {})
+      }
+
       setOrderPlaced(true)
       clearCart()
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -329,7 +363,7 @@ const CheckoutForm: React.FC<{ stripeLoadError?: string }> = ({ stripeLoadError 
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">{t('checkout.contactInfo')}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setFormErrors((p) => ({ ...p, email: false })) }} placeholder={t('checkout.email') + ' *'} className={`col-span-2 px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent ${formErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
+                <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setFormErrors((p) => ({ ...p, email: false })) }} onBlur={handleEmailBlur} placeholder={t('checkout.email') + ' *'} className={`col-span-2 px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent ${formErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                 <input type="text" value={firstName} onChange={(e) => { setFirstName(e.target.value); setFormErrors((p) => ({ ...p, firstName: false })) }} placeholder={t('checkout.firstName') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.firstName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
                 <input type="text" value={lastName} onChange={(e) => { setLastName(e.target.value); setFormErrors((p) => ({ ...p, lastName: false })) }} placeholder={t('checkout.lastName') + ' *'} className={`px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 ${formErrors.lastName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`} />
               </div>
