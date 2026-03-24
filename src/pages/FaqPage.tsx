@@ -18,7 +18,7 @@ const faqData: FaqCategory[] = [
     items: [
       {
         q: 'How long does shipping take?',
-        a: 'Standard shipping typically takes 5-10 business days within the US. Express shipping (2-3 business days) is available at checkout for an additional fee. International orders may take 10-20 business days depending on the destination.',
+        a: 'Standard shipping typically takes 7-12 business days within the US. International orders may take 10-20 business days depending on the destination.',
       },
       {
         q: 'How much does shipping cost?',
