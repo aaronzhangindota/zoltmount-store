@@ -35,6 +35,13 @@ const SYSTEM_PROMPT = `You are the Chief Customer Advisor for ZoltMount — a pr
 - If asked where products are made: "Our products are designed and quality-tested by our team, and shipped direct from our manufacturing hub to ensure the best price and quality."
 `
 
+function jsonResponse(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
 interface ChatEnv {
   GEMINI_API_KEY: string
   [key: string]: unknown
@@ -44,13 +51,13 @@ export const onRequestPost: PagesFunction<ChatEnv> = async ({ request, env }) =>
   try {
     const apiKey = env.GEMINI_API_KEY
     if (!apiKey) {
-      return Response.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 })
+      return jsonResponse({ error: 'GEMINI_API_KEY not configured' }, 500)
     }
 
     const body: any = await request.json()
     const messages = body?.messages
     if (!Array.isArray(messages) || messages.length === 0) {
-      return Response.json({ error: 'messages array is required' }, { status: 400 })
+      return jsonResponse({ error: 'messages array is required' }, 400)
     }
 
     const geminiBody = {
@@ -78,10 +85,7 @@ export const onRequestPost: PagesFunction<ChatEnv> = async ({ request, env }) =>
 
     if (!res.ok) {
       const errText = await res.text()
-      return Response.json(
-        { error: 'AI service error', status: res.status, detail: errText },
-        { status: 502 }
-      )
+      return jsonResponse({ error: 'AI service error', status: res.status, detail: errText }, 502)
     }
 
     const data: any = await res.json()
@@ -89,11 +93,8 @@ export const onRequestPost: PagesFunction<ChatEnv> = async ({ request, env }) =>
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       'Sorry, I could not generate a response. Please contact support@zoltmount.com.'
 
-    return Response.json({ reply })
+    return jsonResponse({ reply })
   } catch (err: any) {
-    return Response.json(
-      { error: 'Internal error', message: String(err?.message || err) },
-      { status: 500 }
-    )
+    return jsonResponse({ error: 'Internal error', message: String(err?.message || err) }, 500)
   }
 }
