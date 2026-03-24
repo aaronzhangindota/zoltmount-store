@@ -18,7 +18,7 @@ export const CTABanner: React.FC = () => {
           {t('cta.title')}
         </h2>
         <p className="text-blue-100 mt-4 text-lg max-w-2xl mx-auto">
-          {t('cta.subtitle')} <span className="font-bold text-accent-400">ZOLT15</span> {t('cta.subtitleEnd')}
+          {t('cta.subtitleNew', 'Join 500,000+ satisfied customers. Subscribe to get 10% off your first order.')}
         </p>
         <div className="flex flex-wrap justify-center gap-4 mt-8">
           <Link

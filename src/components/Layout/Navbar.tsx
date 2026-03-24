@@ -74,7 +74,7 @@ export const Navbar: React.FC = () => {
     >
       {/* Top banner */}
       <div className="bg-brand-900 text-white text-center text-xs py-1.5 px-4">
-        {t('nav.bannerUseCode', 'Use code')} <span className="font-bold text-accent-400">ZOLT15</span> {t('nav.bannerDiscount')}
+        <span className="font-medium">{t('nav.bannerSubscribe', 'Subscribe & Get 10% Off Your First Order')}</span>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">

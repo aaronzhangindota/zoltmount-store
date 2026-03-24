@@ -24,18 +24,8 @@ async function ensureDefaults(kv: KVNamespace): Promise<PromoCode[]> {
   if (codes.length === 0) {
     codes = [
       {
-        id: 'pc-zolt15',
-        code: 'ZOLT15',
-        discountPercent: 15,
-        active: true,
-        usageLimit: null,
-        usedCount: 0,
-        minOrderAmount: 0,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: 'pc-welcome10',
-        code: 'WELCOME10',
+        id: 'pc-zolt10',
+        code: 'ZOLT10',
         discountPercent: 10,
         active: true,
         usageLimit: null,
