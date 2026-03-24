@@ -40,6 +40,7 @@ export const Footer: React.FC = () => {
     { label: t('footer.returnsRefunds'), to: '/returns' },
     { label: t('footer.faq'), to: '/faq' },
     { label: t('footer.contactUs'), to: '/contact' },
+    { label: t('footer.bulkOrders'), to: '/b2b' },
   ]
 
   return (

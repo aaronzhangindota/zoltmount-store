@@ -5,6 +5,7 @@ const zh = {
     products: '产品',
     about: '关于我们',
     contact: '联系我们',
+    bulkOrders: '批量采购',
     freeShipping: '全球配送',
     banner: '销往 50+ 国家 | 使用优惠码',
     bannerDiscount: '立享 85 折',
@@ -368,6 +369,7 @@ const zh = {
     returnsRefunds: '退换货政策',
     faq: '常见问题',
     contactUs: '联系我们',
+    bulkOrders: 'B2B / 批量采购',
     fixedMounts: '固定支架',
     tiltMounts: '可调角度支架',
     fullMotion: '全动态支架',
@@ -402,6 +404,37 @@ const zh = {
   // Footer
   footer2: {
     subscribed: '订阅成功！感谢您。',
+  },
+
+  // B2B
+  b2b: {
+    title: 'B2B 解决方案 & 批量采购',
+    subtitle: '面向全球企业的工厂直供电视支架方案。批量优惠价、OEM/ODM 定制、香港及大陆直发全球物流。',
+    factoryTitle: '工厂直供',
+    factoryDesc: '30 年实心钢制造经验，无中间商差价——直接从深圳工厂下单，价格更具竞争力。',
+    customTitle: 'OEM / ODM 定制',
+    customDesc: '支持品牌定制、包装设计及产品规格调整，满足大型项目的个性化需求。',
+    logisticsTitle: '全球物流',
+    logisticsDesc: '从香港及中国大陆发货至全球 50 多个国家，批量订单提供灵活的货运方案。',
+    formTitle: '获取报价',
+    companyName: '公司名称',
+    contactEmail: '联系邮箱',
+    projectSize: '项目规模（数量）',
+    units: '台',
+    industry: '行业',
+    industryEducation: '教育',
+    industryHealthcare: '医疗',
+    industryCorporate: '企业办公',
+    industryHospitality: '酒店',
+    industryGovernment: '政府',
+    industryOther: '其他',
+    message: '留言',
+    messagePlaceholder: '请描述您的项目需求...',
+    submit: '提交询价',
+    successTitle: '询价已发送！',
+    successDesc: '我们的 B2B 团队将在 24 小时内与您联系。',
+    sendAnother: '再次询价',
+    ctaText: '更希望直接联系我们？',
   },
 
   // Chat

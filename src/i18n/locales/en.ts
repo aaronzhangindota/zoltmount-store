@@ -5,6 +5,7 @@ const en = {
     products: 'Products',
     about: 'About',
     contact: 'Contact',
+    bulkOrders: 'Bulk Orders',
     freeShipping: 'GLOBAL SHIPPING',
     banner: 'to 50+ countries | Use code',
     bannerDiscount: 'for 15% off',
@@ -362,6 +363,7 @@ const en = {
     returnsRefunds: 'Returns & Refunds',
     faq: 'FAQ',
     contactUs: 'Contact Us',
+    bulkOrders: 'B2B / Bulk Orders',
     fixedMounts: 'Fixed Mounts',
     tiltMounts: 'Tilt Mounts',
     fullMotion: 'Full Motion Mounts',
@@ -396,6 +398,37 @@ const en = {
   // Footer
   footer2: {
     subscribed: 'Subscribed! Thank you.',
+  },
+
+  // B2B
+  b2b: {
+    title: 'B2B Solutions & Bulk Orders',
+    subtitle: 'Factory-direct TV mounting solutions for businesses worldwide. Volume pricing, OEM/ODM customization, and global logistics from Hong Kong & Mainland China.',
+    factoryTitle: 'Factory Direct',
+    factoryDesc: '30 years of manufacturing excellence in solid steel construction. Competitive pricing with no middlemen — order directly from our Shenzhen factory.',
+    customTitle: 'OEM / ODM Customization',
+    customDesc: 'Custom branding, packaging, and product specifications for large-scale projects. We adapt to your exact requirements.',
+    logisticsTitle: 'Global Logistics',
+    logisticsDesc: 'Reliable shipping from Hong Kong and Mainland China to 50+ countries. Flexible freight options for bulk orders.',
+    formTitle: 'Request a Quote',
+    companyName: 'Company Name',
+    contactEmail: 'Contact Email',
+    projectSize: 'Project Size (Units)',
+    units: 'units',
+    industry: 'Industry',
+    industryEducation: 'Education',
+    industryHealthcare: 'Healthcare',
+    industryCorporate: 'Corporate',
+    industryHospitality: 'Hospitality',
+    industryGovernment: 'Government',
+    industryOther: 'Other',
+    message: 'Message',
+    messagePlaceholder: 'Tell us about your project requirements...',
+    submit: 'Submit Inquiry',
+    successTitle: 'Inquiry Sent!',
+    successDesc: 'Our B2B team will get back to you within 24 hours.',
+    sendAnother: 'Send Another Inquiry',
+    ctaText: 'Prefer to reach us directly?',
   },
 
   // Chat

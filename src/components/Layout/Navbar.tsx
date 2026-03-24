@@ -62,6 +62,7 @@ export const Navbar: React.FC = () => {
     { path: '/products', label: t('nav.products') },
     { path: '/about', label: t('nav.about') },
     { path: '/contact', label: t('nav.contact') },
+    { path: '/b2b', label: t('nav.bulkOrders') },
   ]
 
   return (

@@ -20,6 +20,7 @@ import { VesaCompatPage } from './pages/VesaCompatPage'
 import { WarrantyPage } from './pages/WarrantyPage'
 import { ReturnsPage } from './pages/ReturnsPage'
 import { FaqPage } from './pages/FaqPage'
+import { B2bPage } from './pages/B2bPage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { AccountPage } from './pages/account/AccountPage'
@@ -62,6 +63,7 @@ const App: React.FC = () => {
             <Route path="/warranty" element={<WarrantyPage />} />
             <Route path="/returns" element={<ReturnsPage />} />
             <Route path="/faq" element={<FaqPage />} />
+            <Route path="/b2b" element={<B2bPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route element={<ProtectedRoute />}>
