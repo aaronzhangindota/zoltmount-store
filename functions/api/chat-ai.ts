@@ -1,3 +1,5 @@
+import { json } from './_middleware'
+
 interface Env {
   GEMINI_API_KEY: string
 }
@@ -39,52 +41,43 @@ const SYSTEM_PROMPT = `You are the Chief Customer Advisor for ZoltMount — a pr
 - If asked where products are made: "Our products are designed and quality-tested by our team, and shipped direct from our manufacturing hub to ensure the best price and quality."
 `
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { GEMINI_API_KEY } = context.env
-
-  if (!GEMINI_API_KEY) {
-    return new Response(JSON.stringify({ error: 'AI service not configured' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
-
-  let body: { messages?: { role: string; content: string }[] }
+export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
-    body = await context.request.json()
-  } catch {
-    return new Response(JSON.stringify({ error: 'Invalid request body' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
+    const { GEMINI_API_KEY } = env
 
-  const messages = body.messages
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return new Response(JSON.stringify({ error: 'Messages array is required' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
+    if (!GEMINI_API_KEY) {
+      return json({ error: 'AI service not configured' }, 500)
+    }
 
-  // Build Gemini API request body
-  const geminiContents = messages.map((msg) => ({
-    role: msg.role === 'user' ? 'user' : 'model',
-    parts: [{ text: msg.content }],
-  }))
+    let body: { messages?: { role: string; content: string }[] }
+    try {
+      body = await request.json() as { messages?: { role: string; content: string }[] }
+    } catch (_e) {
+      return json({ error: 'Invalid request body' }, 400)
+    }
 
-  const geminiBody = {
-    system_instruction: {
-      parts: [{ text: SYSTEM_PROMPT }],
-    },
-    contents: geminiContents,
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 1024,
-    },
-  }
+    const messages = body.messages
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return json({ error: 'Messages array is required' }, 400)
+    }
 
-  try {
+    // Build Gemini API request body
+    const geminiContents = messages.map((msg) => ({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.content }],
+    }))
+
+    const geminiBody = {
+      system_instruction: {
+        parts: [{ text: SYSTEM_PROMPT }],
+      },
+      contents: geminiContents,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1024,
+      },
+    }
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
@@ -97,10 +90,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!response.ok) {
       const errorText = await response.text()
       console.error('Gemini API error:', response.status, errorText)
-      return new Response(
-        JSON.stringify({ error: 'AI service temporarily unavailable. Please try again later.' }),
-        { status: 502, headers: { 'Content-Type': 'application/json' } }
-      )
+      return json({ error: 'AI service temporarily unavailable. Please try again later.' }, 502)
     }
 
     const data = await response.json() as any
@@ -108,15 +98,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       'Sorry, I could not generate a response. Please try again or contact support@zoltmount.com.'
 
-    return new Response(JSON.stringify({ reply }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return json({ reply })
   } catch (err) {
-    console.error('Gemini fetch error:', err)
-    return new Response(
-      JSON.stringify({ error: 'Failed to connect to AI service. Please try again later.' }),
-      { status: 502, headers: { 'Content-Type': 'application/json' } }
-    )
+    console.error('chat-ai error:', err)
+    return json({ error: 'Failed to connect to AI service. Please try again later.' }, 502)
   }
 }
