@@ -3,6 +3,7 @@ interface Env {
   ADMIN_API_KEY: string
   MAILERLITE_API_TOKEN: string
   GEMINI_API_KEY: string
+  RESEND_API_KEY: string
 }
 
 export interface AdminAccount {
