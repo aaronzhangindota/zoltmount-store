@@ -1,5 +1,6 @@
 interface Env {
   ZOLTMOUNT_KV: KVNamespace
+  ZOLTMOUNT_R2: R2Bucket
   ADMIN_API_KEY: string
   MAILERLITE_API_TOKEN: string
   GEMINI_API_KEY: string

@@ -248,6 +248,28 @@ const ru = {
     outdoorMounts: 'Уличные',
   },
 
+  // Specs translations
+  specs: {
+    'TV Size': 'Размер ТВ',
+    'VESA Pattern': 'Стандарт VESA',
+    'Max Weight': 'Макс. вес',
+    'Weight Capacity': 'Грузоподъёмность',
+    Material: 'Материал',
+    Color: 'Цвет',
+    Warranty: 'Гарантия',
+    'Heavy-duty Steel': 'Высокопрочная сталь',
+    'Stainless Steel': 'Нержавеющая сталь',
+    'Cold-rolled Steel': 'Холоднокатаная сталь',
+    'Carbon Steel': 'Углеродистая сталь',
+    Black: 'Чёрный',
+    White: 'Белый',
+    Silver: 'Серебристый',
+    Grey: 'Серый',
+    '1 Year': '1 год',
+    '3 Years': '3 года',
+    '5 Years': '5 лет',
+  },
+
   // Common
   common: {
     loading: 'Загрузка...',

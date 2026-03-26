@@ -245,8 +245,8 @@ export const ProductDetailPage: React.FC = () => {
                   <div className="space-y-2">
                     {Object.entries(product.specs).map(([key, val]) => (
                       <div key={key} className="flex justify-between text-sm py-2 border-b border-gray-50">
-                        <span className="text-gray-500">{key}</span>
-                        <span className="text-gray-900 font-medium">{val}</span>
+                        <span className="text-gray-500">{t(`specs.${key}`, key)}</span>
+                        <span className="text-gray-900 font-medium">{t(`specs.${val}`, val)}</span>
                       </div>
                     ))}
                   </div>

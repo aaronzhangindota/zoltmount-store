@@ -387,6 +387,28 @@ const zh = {
     cancelled: '已取消',
   },
 
+  // Specs translations
+  specs: {
+    'TV Size': '电视尺寸',
+    'VESA Pattern': 'VESA 孔距',
+    'Max Weight': '最大承重',
+    'Weight Capacity': '承重能力',
+    Material: '材质',
+    Color: '颜色',
+    Warranty: '质保',
+    'Heavy-duty Steel': '高强钢',
+    'Stainless Steel': '不锈钢',
+    'Cold-rolled Steel': '冷轧钢',
+    'Carbon Steel': '碳钢',
+    Black: '黑色',
+    White: '白色',
+    Silver: '银色',
+    Grey: '灰色',
+    '1 Year': '1年',
+    '3 Years': '3年',
+    '5 Years': '5年',
+  },
+
   // Common
   common: {
     loading: '加载中...',

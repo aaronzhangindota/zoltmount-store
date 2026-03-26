@@ -248,6 +248,28 @@ const de = {
     outdoorMounts: 'Außenhalterungen',
   },
 
+  // Specs translations
+  specs: {
+    'TV Size': 'TV-Größe',
+    'VESA Pattern': 'VESA-Norm',
+    'Max Weight': 'Max. Gewicht',
+    'Weight Capacity': 'Tragfähigkeit',
+    Material: 'Material',
+    Color: 'Farbe',
+    Warranty: 'Garantie',
+    'Heavy-duty Steel': 'Hochfester Stahl',
+    'Stainless Steel': 'Edelstahl',
+    'Cold-rolled Steel': 'Kaltgewalzter Stahl',
+    'Carbon Steel': 'Kohlenstoffstahl',
+    Black: 'Schwarz',
+    White: 'Weiß',
+    Silver: 'Silber',
+    Grey: 'Grau',
+    '1 Year': '1 Jahr',
+    '3 Years': '3 Jahre',
+    '5 Years': '5 Jahre',
+  },
+
   // Common
   common: {
     loading: 'Laden...',

@@ -381,6 +381,28 @@ const en = {
     cancelled: 'Cancelled',
   },
 
+  // Specs translations
+  specs: {
+    'TV Size': 'TV Size',
+    'VESA Pattern': 'VESA Pattern',
+    'Max Weight': 'Max Weight',
+    'Weight Capacity': 'Weight Capacity',
+    Material: 'Material',
+    Color: 'Color',
+    Warranty: 'Warranty',
+    'Heavy-duty Steel': 'Heavy-duty Steel',
+    'Stainless Steel': 'Stainless Steel',
+    'Cold-rolled Steel': 'Cold-rolled Steel',
+    'Carbon Steel': 'Carbon Steel',
+    Black: 'Black',
+    White: 'White',
+    Silver: 'Silver',
+    Grey: 'Grey',
+    '1 Year': '1 Year',
+    '3 Years': '3 Years',
+    '5 Years': '5 Years',
+  },
+
   // Common
   common: {
     loading: 'Loading...',

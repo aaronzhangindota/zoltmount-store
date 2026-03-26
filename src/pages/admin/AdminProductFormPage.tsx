@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { FiArrowLeft, FiSave, FiX, FiPlus, FiTrash2, FiAlertCircle, FiCheck, FiImage } from 'react-icons/fi'
+import { FiArrowLeft, FiSave, FiX, FiPlus, FiTrash2, FiAlertCircle, FiCheck, FiImage, FiUploadCloud } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 import { useDataStore } from '../../store/dataStore'
 import type { Product } from '../../data/products'
@@ -25,9 +25,23 @@ const badgeOptions = [
 
 const tvSizes = ['14"', '17"', '19"', '22"', '24"', '26"', '27"', '32"', '37"', '40"', '42"', '43"', '49"', '50"', '55"', '60"', '65"', '70"', '75"', '80"', '82"', '85"', '86"', '90"', '100"']
 const vesaOptions = ['75x75', '100x100', '200x100', '200x200', '300x300', '400x200', '400x400', '600x400']
-const materialOptions = ['Heavy-duty Steel', 'Stainless Steel', 'Cold-rolled Steel', 'Carbon Steel']
-const colorOptions = ['Black', 'White', 'Silver', 'Grey']
-const warrantyOptions = ['1 Year', '3 Years', '5 Years']
+const materialOptions = [
+  { label: '高强钢', value: 'Heavy-duty Steel' },
+  { label: '不锈钢', value: 'Stainless Steel' },
+  { label: '冷轧钢', value: 'Cold-rolled Steel' },
+  { label: '碳钢', value: 'Carbon Steel' },
+]
+const colorOptions = [
+  { label: '黑色', value: 'Black' },
+  { label: '白色', value: 'White' },
+  { label: '银色', value: 'Silver' },
+  { label: '灰色', value: 'Grey' },
+]
+const warrantyOptions = [
+  { label: '1年', value: '1 Year' },
+  { label: '3年', value: '3 Years' },
+  { label: '5年', value: '5 Years' },
+]
 
 const steps = [
   { id: 0, label: '基本信息', desc: '名称、分类、描述' },
@@ -84,6 +98,14 @@ export const AdminProductFormPage: React.FC = () => {
   // Images
   const [images, setImages] = useState<string[]>([''])
   const [imgErrors, setImgErrors] = useState<Set<number>>(new Set())
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // VESA custom input
+  const [customVesaInput, setCustomVesaInput] = useState('')
+  const [vesaInputError, setVesaInputError] = useState('')
 
   // Populate form when editing
   useEffect(() => {
@@ -116,17 +138,15 @@ export const AdminProductFormPage: React.FC = () => {
       }
       if (specs['VESA Pattern']) {
         const vesaStr = specs['VESA Pattern']
-        const matched = vesaOptions.filter((v) => vesaStr.includes(v.replace('x', 'x')))
-        // Also try "Up to XXXxXXX" pattern
-        if (matched.length === 0) {
-          const upToMatch = vesaStr.match(/(\d+)\s*x\s*(\d+)/)
-          if (upToMatch) {
-            const maxVesa = `${upToMatch[1]}x${upToMatch[2]}`
-            const idx = vesaOptions.indexOf(maxVesa)
-            if (idx >= 0) setSelectedVesa(vesaOptions.slice(0, idx + 1))
-          }
+        // Parse all NxN patterns from the stored string
+        const allPatterns = vesaStr.match(/\d+\s*x\s*\d+/gi) || []
+        const parsed = allPatterns.map((v) => v.replace(/\s/g, '').toLowerCase())
+        if (parsed.length > 0) {
+          setSelectedVesa(parsed)
         } else {
-          setSelectedVesa(matched)
+          // Fallback: try matching preset options
+          const matched = vesaOptions.filter((v) => vesaStr.includes(v))
+          if (matched.length > 0) setSelectedVesa(matched)
         }
       }
       if (specs['Max Weight'] || specs['Weight Capacity']) {
@@ -155,6 +175,73 @@ export const AdminProductFormPage: React.FC = () => {
   }, [name])
 
   const autoSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+  // Image upload handler
+  const uploadFile = useCallback(async (file: File) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError('仅支持 JPG、PNG、WebP 格式')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('文件大小不能超过 5MB')
+      return
+    }
+
+    setUploading(true)
+    setUploadError('')
+    try {
+      const token = localStorage.getItem('adminToken') || ''
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'X-Admin-Token': token },
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || '上传失败')
+      // Add URL to images list
+      setImages((prev) => {
+        const filtered = prev.filter((u) => u.trim())
+        return [...filtered, data.url]
+      })
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : '上传失败')
+    } finally {
+      setUploading(false)
+    }
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
+    const files = Array.from(e.dataTransfer.files)
+    files.forEach((f) => uploadFile(f))
+  }, [uploadFile])
+
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    files.forEach((f) => uploadFile(f))
+    e.target.value = '' // reset so same file can be selected again
+  }, [uploadFile])
+
+  // VESA custom input handler
+  const addCustomVesa = () => {
+    const val = customVesaInput.trim()
+    if (!/^\d+x\d+$/i.test(val)) {
+      setVesaInputError('格式须为 数字x数字，如 800x400')
+      return
+    }
+    const normalized = val.toLowerCase()
+    if (selectedVesa.includes(normalized)) {
+      setVesaInputError('该规格已存在')
+      return
+    }
+    setSelectedVesa((prev) => [...prev, normalized])
+    setCustomVesaInput('')
+    setVesaInputError('')
+  }
 
   const validate = (): string[] => {
     const errs: string[] = []
@@ -571,7 +658,41 @@ export const AdminProductFormPage: React.FC = () => {
                       {v}
                     </button>
                   ))}
+                  {/* Show custom VESA values not in preset list */}
+                  {selectedVesa.filter((v) => !vesaOptions.includes(v)).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => toggleVesa(v)}
+                      className="px-3 py-2 rounded-lg text-sm font-medium border transition-all bg-blue-600 text-white border-blue-600 shadow-sm"
+                    >
+                      <FiCheck size={12} className="inline mr-1" />
+                      {v}
+                      <FiX size={12} className="inline ml-1" />
+                    </button>
+                  ))}
                 </div>
+                {/* Custom VESA input */}
+                <div className="flex items-center gap-2 mt-3">
+                  <input
+                    type="text"
+                    value={customVesaInput}
+                    onChange={(e) => { setCustomVesaInput(e.target.value); setVesaInputError('') }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomVesa() } }}
+                    placeholder="自定义规格，如 800x400"
+                    className={`flex-1 sm:w-48 sm:flex-none px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                      vesaInputError ? 'border-red-300' : 'border-gray-200'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomVesa}
+                    className="px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 text-sm font-medium rounded-lg transition-colors"
+                  >
+                    <FiPlus size={14} className="inline mr-1" />添加
+                  </button>
+                </div>
+                {vesaInputError && <p className="text-xs text-red-500 mt-1">{vesaInputError}</p>}
               </div>
 
               {/* Max Weight */}
@@ -598,7 +719,7 @@ export const AdminProductFormPage: React.FC = () => {
                   >
                     <option value="">请选择</option>
                     {materialOptions.map((m) => (
-                      <option key={m} value={m}>{m}</option>
+                      <option key={m.value} value={m.value}>{m.label}</option>
                     ))}
                   </select>
                 </div>
@@ -610,7 +731,7 @@ export const AdminProductFormPage: React.FC = () => {
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                   >
                     {colorOptions.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c.value} value={c.value}>{c.label}</option>
                     ))}
                   </select>
                 </div>
@@ -623,7 +744,7 @@ export const AdminProductFormPage: React.FC = () => {
                   >
                     <option value="">请选择</option>
                     {warrantyOptions.map((w) => (
-                      <option key={w} value={w}>{w}</option>
+                      <option key={w.value} value={w.value}>{w.label}</option>
                     ))}
                   </select>
                 </div>
@@ -749,11 +870,49 @@ export const AdminProductFormPage: React.FC = () => {
                   onClick={() => setImages([...images, ''])}
                   className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                 >
-                  <FiPlus size={12} /> 添加图片
+                  <FiPlus size={12} /> 添加 URL
                 </button>
               </div>
 
+              {/* Drag & drop upload area */}
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                  dragOver
+                    ? 'border-blue-400 bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                } ${uploading ? 'opacity-60 pointer-events-none' : ''}`}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                <FiUploadCloud size={32} className={`mx-auto mb-3 ${dragOver ? 'text-blue-500' : 'text-gray-400'}`} />
+                {uploading ? (
+                  <p className="text-sm text-blue-600 font-medium">上传中...</p>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-600 font-medium">拖拽图片到此处，或点击选择文件</p>
+                    <p className="text-xs text-gray-400 mt-1">支持 JPG、PNG、WebP，最大 5MB</p>
+                  </>
+                )}
+              </div>
+              {uploadError && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <FiAlertCircle size={14} /> {uploadError}
+                </p>
+              )}
+
+              {/* URL list */}
               <div className="space-y-3">
+                <p className="text-sm font-medium text-gray-700">图片 URL 列表</p>
                 {images.map((url, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-200">
@@ -782,7 +941,7 @@ export const AdminProductFormPage: React.FC = () => {
                         setImages(next)
                         setImgErrors((prev) => { const n = new Set(prev); n.delete(i); return n })
                       }}
-                      placeholder="/images/products/example.jpg"
+                      placeholder="图片 URL 或上传后自动填入"
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                     />
                     {images.length > 1 && (

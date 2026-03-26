@@ -248,6 +248,28 @@ const fr = {
     outdoorMounts: 'Supports extérieurs',
   },
 
+  // Specs translations
+  specs: {
+    'TV Size': 'Taille TV',
+    'VESA Pattern': 'Norme VESA',
+    'Max Weight': 'Poids max',
+    'Weight Capacity': 'Capacité de charge',
+    Material: 'Matériau',
+    Color: 'Couleur',
+    Warranty: 'Garantie',
+    'Heavy-duty Steel': 'Acier haute résistance',
+    'Stainless Steel': 'Acier inoxydable',
+    'Cold-rolled Steel': 'Acier laminé à froid',
+    'Carbon Steel': 'Acier au carbone',
+    Black: 'Noir',
+    White: 'Blanc',
+    Silver: 'Argent',
+    Grey: 'Gris',
+    '1 Year': '1 an',
+    '3 Years': '3 ans',
+    '5 Years': '5 ans',
+  },
+
   // Common
   common: {
     loading: 'Chargement...',
