@@ -68,6 +68,7 @@ export const AdminLayout: React.FC = () => {
   const logout = useAdminStore((s) => s.logout)
   const adminAccount = useAdminStore((s) => s.adminAccount)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   const adminTotalUnread = useChatStore((s) => s.adminTotalUnread)
   const fetchAdminUnreadTotal = useChatStore((s) => s.fetchAdminUnreadTotal)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -181,7 +182,13 @@ export const AdminLayout: React.FC = () => {
           <Link
             key={item.path}
             to={item.path}
-            onClick={() => setSidebarOpen(false)}
+            onClick={(e) => {
+              setSidebarOpen(false)
+              if (isActive(item.path)) {
+                e.preventDefault()
+                setRefreshKey((k) => k + 1)
+              }
+            }}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
               isActive(item.path)
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
@@ -291,7 +298,7 @@ export const AdminLayout: React.FC = () => {
 
         {/* Page content */}
         <main className="p-4 sm:p-6">
-          <Outlet />
+          <Outlet key={refreshKey} />
         </main>
       </div>
 
