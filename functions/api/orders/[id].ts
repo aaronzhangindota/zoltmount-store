@@ -84,9 +84,9 @@ function buildEmailHtml(order: any, status: string): string {
 
         <!-- ===== HEADER: Logo + Slogan ===== -->
         <tr>
-          <td style="background:#ffffff;padding:36px 24px 28px;text-align:center;">
+          <td style="background:#3d4f5f;padding:36px 24px 28px;text-align:center;">
             <img src="https://zoltmount.com/images/zoltmount-logo.jpg" alt="ZoltMount" width="260" style="display:block;margin:0 auto;max-width:260px;height:auto;" />
-            <p style="margin:14px 0 0;font-size:11px;letter-spacing:2.5px;color:#64748b;text-transform:uppercase;font-weight:300;">30 Years of Engineering Excellence</p>
+            <p style="margin:14px 0 0;font-size:11px;letter-spacing:2.5px;color:#c1ced8;text-transform:uppercase;font-weight:300;">30 Years of Engineering Excellence</p>
           </td>
         </tr>
 
