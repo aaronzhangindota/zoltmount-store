@@ -43,61 +43,97 @@ function getStatusBlock(order: any, status: string): string {
   }
 }
 
+function getProductImageUrl(order: any): string {
+  const firstItem = (order.items || [])[0]
+  if (!firstItem) return ''
+  // 从商品的 image 字段获取图片路径，兼容完整 URL 和相对路径
+  const img = firstItem.image || firstItem.imageUrl || ''
+  if (!img) return ''
+  if (img.startsWith('http')) return img
+  return `https://zoltmount.com${img.startsWith('/') ? '' : '/'}${img}`
+}
+
 function buildEmailHtml(order: any, status: string): string {
   const firstName = order.customer?.firstName || 'Customer'
   const items = (order.items || []).map((item: any) =>
     `<tr>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${item.name}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${item.quantity}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">$${Number(item.price).toFixed(2)}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;font-size:14px;">${item.name}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;text-align:center;font-size:14px;">${item.quantity}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;text-align:right;font-size:14px;">$${Number(item.price).toFixed(2)}</td>
     </tr>`
   ).join('')
 
   const total = order.total != null ? `$${Number(order.total).toFixed(2)}` : '—'
+  const productImg = getProductImageUrl(order)
+  const productImageBlock = productImg
+    ? `<div style="text-align:center;margin:20px 0 8px;">
+        <img src="${productImg}" alt="Product" style="max-width:100%;max-height:280px;height:auto;border-radius:8px;border:1px solid #e5e7eb;" />
+      </div>`
+    : ''
 
   return `<!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 0;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#e5e7eb;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#e5e7eb;padding:40px 0;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
-        <!-- Header -->
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+
+        <!-- ===== HEADER: Logo + Slogan ===== -->
         <tr>
-          <td style="background:#1e293b;padding:24px;text-align:center;">
-            <h1 style="margin:0;color:#ffffff;font-size:24px;">ZoltMount</h1>
+          <td style="background:#ffffff;padding:36px 24px 28px;text-align:center;">
+            <img src="https://zoltmount.com/images/zoltmount-logo.jpg" alt="ZoltMount" width="260" style="display:block;margin:0 auto;max-width:260px;height:auto;" />
+            <p style="margin:14px 0 0;font-size:11px;letter-spacing:2.5px;color:#64748b;text-transform:uppercase;font-weight:300;">30 Years of Engineering Excellence</p>
           </td>
         </tr>
-        <!-- Body -->
+
+        <!-- ===== Spacer ===== -->
+        <tr><td style="height:8px;background:linear-gradient(to right,#3b82f6,#1e40af);font-size:0;line-height:0;">&nbsp;</td></tr>
+
+        <!-- ===== BODY ===== -->
         <tr>
-          <td style="padding:32px 24px;">
-            <p style="margin:0 0 16px;font-size:16px;">Hi ${firstName},</p>
-            ${getStatusBlock(order, status)}
+          <td style="padding:40px 32px 32px;">
+            <p style="margin:0 0 20px;font-size:16px;color:#1e293b;line-height:1.6;">Hi ${firstName},</p>
+            <div style="font-size:15px;color:#374151;line-height:1.7;">
+              ${getStatusBlock(order, status)}
+            </div>
+
             <!-- Order Details -->
-            <div style="margin:24px 0;padding:16px;background:#f9fafb;border-radius:6px;">
-              <p style="margin:0 0 12px;font-weight:bold;font-size:15px;">Order #${order.id}</p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
-                <tr style="background:#e5e7eb;">
-                  <th style="padding:8px 12px;text-align:left;">Item</th>
-                  <th style="padding:8px 12px;text-align:center;">Qty</th>
-                  <th style="padding:8px 12px;text-align:right;">Price</th>
+            <div style="margin:28px 0;padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+              <p style="margin:0 0 14px;font-weight:700;font-size:15px;color:#0f172a;">Order #${order.id}</p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr style="background:#e2e8f0;">
+                  <th style="padding:10px 14px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#475569;">Item</th>
+                  <th style="padding:10px 14px;text-align:center;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#475569;">Qty</th>
+                  <th style="padding:10px 14px;text-align:right;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#475569;">Price</th>
                 </tr>
                 ${items}
                 <tr>
-                  <td colspan="2" style="padding:10px 12px;font-weight:bold;text-align:right;">Total:</td>
-                  <td style="padding:10px 12px;font-weight:bold;text-align:right;">${total}</td>
+                  <td colspan="2" style="padding:12px 14px;font-weight:700;text-align:right;font-size:15px;color:#0f172a;">Total:</td>
+                  <td style="padding:12px 14px;font-weight:700;text-align:right;font-size:15px;color:#0f172a;">${total}</td>
                 </tr>
               </table>
+              ${productImageBlock}
             </div>
           </td>
         </tr>
-        <!-- Footer -->
+
+        <!-- ===== FOOTER ===== -->
         <tr>
-          <td style="padding:20px 24px;background:#f9fafb;text-align:center;font-size:13px;color:#6b7280;">
-            <p style="margin:0 0 8px;">Questions? Contact us at <a href="mailto:support@zoltmount.com" style="color:#2563eb;">support@zoltmount.com</a></p>
-            <p style="margin:0;">&copy; ${new Date().getFullYear()} ZoltMount. All rights reserved.</p>
+          <td style="padding:28px 32px;background:#1e293b;text-align:center;">
+            <p style="margin:0 0 12px;font-size:13px;color:#e2e8f0;">Questions? Contact us at <a href="mailto:support@zoltmount.com" style="color:#60a5fa;text-decoration:none;">support@zoltmount.com</a></p>
+            <div style="margin:16px 0;border-top:1px solid #334155;padding-top:16px;">
+              <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;letter-spacing:0.3px;">Operated by VELL EDUCATION GROUP LIMITED (HK)</p>
+              <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;">Room C10, 4/F, Block C2, Hang Wai Industrial Centre, No. 6 Kin Tai Street, Tuen Mun, Hong Kong</p>
+              <p style="margin:8px 0 0;font-size:10px;color:#64748b;">EU Registered Trademark | Legal Representation by AOMB (NL)</p>
+            </div>
+            <p style="margin:16px 0 0;font-size:11px;color:#64748b;">&copy; ${new Date().getFullYear()} ZoltMount. All rights reserved.</p>
           </td>
         </tr>
+
       </table>
     </td></tr>
   </table>
