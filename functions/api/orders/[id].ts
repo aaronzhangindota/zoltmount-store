@@ -84,7 +84,7 @@ function buildEmailHtml(order: any, status: string): string {
 
         <!-- ===== HEADER: Logo + Slogan ===== -->
         <tr>
-          <td style="background:#2C3E50;padding:36px 24px 28px;text-align:center;">
+          <td style="background:#2c3d4d;padding:36px 24px 28px;text-align:center;">
             <img src="https://zoltmount.com/images/zoltmount-logo.jpg" alt="ZoltMount" width="260" style="display:block;margin:0 auto;max-width:260px;height:auto;" />
             <p style="margin:14px 0 0;font-size:11px;letter-spacing:2.5px;color:#c1ced8;text-transform:uppercase;font-weight:300;">30 Years of Engineering Excellence</p>
           </td>
@@ -123,7 +123,7 @@ function buildEmailHtml(order: any, status: string): string {
 
         <!-- ===== FOOTER ===== -->
         <tr>
-          <td style="padding:28px 32px;background:#2C3E50;text-align:center;">
+          <td style="padding:28px 32px;background:#2c3d4d;text-align:center;">
             <p style="margin:0 0 12px;font-size:13px;color:#e2e8f0;">Questions? Contact us at <a href="mailto:support@zoltmount.com" style="color:#60a5fa;text-decoration:none;">support@zoltmount.com</a></p>
             <div style="margin:16px 0;border-top:1px solid #334155;padding-top:16px;">
               <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;letter-spacing:0.3px;">Operated by VELL EDUCATION GROUP LIMITED (HK)</p>
