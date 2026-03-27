@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText, FiLock, FiTruck, FiMessageSquare, FiUserCheck, FiHeadphones, FiKey, FiBell, FiX } from 'react-icons/fi'
+import { FiGrid, FiPackage, FiShoppingCart, FiTag, FiCreditCard, FiLogOut, FiMenu, FiChevronRight, FiUsers, FiFileText, FiLock, FiTruck, FiMessageSquare, FiUserCheck, FiKey, FiX } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
-import { useChatStore } from '../../store/chatStore'
 import { api } from '../../api/client'
 
 const allNavItems = [
@@ -12,7 +11,6 @@ const allNavItems = [
   { path: '/haijieaaronzhang/orders', icon: FiShoppingCart, label: '订单管理', superOnly: false },
   { path: '/haijieaaronzhang/customers', icon: FiUserCheck, label: '客户管理', superOnly: true },
   { path: '/haijieaaronzhang/messages', icon: FiMessageSquare, label: '消息管理', superOnly: false },
-  { path: '/haijieaaronzhang/chat', icon: FiHeadphones, label: '在线客服', superOnly: false },
   { path: '/haijieaaronzhang/payment', icon: FiCreditCard, label: '支付设置', superOnly: true },
   { path: '/haijieaaronzhang/payment-gateways', icon: FiKey, label: '收款网关', superOnly: true },
   { path: '/haijieaaronzhang/shipping', icon: FiTruck, label: '物流运费', superOnly: true },
@@ -28,7 +26,6 @@ const breadcrumbMap: Record<string, string> = {
   '/haijieaaronzhang/orders': '订单管理',
   '/haijieaaronzhang/customers': '客户管理',
   '/haijieaaronzhang/messages': '消息管理',
-  '/haijieaaronzhang/chat': '在线客服',
   '/haijieaaronzhang/payment': '支付设置',
   '/haijieaaronzhang/payment-gateways': '收款网关',
   '/haijieaaronzhang/shipping': '物流运费',
@@ -40,7 +37,7 @@ const breadcrumbMap: Record<string, string> = {
 // Toast notification type
 interface AdminToast {
   id: number
-  type: 'order' | 'chat'
+  type: 'order'
   message: string
   link: string
 }
@@ -69,18 +66,15 @@ export const AdminLayout: React.FC = () => {
   const adminAccount = useAdminStore((s) => s.adminAccount)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
-  const adminTotalUnread = useChatStore((s) => s.adminTotalUnread)
-  const fetchAdminUnreadTotal = useChatStore((s) => s.fetchAdminUnreadTotal)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Notification state
   const [toasts, setToasts] = useState<AdminToast[]>([])
   const [pendingOrderCount, setPendingOrderCount] = useState(0)
   const prevOrderCountRef = useRef<number>(-1)
-  const prevChatUnreadRef = useRef<number>(-1)
   const toastIdRef = useRef(0)
 
-  const addToast = useCallback((type: 'order' | 'chat', message: string, link: string) => {
+  const addToast = useCallback((type: 'order', message: string, link: string) => {
     const id = ++toastIdRef.current
     setToasts((prev) => [...prev, { id, type, message, link }])
     playNotificationSound()
@@ -103,14 +97,9 @@ export const AdminLayout: React.FC = () => {
     }
   }, [])
 
-  // Unified polling: orders + chat every 10 seconds
+  // Polling: orders every 10 seconds
   useEffect(() => {
     const poll = async () => {
-      // Fetch chat unread
-      await fetchAdminUnreadTotal()
-      const chatUnread = useChatStore.getState().adminTotalUnread
-
-      // Fetch pending orders
       try {
         const orders = await api.getOrders()
         const pending = orders.filter((o) => o.status === 'pending').length
@@ -123,12 +112,6 @@ export const AdminLayout: React.FC = () => {
         }
         prevOrderCountRef.current = pending
       } catch { /* ignore */ }
-
-      // Notify if new chat messages (skip first load)
-      if (prevChatUnreadRef.current >= 0 && chatUnread > prevChatUnreadRef.current) {
-        addToast('chat', `收到新的客服消息（${chatUnread} 条未读）`, '/haijieaaronzhang/chat')
-      }
-      prevChatUnreadRef.current = chatUnread
     }
 
     poll()
@@ -200,11 +183,6 @@ export const AdminLayout: React.FC = () => {
             {item.path === '/haijieaaronzhang/orders' && pendingOrderCount > 0 && (
               <span className="ml-auto w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                 {pendingOrderCount > 9 ? '9+' : pendingOrderCount}
-              </span>
-            )}
-            {item.path === '/haijieaaronzhang/chat' && adminTotalUnread > 0 && (
-              <span className="ml-auto w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                {adminTotalUnread > 9 ? '9+' : adminTotalUnread}
               </span>
             )}
           </Link>
@@ -308,27 +286,14 @@ export const AdminLayout: React.FC = () => {
           {toasts.map((toast) => (
             <div
               key={toast.id}
-              className={`flex items-start gap-3 p-4 rounded-xl shadow-2xl border cursor-pointer animate-[slideIn_0.3s_ease-out] ${
-                toast.type === 'order'
-                  ? 'bg-orange-50 border-orange-200'
-                  : 'bg-blue-50 border-blue-200'
-              }`}
+              className="flex items-start gap-3 p-4 rounded-xl shadow-2xl border cursor-pointer animate-[slideIn_0.3s_ease-out] bg-orange-50 border-orange-200"
               onClick={() => { removeToast(toast.id); navigate(toast.link) }}
             >
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
-                toast.type === 'order' ? 'bg-orange-500' : 'bg-blue-500'
-              }`}>
-                {toast.type === 'order'
-                  ? <FiShoppingCart size={16} className="text-white" />
-                  : <FiHeadphones size={16} className="text-white" />
-                }
+              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-orange-500">
+                <FiShoppingCart size={16} className="text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-bold ${
-                  toast.type === 'order' ? 'text-orange-800' : 'text-blue-800'
-                }`}>
-                  {toast.type === 'order' ? '新订单通知' : '新消息通知'}
-                </p>
+                <p className="text-sm font-bold text-orange-800">新订单通知</p>
                 <p className="text-xs text-gray-600 mt-0.5">{toast.message}</p>
                 <p className="text-[10px] text-gray-400 mt-1">点击查看</p>
               </div>

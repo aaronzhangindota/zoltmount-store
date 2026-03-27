@@ -37,7 +37,6 @@ import { AdminChangePasswordPage } from './pages/admin/AdminChangePasswordPage'
 import { AdminShippingPage } from './pages/admin/AdminShippingPage'
 import { AdminCustomersPage } from './pages/admin/AdminCustomersPage'
 import { AdminMessagesPage } from './pages/admin/AdminMessagesPage'
-import { AdminChatPage } from './pages/admin/AdminChatPage'
 import { AdminPaymentGatewaysPage } from './pages/admin/AdminPaymentGatewaysPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
@@ -83,7 +82,6 @@ const App: React.FC = () => {
               <Route path="/haijieaaronzhang/orders" element={<AdminOrdersPage />} />
               <Route path="/haijieaaronzhang/customers" element={<AdminCustomersPage />} />
               <Route path="/haijieaaronzhang/messages" element={<AdminMessagesPage />} />
-              <Route path="/haijieaaronzhang/chat" element={<AdminChatPage />} />
               <Route path="/haijieaaronzhang/payment" element={<AdminPaymentPage />} />
               <Route path="/haijieaaronzhang/payment-gateways" element={<AdminPaymentGatewaysPage />} />
               <Route path="/haijieaaronzhang/shipping" element={<AdminShippingPage />} />
