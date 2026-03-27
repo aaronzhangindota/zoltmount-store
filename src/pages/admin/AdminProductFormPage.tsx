@@ -191,7 +191,11 @@ export const AdminProductFormPage: React.FC = () => {
     setUploading(true)
     setUploadError('')
     try {
-      const token = localStorage.getItem('adminToken') || ''
+      let token = ''
+      try {
+        const raw = localStorage.getItem('admin-store')
+        if (raw) token = JSON.parse(raw)?.state?.adminToken || ''
+      } catch { /* ignore */ }
       const formData = new FormData()
       formData.append('file', file)
       const res = await fetch('/api/upload', {
