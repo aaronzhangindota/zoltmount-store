@@ -1,8 +1,10 @@
 export interface Product {
   id: string
+  sku?: string
   name: string
   slug: string
   category: 'fixed' | 'tilt' | 'full-motion' | 'ceiling' | 'desk' | 'stand' | 'cart' | 'accessory'
+  status?: 'draft' | 'active' | 'archived'
   price: number
   originalPrice?: number
   rating: number

@@ -30,6 +30,51 @@ export const ProductDetailPage: React.FC = () => {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewSubmitted, setReviewSubmitted] = useState(false)
 
+  // Dynamic SEO: page title + JSON-LD Product schema
+  useEffect(() => {
+    if (product) {
+      document.title = `${product.name} | ZoltMount`
+
+      // Inject JSON-LD Product schema
+      const existingLd = document.getElementById('product-jsonld')
+      if (existingLd) existingLd.remove()
+
+      const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.name,
+        description: product.description,
+        image: product.images[0] || '',
+        sku: product.sku || product.id,
+        brand: { '@type': 'Brand', name: 'ZoltMount' },
+        offers: {
+          '@type': 'Offer',
+          url: `https://zoltmount.com/products/${product.slug}`,
+          priceCurrency: 'USD',
+          price: product.price.toFixed(2),
+          availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        },
+        aggregateRating: product.reviewCount > 0 ? {
+          '@type': 'AggregateRating',
+          ratingValue: product.rating.toString(),
+          reviewCount: product.reviewCount.toString(),
+        } : undefined,
+      }
+
+      const script = document.createElement('script')
+      script.id = 'product-jsonld'
+      script.type = 'application/ld+json'
+      script.textContent = JSON.stringify(jsonLd)
+      document.head.appendChild(script)
+
+      return () => {
+        document.title = 'ZoltMount — Premium TV Mounts & Wall Brackets'
+        const el = document.getElementById('product-jsonld')
+        if (el) el.remove()
+      }
+    }
+  }, [product])
+
   useEffect(() => {
     if (slug && product) {
       setReviewsLoading(true)
@@ -142,6 +187,9 @@ export const ProductDetailPage: React.FC = () => {
             )}
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{product.name}</h1>
+            {product.sku && (
+              <p className="text-xs text-gray-400 mt-1">SKU: {product.sku}</p>
+            )}
 
             {/* Rating */}
             <div className="flex items-center gap-3 mt-3">
@@ -189,11 +237,19 @@ export const ProductDetailPage: React.FC = () => {
               </div>
 
               <button
-                onClick={() => addItem(product, quantity)}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all text-sm hover:-translate-y-0.5 shadow-lg shadow-brand-600/20"
+                onClick={() => product.inStock && addItem(product, quantity)}
+                disabled={!product.inStock}
+                className={`flex-1 flex items-center justify-center gap-2 py-3.5 font-bold rounded-xl transition-all text-sm ${
+                  product.inStock
+                    ? 'bg-brand-600 hover:bg-brand-700 text-white hover:-translate-y-0.5 shadow-lg shadow-brand-600/20'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
               >
                 <FiShoppingCart size={18} />
-                {t('detail.addToCartPrice', { price: (product.price * quantity).toFixed(2) })}
+                {product.inStock
+                  ? t('detail.addToCartPrice', { price: (product.price * quantity).toFixed(2) })
+                  : t('detail.outOfStock', 'Out of Stock')
+                }
               </button>
             </div>
 

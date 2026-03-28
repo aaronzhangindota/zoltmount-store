@@ -66,8 +66,10 @@ export const AdminProductFormPage: React.FC = () => {
 
   // Basic info
   const [name, setName] = useState('')
+  const [sku, setSku] = useState('')
   const [slug, setSlug] = useState('')
   const [category, setCategory] = useState<Product['category']>('fixed')
+  const [status, setStatus] = useState<'draft' | 'active' | 'archived'>('active')
   const [badge, setBadge] = useState('')
   const [description, setDescription] = useState('')
   const [features, setFeatures] = useState('')
@@ -111,14 +113,16 @@ export const AdminProductFormPage: React.FC = () => {
   useEffect(() => {
     if (existing) {
       setName(existing.name)
+      setSku(existing.sku || '')
       setSlug(existing.slug)
       setCategory(existing.category)
+      setStatus(existing.status || 'active')
       setBadge(existing.badge || '')
       setDescription(existing.description)
       setFeatures(existing.features.join('\n'))
       setPrice(existing.price.toString())
       setOriginalPrice(existing.originalPrice?.toString() || '')
-      setStockCount(existing.inStock ? '100' : '0')
+      setStockCount(existing.inStock ? '1' : '0')
       setRating(existing.rating.toString())
       setReviewCount(existing.reviewCount.toString())
       setImages(existing.images.length > 0 ? existing.images : [''])
@@ -167,14 +171,15 @@ export const AdminProductFormPage: React.FC = () => {
     }
   }, [existing])
 
-  // Auto-generate slug from name
-  useEffect(() => {
-    if (!isEdit && name && !slug) {
-      // Don't auto-set if user has manually typed a slug
-    }
-  }, [name])
-
   const autoSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+  // Auto-generate slug from name (only for new products, only if user hasn't manually typed)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  useEffect(() => {
+    if (!isEdit && name && !slugManuallyEdited) {
+      setSlug(autoSlug)
+    }
+  }, [name, isEdit, slugManuallyEdited])
 
   // Image upload handler
   const uploadFile = useCallback(async (file: File) => {
@@ -281,10 +286,12 @@ export const AdminProductFormPage: React.FC = () => {
     const validImages = images.map((s) => s.trim()).filter(Boolean)
 
     const product: Product = {
-      id: isEdit ? id! : `mp-${Date.now()}`,
+      id: isEdit ? id! : `mp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      sku: sku.trim() || undefined,
       name: name.trim(),
       slug: slug.trim() || autoSlug,
       category,
+      status,
       price: parseFloat(price) || 0,
       originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
       rating: parseFloat(rating) || 4.5,
@@ -437,13 +444,51 @@ export const AdminProductFormPage: React.FC = () => {
                 />
               </div>
 
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU / 型号</label>
+                  <input
+                    type="text"
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value)}
+                    placeholder="例如：ZM-FM-101"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">商品状态</label>
+                  <div className="flex gap-2">
+                    {([
+                      { value: 'active', label: '上架', color: 'green' },
+                      { value: 'draft', label: '草稿', color: 'gray' },
+                      { value: 'archived', label: '下架', color: 'red' },
+                    ] as const).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setStatus(opt.value)}
+                        className={`flex-1 px-3 py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                          status === opt.value
+                            ? opt.color === 'green' ? 'bg-green-50 text-green-700 border-green-300 shadow-sm'
+                            : opt.color === 'red' ? 'bg-red-50 text-red-600 border-red-300 shadow-sm'
+                            : 'bg-gray-100 text-gray-600 border-gray-300 shadow-sm'
+                            : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
+                    onChange={(e) => { setSlug(e.target.value); setSlugManuallyEdited(true) }}
                     placeholder="自动生成"
                     className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                   />
@@ -563,23 +608,33 @@ export const AdminProductFormPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  库存数量
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  库存状态
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={stockCount}
-                  onChange={(e) => setStockCount(e.target.value)}
-                  className="w-full sm:w-40 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                />
-                <p className="mt-1 text-xs text-gray-400">
-                  {parseInt(stockCount) > 0 ? (
-                    <span className="text-green-600">有货</span>
-                  ) : (
-                    <span className="text-red-500">缺货（库存为 0）</span>
-                  )}
-                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setStockCount('1')}
+                    className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                      parseInt(stockCount) > 0
+                        ? 'bg-green-50 text-green-700 border-green-300 shadow-sm'
+                        : 'bg-white text-gray-500 border-gray-200 hover:border-green-300'
+                    }`}
+                  >
+                    有货
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStockCount('0')}
+                    className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                      parseInt(stockCount) <= 0
+                        ? 'bg-red-50 text-red-600 border-red-300 shadow-sm'
+                        : 'bg-white text-gray-500 border-gray-200 hover:border-red-300'
+                    }`}
+                  >
+                    缺货
+                  </button>
+                </div>
               </div>
 
               <div className="border-t border-gray-100 pt-5">

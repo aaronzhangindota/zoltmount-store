@@ -91,16 +91,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </span>
             )}
           </div>
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              addItem(product)
-            }}
-            className="p-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
-            title={t('product.addToCart')}
-          >
-            <FiShoppingCart size={16} />
-          </button>
+          {product.inStock ? (
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                addItem(product)
+              }}
+              className="p-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+              title={t('product.addToCart')}
+            >
+              <FiShoppingCart size={16} />
+            </button>
+          ) : (
+            <span className="px-2.5 py-1.5 bg-gray-100 text-gray-400 text-xs font-medium rounded-xl">
+              {t('product.outOfStock', 'Sold Out')}
+            </span>
+          )}
         </div>
       </div>
     </div>

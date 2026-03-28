@@ -23,6 +23,7 @@ export const AdminProductsPage: React.FC = () => {
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [stockFilter, setStockFilter] = useState<'all' | 'inStock' | 'outOfStock'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'draft' | 'archived'>('all')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
@@ -35,7 +36,8 @@ export const AdminProductsPage: React.FC = () => {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.id.toLowerCase().includes(q)
+          p.id.toLowerCase().includes(q) ||
+          (p.sku && p.sku.toLowerCase().includes(q))
       )
     }
 
@@ -51,8 +53,13 @@ export const AdminProductsPage: React.FC = () => {
       result = result.filter((p) => !p.inStock)
     }
 
+    // Status filter
+    if (statusFilter !== 'all') {
+      result = result.filter((p) => (p.status || 'active') === statusFilter)
+    }
+
     return result
-  }, [products, search, categoryFilter, stockFilter])
+  }, [products, search, categoryFilter, stockFilter, statusFilter])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
   const currentPage = Math.min(page, totalPages)
@@ -62,6 +69,7 @@ export const AdminProductsPage: React.FC = () => {
   const handleSearch = (v: string) => { setSearch(v); setPage(1) }
   const handleCategory = (v: string) => { setCategoryFilter(v); setPage(1) }
   const handleStock = (v: 'all' | 'inStock' | 'outOfStock') => { setStockFilter(v); setPage(1) }
+  const handleStatus = (v: 'all' | 'active' | 'draft' | 'archived') => { setStatusFilter(v); setPage(1) }
 
   const allPageSelected = paged.length > 0 && paged.every((p) => selected.has(p.id))
   const toggleAll = () => {
@@ -89,10 +97,10 @@ export const AdminProductsPage: React.FC = () => {
     })
   }
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = async () => {
     if (selected.size === 0) return
     if (window.confirm(`确定要删除选中的 ${selected.size} 个商品吗？`)) {
-      selected.forEach((id) => deleteProduct(id))
+      await Promise.all(Array.from(selected).map((id) => deleteProduct(id)))
       setSelected(new Set())
     }
   }
@@ -121,7 +129,7 @@ export const AdminProductsPage: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
-            placeholder="搜索商品名称或ID..."
+            placeholder="搜索商品名称、SKU 或 ID..."
             className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
         </div>
@@ -152,6 +160,17 @@ export const AdminProductsPage: React.FC = () => {
           <option value="outOfStock">缺货</option>
         </select>
 
+        <select
+          value={statusFilter}
+          onChange={(e) => handleStatus(e.target.value as 'all' | 'active' | 'draft' | 'archived')}
+          className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+        >
+          <option value="all">全部状态</option>
+          <option value="active">已上架</option>
+          <option value="draft">草稿</option>
+          <option value="archived">已下架</option>
+        </select>
+
         {selected.size > 0 && (
           <button
             onClick={handleBatchDelete}
@@ -177,10 +196,10 @@ export const AdminProductsPage: React.FC = () => {
                 />
               </th>
               <th className="px-5 py-3 font-medium">商品</th>
-              <th className="px-5 py-3 font-medium">ID</th>
+              <th className="px-5 py-3 font-medium">SKU</th>
               <th className="px-5 py-3 font-medium">分类</th>
               <th className="px-5 py-3 font-medium">价格</th>
-              <th className="px-5 py-3 font-medium">标签</th>
+              <th className="px-5 py-3 font-medium">状态</th>
               <th className="px-5 py-3 font-medium">库存</th>
               <th className="px-5 py-3 font-medium text-right">操作</th>
             </tr>
@@ -214,7 +233,7 @@ export const AdminProductsPage: React.FC = () => {
                     <span className="font-medium text-gray-900 truncate max-w-[200px]">{p.name}</span>
                   </div>
                 </td>
-                <td className="px-5 py-3 text-gray-500 font-mono text-xs">{p.id}</td>
+                <td className="px-5 py-3 text-gray-500 font-mono text-xs">{p.sku || p.id}</td>
                 <td className="px-5 py-3 text-gray-600">{categoryLabels[p.category] || p.category}</td>
                 <td className="px-5 py-3">
                   <span className="font-semibold text-gray-900">${p.price.toFixed(2)}</span>
@@ -223,13 +242,16 @@ export const AdminProductsPage: React.FC = () => {
                   )}
                 </td>
                 <td className="px-5 py-3">
-                  {p.badge ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                      {p.badge}
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">—</span>
-                  )}
+                  {(() => {
+                    const s = p.status || 'active'
+                    return s === 'active' ? (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">上架</span>
+                    ) : s === 'draft' ? (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">草稿</span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">下架</span>
+                    )
+                  })()}
                 </td>
                 <td className="px-5 py-3">
                   <span className={`text-xs font-medium ${p.inStock ? 'text-green-600' : 'text-red-500'}`}>

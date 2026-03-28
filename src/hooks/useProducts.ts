@@ -2,8 +2,11 @@ import { useDataStore } from '../store/dataStore'
 import type { Product, Category } from '../data/products'
 
 export function useProducts() {
-  const products = useDataStore((s) => s.products)
+  const allProducts = useDataStore((s) => s.products)
   const categories = useDataStore((s) => s.categories)
+
+  // Only show active products on frontend (undefined status = active for backwards compat)
+  const products = allProducts.filter((p) => !p.status || p.status === 'active')
 
   const getProductBySlug = (slug: string): Product | undefined =>
     products.find((p) => p.slug === slug)
