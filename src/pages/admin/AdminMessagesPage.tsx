@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { FiMail, FiInbox, FiSearch, FiTrash2, FiRefreshCw, FiClock, FiUser, FiMessageSquare, FiChevronDown, FiChevronUp } from 'react-icons/fi'
+import { FiMail, FiInbox, FiSearch, FiTrash2, FiRefreshCw, FiClock, FiUser, FiMessageSquare, FiChevronDown, FiChevronUp, FiUploadCloud, FiExternalLink } from 'react-icons/fi'
 import { api } from '../../api/client'
 
 interface ContactSubmission {
@@ -28,6 +28,8 @@ export const AdminMessagesPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [syncing, setSyncing] = useState(false)
+  const [syncResult, setSyncResult] = useState<{ total: number; synced: number; failed: number } | null>(null)
 
   const fetchData = async () => {
     setLoading(true)
@@ -74,6 +76,20 @@ export const AdminMessagesPage: React.FC = () => {
       setSubscribers((prev) => prev.filter((s) => s.id !== id))
     } catch {
       // ignore
+    }
+  }
+
+  const handleSyncToMailerLite = async () => {
+    if (syncing) return
+    setSyncing(true)
+    setSyncResult(null)
+    try {
+      const result = await api.syncNewsletterToMailerLite()
+      setSyncResult(result)
+    } catch {
+      setSyncResult({ total: 0, synced: 0, failed: -1 })
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -281,11 +297,40 @@ export const AdminMessagesPage: React.FC = () => {
           </div>
         ) : (
           <div>
-            {/* Export hint */}
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-4 flex items-center gap-2 text-sm text-blue-700">
-              <FiMail size={14} />
-              共 {subscribers.length} 位订阅者
+            {/* Toolbar: sync + MailerLite link */}
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+              <span className="text-blue-700 flex items-center gap-2">
+                <FiMail size={14} />
+                共 {subscribers.length} 位订阅者
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSyncToMailerLite}
+                  disabled={syncing || subscribers.length === 0}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-blue-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FiUploadCloud size={14} className={syncing ? 'animate-pulse' : ''} />
+                  {syncing ? '同步中...' : '同步到 MailerLite'}
+                </button>
+                <a
+                  href="https://dashboard.mailerlite.com/campaigns"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                >
+                  <FiExternalLink size={14} />
+                  去 MailerLite 发邮件
+                </a>
+              </div>
             </div>
+            {syncResult && (
+              <div className={`rounded-lg p-3 mb-4 text-sm ${syncResult.failed === -1 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`}>
+                {syncResult.failed === -1
+                  ? '同步失败，请检查 MailerLite API Token 配置'
+                  : `同步完成！共 ${syncResult.total} 位，成功 ${syncResult.synced} 位${syncResult.failed > 0 ? `，失败 ${syncResult.failed} 位` : ''}`
+                }
+              </div>
+            )}
 
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <table className="w-full text-sm">

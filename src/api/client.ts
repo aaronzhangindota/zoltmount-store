@@ -281,6 +281,9 @@ class ApiClient {
   async deleteNewsletterSubscriber(id: string): Promise<void> {
     await this.request(`/newsletter?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
   }
+  async syncNewsletterToMailerLite(): Promise<{ total: number; synced: number; failed: number }> {
+    return this.request('/newsletter', { method: 'PATCH' })
+  }
 
   // Admin: list all registered users
   async getAdminUsers(): Promise<ApiUser[]> {
