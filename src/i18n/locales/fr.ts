@@ -303,6 +303,28 @@ const fr = {
     sessionClosed: 'Cette conversation a été fermée',
     startNew: 'Démarrer une nouvelle conversation',
   },
+
+  // Tracking
+  tracking: {
+    pageTitle: 'Suivi de Colis',
+    pageSubtitle: 'Entrez votre numéro de suivi pour voir le statut de livraison.',
+    inputPlaceholder: 'Entrez le numéro de suivi...',
+    search: 'Suivre',
+    querying: 'Recherche des informations de suivi...',
+    fetchError: 'Impossible de récupérer les informations. Veuillez réessayer.',
+    rateLimited: 'Trop de requêtes. Veuillez réessayer dans une minute.',
+    emptyHint: 'Entrez un numéro de suivi ci-dessus pour commencer.',
+    noEvents: 'Aucun événement de suivi pour le moment.',
+    showAll: 'Voir les {{count}} événements',
+    awaitingShipment: 'En attente d\'expédition',
+    delivered: 'Livré',
+    inTransit: 'En transit',
+    awaitingPickup: 'En attente de retrait',
+    deliveryFailed: 'Échec de livraison',
+    exception: 'Exception',
+    returned: 'Retourné',
+    pending: 'En attente',
+  },
 }
 
 export default fr

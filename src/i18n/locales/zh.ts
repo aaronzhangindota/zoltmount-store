@@ -473,6 +473,28 @@ const zh = {
     sessionClosed: '此对话已关闭',
     startNew: '开始新对话',
   },
+
+  // Tracking
+  tracking: {
+    pageTitle: '物流追踪',
+    pageSubtitle: '输入运单号查看最新物流状态。',
+    inputPlaceholder: '输入运单号...',
+    search: '查询',
+    querying: '正在查询物流信息...',
+    fetchError: '查询物流信息失败，请稍后重试。',
+    rateLimited: '查询过于频繁，请一分钟后再试。',
+    emptyHint: '请在上方输入运单号开始查询。',
+    noEvents: '暂无物流信息，请稍后查看。',
+    showAll: '查看全部 {{count}} 条记录',
+    awaitingShipment: '等待发货',
+    delivered: '已签收',
+    inTransit: '运输中',
+    awaitingPickup: '待取件',
+    deliveryFailed: '投递失败',
+    exception: '异常',
+    returned: '退件',
+    pending: '待查询',
+  },
 }
 
 export default zh

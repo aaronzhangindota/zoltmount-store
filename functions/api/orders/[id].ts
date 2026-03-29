@@ -1,9 +1,11 @@
 import { requireAdmin, getCollection, putCollection, json, writeLog } from '../_middleware'
+import { getCarrierCode } from '../tracking/_carrier-map'
 
 interface Env {
   ZOLTMOUNT_KV: KVNamespace
   ADMIN_API_KEY: string
   RESEND_API_KEY: string
+  TRACK17_API_KEY: string
 }
 
 // ─── 邮件模板 ───
@@ -27,6 +29,7 @@ function getStatusBlock(order: any, status: string): string {
       let tracking = ''
       if (order.trackingNumber) {
         tracking += `<p><strong>Tracking Number:</strong> ${order.trackingNumber}</p>`
+        tracking += `<p><a href="https://zoltmount.com/track?number=${encodeURIComponent(order.trackingNumber)}" style="color:#2563eb;text-decoration:underline;">Track your package on our website</a></p>`
       }
       if (order.carrier) {
         tracking += `<p><strong>Carrier:</strong> ${order.carrier}</p>`
@@ -171,6 +174,40 @@ async function sendOrderStatusEmail(env: Env, order: any, newStatus: string): Pr
   }
 }
 
+// ─── 17TRACK 运单注册 ───
+
+async function registerTo17Track(env: Env, trackingNumber: string, carrier?: string): Promise<void> {
+  if (!env.TRACK17_API_KEY || !trackingNumber) return
+
+  const carrierCode = carrier ? getCarrierCode(carrier) : undefined
+  const body: any[] = [{ number: trackingNumber }]
+  if (carrierCode) {
+    body[0].carrier = carrierCode
+  } else {
+    body[0].auto_detection = true
+  }
+
+  try {
+    await fetch('https://api.17track.net/track/v2.2/register', {
+      method: 'POST',
+      headers: {
+        '17token': env.TRACK17_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+
+    // 保存注册元数据到 KV（90天TTL）
+    await env.ZOLTMOUNT_KV.put(
+      `tracking:${trackingNumber}`,
+      JSON.stringify({ carrier: carrier || 'auto', carrierCode, registeredAt: new Date().toISOString() }),
+      { expirationTtl: 90 * 24 * 3600 }
+    )
+  } catch {
+    // 注册失败不影响主流程
+  }
+}
+
 // ─── API Handlers ───
 
 export const onRequestPut: PagesFunction<Env> = async (context) => {
@@ -199,6 +236,8 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
   }
   if (data.trackingNumber) {
     await writeLog(env.ZOLTMOUNT_KV, result.auth, `更新订单 ${id} 物流单号`, 'orders')
+    // 自动注册运单到 17TRACK（异步，不阻塞主流程）
+    context.waitUntil(registerTo17Track(env, data.trackingNumber, data.carrier || orders[idx].carrier))
   }
 
   return json(orders[idx])

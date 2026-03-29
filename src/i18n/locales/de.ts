@@ -303,6 +303,28 @@ const de = {
     sessionClosed: 'Dieses Gespräch wurde beendet',
     startNew: 'Neues Gespräch starten',
   },
+
+  // Tracking
+  tracking: {
+    pageTitle: 'Sendungsverfolgung',
+    pageSubtitle: 'Geben Sie Ihre Sendungsnummer ein, um den aktuellen Status zu sehen.',
+    inputPlaceholder: 'Sendungsnummer eingeben...',
+    search: 'Verfolgen',
+    querying: 'Sendungsinformationen werden abgerufen...',
+    fetchError: 'Informationen konnten nicht abgerufen werden. Bitte versuchen Sie es erneut.',
+    rateLimited: 'Zu viele Anfragen. Bitte versuchen Sie es in einer Minute erneut.',
+    emptyHint: 'Geben Sie oben eine Sendungsnummer ein.',
+    noEvents: 'Noch keine Sendungsereignisse. Bitte schauen Sie später nach.',
+    showAll: 'Alle {{count}} Ereignisse anzeigen',
+    awaitingShipment: 'Warten auf Versand',
+    delivered: 'Zugestellt',
+    inTransit: 'Unterwegs',
+    awaitingPickup: 'Wartet auf Abholung',
+    deliveryFailed: 'Zustellung fehlgeschlagen',
+    exception: 'Ausnahme',
+    returned: 'Zurückgesendet',
+    pending: 'Ausstehend',
+  },
 }
 
 export default de

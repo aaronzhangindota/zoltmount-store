@@ -2,6 +2,21 @@ import type { Product, Category } from '../data/products'
 import type { Order, PaymentMethod, ShippingZone } from '../store/adminStore'
 import type { Address } from '../store/userStore'
 
+export interface TrackingEvent {
+  time: string
+  description: string
+  location: string
+}
+
+export interface TrackingResult {
+  number: string
+  carrier: string
+  status: number | null
+  events: TrackingEvent[]
+  lastEvent: string | null
+  lastTime: string | null
+}
+
 export interface AdminAccountInfo {
   id: string
   name: string
@@ -329,6 +344,25 @@ class ApiClient {
 
   async completeMailerLiteOrder(mlOrderId: string): Promise<void> {
     await this.request('/mailerlite', { method: 'PUT', body: JSON.stringify({ orderId: mlOrderId }) })
+  }
+
+  // ─── Tracking ───
+  async getTrackingInfo(trackingNumber: string): Promise<TrackingResult> {
+    return this.request<TrackingResult>(`/tracking/${encodeURIComponent(trackingNumber)}`)
+  }
+
+  async queryTracking(trackingNumber: string): Promise<TrackingResult> {
+    return this.request<TrackingResult>('/tracking/query', {
+      method: 'POST',
+      body: JSON.stringify({ number: trackingNumber }),
+    })
+  }
+
+  async registerTracking(trackingNumber: string, carrier?: string): Promise<any> {
+    return this.request('/tracking/register', {
+      method: 'POST',
+      body: JSON.stringify({ trackingNumber, carrier }),
+    })
   }
 }
 

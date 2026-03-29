@@ -303,6 +303,28 @@ const es = {
     sessionClosed: 'Esta conversación ha sido cerrada',
     startNew: 'Iniciar nueva conversación',
   },
+
+  // Tracking
+  tracking: {
+    pageTitle: 'Seguimiento de Paquete',
+    pageSubtitle: 'Ingresa tu número de seguimiento para ver el estado del envío.',
+    inputPlaceholder: 'Ingresa número de seguimiento...',
+    search: 'Rastrear',
+    querying: 'Consultando información de seguimiento...',
+    fetchError: 'No se pudo obtener la información. Intenta de nuevo.',
+    rateLimited: 'Demasiadas consultas. Intenta en un minuto.',
+    emptyHint: 'Ingresa un número de seguimiento arriba para comenzar.',
+    noEvents: 'Sin eventos de seguimiento aún. Revisa más tarde.',
+    showAll: 'Ver los {{count}} eventos',
+    awaitingShipment: 'En espera de envío',
+    delivered: 'Entregado',
+    inTransit: 'En tránsito',
+    awaitingPickup: 'Esperando recogida',
+    deliveryFailed: 'Entrega fallida',
+    exception: 'Excepción',
+    returned: 'Devuelto',
+    pending: 'Pendiente',
+  },
 }
 
 export default es

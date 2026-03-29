@@ -467,6 +467,28 @@ const en = {
     sessionClosed: 'This conversation has been closed',
     startNew: 'Start a new conversation',
   },
+
+  // Tracking
+  tracking: {
+    pageTitle: 'Track Your Package',
+    pageSubtitle: 'Enter your tracking number to see the latest shipping status.',
+    inputPlaceholder: 'Enter tracking number...',
+    search: 'Track',
+    querying: 'Querying tracking info...',
+    fetchError: 'Failed to fetch tracking info. Please try again.',
+    rateLimited: 'Too many requests. Please try again in a minute.',
+    emptyHint: 'Enter a tracking number above to get started.',
+    noEvents: 'No tracking events yet. Please check back later.',
+    showAll: 'Show all {{count}} events',
+    awaitingShipment: 'Awaiting shipment',
+    delivered: 'Delivered',
+    inTransit: 'In Transit',
+    awaitingPickup: 'Awaiting Pickup',
+    deliveryFailed: 'Delivery Failed',
+    exception: 'Exception',
+    returned: 'Returned',
+    pending: 'Pending',
+  },
 }
 
 export default en

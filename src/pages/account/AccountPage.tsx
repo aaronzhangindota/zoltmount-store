@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useUserStore } from '../../store/userStore'
 import { useDataStore } from '../../store/dataStore'
 import { api } from '../../api/client'
+import { TrackingTimeline } from '../../components/TrackingTimeline'
 import type { Order } from '../../store/adminStore'
 import type { Address } from '../../store/userStore'
 
@@ -510,25 +511,16 @@ const OrdersTab: React.FC = () => {
 
                 {/* 2. 物流追踪卡片 */}
                 {order.trackingNumber ? (
-                  <div className="p-3 bg-blue-50 rounded-lg flex flex-wrap items-center gap-3">
-                    <FiTruck className="text-blue-600 shrink-0" size={16} />
-                    <div className="text-sm min-w-0">
-                      <span className="text-gray-600">{order.carrier || 'Carrier'}: </span>
-                      <span className="font-medium text-gray-900 break-all">{order.trackingNumber}</span>
-                    </div>
-                    <a
-                      href={`https://www.17track.net/en/track#nums=${order.trackingNumber}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-auto px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      {t('account.trackPackage')}
-                    </a>
-                  </div>
+                  <TrackingTimeline
+                    trackingNumber={order.trackingNumber}
+                    carrier={order.carrier}
+                    onFetch={(num) => api.getTrackingInfo(num)}
+                    compact
+                  />
                 ) : order.status !== 'completed' && order.status !== 'cancelled' ? (
                   <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-3 text-sm text-gray-400">
                     <FiTruck size={16} className="shrink-0" />
-                    <span>Awaiting shipment</span>
+                    <span>{t('tracking.awaitingShipment')}</span>
                   </div>
                 ) : null}
 

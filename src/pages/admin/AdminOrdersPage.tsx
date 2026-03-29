@@ -1,8 +1,11 @@
 import React, { useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { FiShoppingCart, FiSearch, FiMapPin, FiTruck, FiTrash2, FiCheck, FiX, FiPackage, FiChevronDown, FiChevronUp, FiSave, FiDownload, FiFilter } from 'react-icons/fi'
+import { FiShoppingCart, FiSearch, FiMapPin, FiTruck, FiTrash2, FiCheck, FiX, FiPackage, FiChevronDown, FiChevronUp, FiSave, FiDownload, FiFilter, FiEye } from 'react-icons/fi'
 import { useAdminStore } from '../../store/adminStore'
 import { useDataStore } from '../../store/dataStore'
+import { api } from '../../api/client'
+import { TrackingTimeline } from '../../components/TrackingTimeline'
+import type { TrackingResult } from '../../components/TrackingTimeline'
 import type { Order } from '../../store/adminStore'
 
 const carrierOptions = [
@@ -97,6 +100,23 @@ export const AdminOrdersPage: React.FC = () => {
   const [dateTo, setDateTo] = useState('')
   const [amountMin, setAmountMin] = useState('')
   const [amountMax, setAmountMax] = useState('')
+
+  // 17TRACK 物流追踪状态
+  const [trackingResults, setTrackingResults] = useState<Record<string, TrackingResult | null>>({})
+  const [trackingLoading, setTrackingLoading] = useState<Record<string, boolean>>({})
+
+  const handleViewTracking = async (trackingNumber: string) => {
+    if (trackingLoading[trackingNumber]) return
+    setTrackingLoading((p) => ({ ...p, [trackingNumber]: true }))
+    try {
+      const result = await api.queryTracking(trackingNumber)
+      setTrackingResults((p) => ({ ...p, [trackingNumber]: result }))
+    } catch {
+      setTrackingResults((p) => ({ ...p, [trackingNumber]: null }))
+    } finally {
+      setTrackingLoading((p) => ({ ...p, [trackingNumber]: false }))
+    }
+  }
 
   // Local tracking edits (only save on button click)
   const [editingTracking, setEditingTracking] = useState<Record<string, { carrier: string; trackingNumber: string }>>({})
@@ -543,18 +563,36 @@ export const AdminOrdersPage: React.FC = () => {
                           </button>
                         </div>
                         {order.trackingNumber && (
-                          <div className="mt-2 flex items-center gap-2">
-                            <p className="text-xs text-blue-600">
-                              已保存: {order.carrier} - {order.trackingNumber}
-                            </p>
-                            <a
-                              href={`https://www.17track.net/zh/track#nums=${order.trackingNumber}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-800 underline"
-                            >
-                              查看物流
-                            </a>
+                          <div className="mt-3 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs text-blue-600">
+                                已保存: {order.carrier} - {order.trackingNumber}
+                              </p>
+                              <a
+                                href={`https://www.17track.net/zh/track#nums=${order.trackingNumber}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 hover:text-blue-800 underline"
+                              >
+                                17track查看
+                              </a>
+                              <button
+                                onClick={() => handleViewTracking(order.trackingNumber!)}
+                                disabled={trackingLoading[order.trackingNumber!]}
+                                className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors disabled:opacity-50"
+                              >
+                                <FiEye size={12} />
+                                {trackingLoading[order.trackingNumber!] ? '查询中...' : '查看物流状态'}
+                              </button>
+                            </div>
+                            {trackingResults[order.trackingNumber!] && (
+                              <TrackingTimeline
+                                trackingNumber={order.trackingNumber!}
+                                carrier={order.carrier}
+                                data={trackingResults[order.trackingNumber!]}
+                                defaultExpanded
+                              />
+                            )}
                           </div>
                         )}
                       </div>

@@ -8,3 +8,10 @@ id = "9c75035d0eb249f4bd3e262f261988bf"
 [[r2_buckets]]
 binding = "ZOLTMOUNT_R2"
 bucket_name = "zoltmount-products"
+
+# Secrets (通过 wrangler secret put 设置，不要写在此文件中):
+# ADMIN_API_KEY      — 管理员密码
+# RESEND_API_KEY     — Resend 邮件服务
+# MAILERLITE_API_TOKEN — MailerLite 营销自动化
+# GEMINI_API_KEY     — AI 客服 (Gemini)
+# TRACK17_API_KEY    — 17TRACK 物流追踪 API (v2.2)

@@ -38,6 +38,7 @@ import { AdminShippingPage } from './pages/admin/AdminShippingPage'
 import { AdminCustomersPage } from './pages/admin/AdminCustomersPage'
 import { AdminMessagesPage } from './pages/admin/AdminMessagesPage'
 import { AdminPaymentGatewaysPage } from './pages/admin/AdminPaymentGatewaysPage'
+import { TrackPage } from './pages/TrackPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 const App: React.FC = () => {
@@ -63,6 +64,7 @@ const App: React.FC = () => {
             <Route path="/returns" element={<ReturnsPage />} />
             <Route path="/faq" element={<FaqPage />} />
             <Route path="/b2b" element={<B2bPage />} />
+            <Route path="/track" element={<TrackPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route element={<ProtectedRoute />}>
