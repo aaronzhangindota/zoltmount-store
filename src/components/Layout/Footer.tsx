@@ -34,6 +34,7 @@ export const Footer: React.FC = () => {
   ]
 
   const supportLinks = [
+    { label: t('nav2.trackOrder'), to: '/track' },
     { label: t('footer.installGuides'), to: '/install' },
     { label: t('footer.vesaCompat'), to: '/vesa' },
     { label: t('footer.warrantyPolicy'), to: '/warranty' },

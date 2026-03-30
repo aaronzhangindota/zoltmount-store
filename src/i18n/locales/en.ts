@@ -280,6 +280,7 @@ const en = {
     account: 'My Account',
     orders: 'My Orders',
     points: 'Points: {{points}}',
+    trackOrder: 'Track Order',
     logout: 'Log Out',
     login: 'Log In',
   },

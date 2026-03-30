@@ -286,6 +286,7 @@ const zh = {
     account: '会员中心',
     orders: '我的订单',
     points: '积分：{{points}}',
+    trackOrder: '物流追踪',
     logout: '退出登录',
     login: '登录',
   },

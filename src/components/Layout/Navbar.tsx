@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { FiShoppingCart, FiMenu, FiX, FiSearch, FiGlobe, FiChevronDown, FiUser, FiPackage, FiStar, FiLogOut } from 'react-icons/fi'
+import { FiShoppingCart, FiMenu, FiX, FiSearch, FiGlobe, FiChevronDown, FiUser, FiPackage, FiStar, FiLogOut, FiTruck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useCartStore } from '../../store/cartStore'
 import { useDataStore } from '../../store/dataStore'
@@ -180,6 +180,13 @@ export const Navbar: React.FC = () => {
                         <FiPackage size={15} /> {t('nav2.orders')}
                       </Link>
                       <Link
+                        to="/track"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <FiTruck size={15} /> {t('nav2.trackOrder')}
+                      </Link>
+                      <Link
                         to="/account?tab=points"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -341,6 +348,9 @@ export const Navbar: React.FC = () => {
                   </Link>
                   <Link to="/account?tab=orders" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
                     <FiPackage size={16} /> {t('nav2.orders')}
+                  </Link>
+                  <Link to="/track" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    <FiTruck size={16} /> {t('nav2.trackOrder')}
                   </Link>
                   <button
                     onClick={() => { logout(); navigate('/') }}
