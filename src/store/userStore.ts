@@ -24,6 +24,7 @@ export interface User {
   lastName: string
   phone: string
   addresses: Address[]
+  wishlist: string[]
   points: number
   totalSpent: number
   memberSince: string
@@ -48,6 +49,9 @@ interface UserState {
   addPoints: (points: number, spent?: number) => Promise<void>
   usePoints: (points: number) => Promise<boolean>
 
+  toggleWishlist: (productId: string) => Promise<void>
+  isInWishlist: (productId: string) => boolean
+
   getDefaultAddress: () => Address | undefined
   getMemberDiscount: () => number
 
@@ -62,6 +66,7 @@ function apiUserToUser(apiUser: ApiUser): User {
     lastName: apiUser.lastName,
     phone: apiUser.phone,
     addresses: apiUser.addresses,
+    wishlist: apiUser.wishlist || [],
     points: apiUser.points,
     totalSpent: apiUser.totalSpent,
     memberSince: apiUser.memberSince,
@@ -161,6 +166,23 @@ export const useUserStore = create<UserState>()(
         } catch {
           return false
         }
+      },
+
+      toggleWishlist: async (productId) => {
+        const { currentUser } = get()
+        if (!currentUser) return
+        const inList = currentUser.wishlist.includes(productId)
+        try {
+          const { user } = inList
+            ? await api.removeFromWishlist(productId)
+            : await api.addToWishlist(productId)
+          set({ currentUser: apiUserToUser(user) })
+        } catch { /* ignore */ }
+      },
+
+      isInWishlist: (productId) => {
+        const { currentUser } = get()
+        return currentUser?.wishlist.includes(productId) || false
       },
 
       getDefaultAddress: () => {

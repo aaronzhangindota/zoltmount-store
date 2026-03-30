@@ -1,7 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useSEO } from '../hooks/useSEO'
 
 export const VesaCompatPage: React.FC = () => {
+  useSEO({ title: 'VESA Compatibility Guide | ZoltMount', description: 'Find the right VESA pattern for your TV. Complete VESA mount compatibility chart.', canonical: '/vesa' })
   const vesaData = [
     { vesa: '75x75', size: '13" - 22"', weight: 'Up to 15 lbs', type: 'Small monitors, kitchen TVs' },
     { vesa: '100x100', size: '19" - 27"', weight: 'Up to 33 lbs', type: 'Computer monitors, small TVs' },

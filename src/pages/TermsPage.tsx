@@ -1,7 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useSEO } from '../hooks/useSEO'
 
 export const TermsPage: React.FC = () => {
+  useSEO({ title: 'Terms of Service | ZoltMount', canonical: '/terms' })
   return (
     <div className="min-h-screen bg-white pt-28 pb-16">
       {/* Hero */}

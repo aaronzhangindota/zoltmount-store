@@ -268,6 +268,8 @@ const en = {
     pointsBalance: 'Points Balance',
     pointsValue: 'Value: ${{value}}',
     pointsUnit: 'points',
+    wishlist: 'Wishlist',
+    noWishlist: 'Your wishlist is empty.',
     pointsRule: 'Earn 1 point per $100 spent. Points usage coming soon!',
     memberSince: 'Member since {{date}}',
     logout: 'Log Out',

@@ -1,7 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useSEO } from '../hooks/useSEO'
 
 export const PrivacyPage: React.FC = () => {
+  useSEO({ title: 'Privacy Policy | ZoltMount', canonical: '/privacy' })
   return (
     <div className="min-h-screen bg-white pt-28 pb-16">
       {/* Hero */}

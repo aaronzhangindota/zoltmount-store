@@ -261,5 +261,25 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     return json({ user: sanitizeUser(user) })
   }
 
+  if (action === 'addToWishlist') {
+    const { productId } = body
+    if (!productId) return json({ error: 'Missing productId' }, 400)
+    if (!user.wishlist) user.wishlist = []
+    if (!user.wishlist.includes(productId)) {
+      user.wishlist.push(productId)
+      await putCollection(kv, 'users', users)
+    }
+    return json({ user: sanitizeUser(user) })
+  }
+
+  if (action === 'removeFromWishlist') {
+    const { productId } = body
+    if (!productId) return json({ error: 'Missing productId' }, 400)
+    if (!user.wishlist) user.wishlist = []
+    user.wishlist = user.wishlist.filter((id: string) => id !== productId)
+    await putCollection(kv, 'users', users)
+    return json({ user: sanitizeUser(user) })
+  }
+
   return json({ error: 'Invalid action' }, 400)
 }

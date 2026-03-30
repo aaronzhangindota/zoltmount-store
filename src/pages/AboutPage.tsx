@@ -1,8 +1,10 @@
 import React from 'react'
 import { FiTarget, FiGlobe, FiUsers, FiAward } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { useSEO } from '../hooks/useSEO'
 
 export const AboutPage: React.FC = () => {
+  useSEO({ title: 'About Us | ZoltMount', description: '30 years of steel engineering excellence. Learn about ZoltMount\'s mission, quality promise, and global reach.', canonical: '/about' })
   const { t } = useTranslation()
 
   const stats = [

@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { FiUser, FiMapPin, FiPackage, FiStar, FiPlus, FiEdit2, FiTrash2, FiCheck, FiChevronDown, FiChevronUp, FiTruck } from 'react-icons/fi'
+import { FiUser, FiMapPin, FiPackage, FiStar, FiHeart, FiPlus, FiEdit2, FiTrash2, FiCheck, FiChevronDown, FiChevronUp, FiTruck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useUserStore } from '../../store/userStore'
 import { useDataStore } from '../../store/dataStore'
+import { ProductCard } from '../../components/Common/ProductCard'
 import { api } from '../../api/client'
 import { TrackingTimeline } from '../../components/TrackingTimeline'
 import type { Order } from '../../store/adminStore'
 import type { Address } from '../../store/userStore'
 
-const tabs = ['profile', 'addresses', 'orders', 'points'] as const
+const tabs = ['profile', 'addresses', 'orders', 'wishlist', 'points'] as const
 type Tab = (typeof tabs)[number]
-const tabIcons = { profile: FiUser, addresses: FiMapPin, orders: FiPackage, points: FiStar }
+const tabIcons = { profile: FiUser, addresses: FiMapPin, orders: FiPackage, wishlist: FiHeart, points: FiStar }
 
 export const AccountPage: React.FC = () => {
   const { t } = useTranslation()
@@ -48,6 +49,7 @@ export const AccountPage: React.FC = () => {
         {activeTab === 'profile' && <ProfileTab />}
         {activeTab === 'addresses' && <AddressesTab />}
         {activeTab === 'orders' && <OrdersTab />}
+        {activeTab === 'wishlist' && <WishlistTab />}
         {activeTab === 'points' && <PointsTab />}
       </div>
     </div>
@@ -614,6 +616,37 @@ const OrdersTab: React.FC = () => {
           </div>
         )
       })}
+    </div>
+  )
+}
+
+/* ─── Wishlist Tab ─── */
+const WishlistTab: React.FC = () => {
+  const { t } = useTranslation()
+  const currentUser = useUserStore((s) => s.currentUser)
+  const products = useDataStore((s) => s.products)
+
+  const wishlistProducts = products.filter((p) =>
+    currentUser?.wishlist?.includes(p.id) && (!p.status || p.status === 'active')
+  )
+
+  if (wishlistProducts.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+        <FiHeart className="mx-auto text-gray-300 mb-3" size={40} />
+        <p className="text-gray-400 text-sm">{t('account.noWishlist', 'Your wishlist is empty.')}</p>
+        <Link to="/products" className="text-brand-600 hover:underline text-sm mt-2 inline-block">
+          {t('checkout.browseProducts')}
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {wishlistProducts.map((product) => (
+        <ProductCard key={product.id} product={product} />
+      ))}
     </div>
   )
 }

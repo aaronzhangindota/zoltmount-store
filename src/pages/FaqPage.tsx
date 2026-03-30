@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi'
+import { useSEO } from '../hooks/useSEO'
 
 interface FaqItem {
   q: string
@@ -154,6 +155,7 @@ const AccordionItem: React.FC<{ item: FaqItem; isOpen: boolean; onToggle: () => 
 )
 
 export const FaqPage: React.FC = () => {
+  useSEO({ title: 'FAQ | ZoltMount', description: 'Frequently asked questions about TV mounts, installation, shipping, warranty, and returns.', canonical: '/faq' })
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
 
   const toggleItem = (key: string) => {

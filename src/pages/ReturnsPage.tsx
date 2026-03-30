@@ -1,8 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { FiRotateCcw, FiCheck, FiX, FiClock, FiPackage, FiDollarSign } from 'react-icons/fi'
+import { useSEO } from '../hooks/useSEO'
 
 export const ReturnsPage: React.FC = () => {
+  useSEO({ title: 'Returns & Refunds | ZoltMount', description: '30-day no-questions-asked return policy. Easy returns and full refunds on all ZoltMount products.', canonical: '/returns' })
   return (
     <div className="min-h-screen bg-white pt-28 pb-16">
       {/* Hero */}

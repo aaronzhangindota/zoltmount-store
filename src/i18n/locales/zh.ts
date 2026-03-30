@@ -274,6 +274,8 @@ const zh = {
     pointsBalance: '积分余额',
     pointsValue: '价值：${{value}}',
     pointsUnit: '积分',
+    wishlist: '收藏夹',
+    noWishlist: '收藏夹是空的。',
     pointsRule: '每消费 $100 获得 1 积分，积分用途敬请期待！',
     memberSince: '注册时间：{{date}}',
     logout: '退出登录',

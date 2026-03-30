@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { FiFilter } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useProducts } from '../hooks/useProducts'
+import { useSEO } from '../hooks/useSEO'
 import { ProductCard } from '../components/Common/ProductCard'
 
 const catTransKeys: Record<string, string> = {
@@ -26,6 +27,16 @@ export const ProductsPage: React.FC = () => {
   const searchQuery = searchParams.get('q') || ''
   const [sort, setSort] = useState<SortOption>('featured')
   const [showFilters, setShowFilters] = useState(false)
+
+  const categoryName = categoryFilter === 'all'
+    ? t('productsPage.allMounts')
+    : (catTransKeys[categoryFilter] ? t(catTransKeys[categoryFilter]) : categories.find((c) => c.slug === categoryFilter)?.name || 'Products')
+
+  useSEO({
+    title: `${categoryName} | ZoltMount`,
+    description: `Shop ${categoryName} at ZoltMount. Premium TV mounts with 5-year warranty and global shipping.`,
+    canonical: categoryFilter === 'all' ? '/products' : `/products?category=${categoryFilter}`,
+  })
 
   const filtered = useMemo(() => {
     let result = categoryFilter === 'all'

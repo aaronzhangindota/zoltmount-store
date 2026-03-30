@@ -1,8 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { FiShield, FiCheck, FiX } from 'react-icons/fi'
+import { useSEO } from '../hooks/useSEO'
 
 export const WarrantyPage: React.FC = () => {
+  useSEO({ title: 'Warranty Policy | ZoltMount', description: 'ZoltMount 5-year structural warranty. Learn what\'s covered and how to make a claim.', canonical: '/warranty' })
   return (
     <div className="min-h-screen bg-white pt-28 pb-16">
       {/* Hero */}

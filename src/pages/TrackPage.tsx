@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSEO } from '../hooks/useSEO'
 import { FiSearch, FiPackage } from 'react-icons/fi'
 import { TrackingTimeline } from '../components/TrackingTimeline'
 import type { TrackingResult } from '../components/TrackingTimeline'
@@ -8,6 +9,7 @@ import { api } from '../api/client'
 
 export const TrackPage: React.FC = () => {
   const { t } = useTranslation()
+  useSEO({ title: 'Track Your Package | ZoltMount', description: 'Track your ZoltMount order shipment in real time.', canonical: '/track' })
   const [searchParams, setSearchParams] = useSearchParams()
   const urlNumber = searchParams.get('number') || ''
 

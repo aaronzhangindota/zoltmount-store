@@ -4,6 +4,7 @@ import { FiStar, FiShoppingCart } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import type { Product } from '../../data/products'
 import { useCartStore } from '../../store/cartStore'
+import { WishlistButton } from './WishlistButton'
 
 interface ProductCardProps {
   product: Product
@@ -53,6 +54,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             -{discount}%
           </span>
         )}
+
+        <div className={`absolute ${discount > 0 ? 'top-10' : 'top-3'} right-3 z-10`}>
+          <WishlistButton productId={product.id} size={16} className="shadow-sm" />
+        </div>
       </Link>
 
       {/* Content */}

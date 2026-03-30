@@ -1,8 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { FiTool, FiAlertTriangle, FiCheckCircle, FiInfo } from 'react-icons/fi'
+import { useSEO } from '../hooks/useSEO'
 
 export const InstallGuidePage: React.FC = () => {
+  useSEO({ title: 'Installation Guide | ZoltMount', description: 'Step-by-step TV mount installation guide. Tools needed, safety tips, and video tutorials.', canonical: '/install' })
   return (
     <div className="min-h-screen bg-white pt-28 pb-16">
       {/* Hero */}

@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { FiMail, FiPhone, FiMapPin, FiClock, FiMessageCircle, FiCheck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { useSEO } from '../hooks/useSEO'
 import { api } from '../api/client'
 
 export const ContactPage: React.FC = () => {
   const { t } = useTranslation()
+  useSEO({ title: 'Contact Us | ZoltMount', description: 'Get in touch with ZoltMount. Email, phone, live chat support available 24/7.', canonical: '/contact' })
 
   const contactCards = [
     { icon: FiMail, title: t('contact.emailTitle'), detail: t('contact.emailDetail'), sub: t('contact.emailSub') },

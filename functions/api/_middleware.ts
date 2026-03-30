@@ -213,6 +213,7 @@ export interface UserRecord {
   lastName: string
   phone: string
   addresses: Address[]
+  wishlist?: string[]
   points: number
   totalSpent: number
   memberSince: string

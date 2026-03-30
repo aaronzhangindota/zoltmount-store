@@ -46,6 +46,7 @@ export interface ApiUser {
   lastName: string
   phone: string
   addresses: Address[]
+  wishlist?: string[]
   points: number
   totalSpent: number
   memberSince: string
@@ -140,6 +141,21 @@ class ApiClient {
     return this.request('/user-auth', {
       method: 'PUT',
       body: JSON.stringify({ action: 'usePoints', points }),
+    })
+  }
+
+  // ─── Wishlist ───
+  async addToWishlist(productId: string): Promise<{ user: ApiUser }> {
+    return this.request('/user-auth', {
+      method: 'PUT',
+      body: JSON.stringify({ action: 'addToWishlist', productId }),
+    })
+  }
+
+  async removeFromWishlist(productId: string): Promise<{ user: ApiUser }> {
+    return this.request('/user-auth', {
+      method: 'PUT',
+      body: JSON.stringify({ action: 'removeFromWishlist', productId }),
     })
   }
 

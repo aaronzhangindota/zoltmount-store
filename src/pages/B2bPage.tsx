@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { FiCheck, FiMail, FiMessageCircle } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { useSEO } from '../hooks/useSEO'
 import { api } from '../api/client'
 
 export const B2bPage: React.FC = () => {
   const { t } = useTranslation()
+  useSEO({ title: 'B2B Solutions & Bulk Orders | ZoltMount', description: 'Factory-direct TV mounting solutions for businesses. Volume pricing, OEM/ODM customization, global logistics.', canonical: '/b2b' })
 
   const [companyName, setCompanyName] = useState('')
   const [email, setEmail] = useState('')

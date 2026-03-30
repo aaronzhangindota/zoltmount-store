@@ -3,10 +3,12 @@ import { useParams, Link } from 'react-router-dom'
 import { FiStar, FiShoppingCart, FiTruck, FiShield, FiRefreshCw, FiCheck, FiMinus, FiPlus, FiChevronRight } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { useProducts } from '../hooks/useProducts'
+import { useSEO } from '../hooks/useSEO'
 import { useCartStore } from '../store/cartStore'
 import { useUserStore } from '../store/userStore'
 import { api } from '../api/client'
 import { ProductCard } from '../components/Common/ProductCard'
+import { WishlistButton } from '../components/Common/WishlistButton'
 
 export const ProductDetailPage: React.FC = () => {
   const { t } = useTranslation()
@@ -30,36 +32,51 @@ export const ProductDetailPage: React.FC = () => {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewSubmitted, setReviewSubmitted] = useState(false)
 
-  // Dynamic SEO: page title + JSON-LD Product schema
+  // SEO: title + canonical
+  useSEO({
+    title: product ? `${product.name} | ZoltMount` : 'Product | ZoltMount',
+    description: product?.description,
+    canonical: product ? `/products/${product.slug}` : undefined,
+  })
+
+  // JSON-LD: Product + BreadcrumbList
   useEffect(() => {
     if (product) {
-      document.title = `${product.name} | ZoltMount`
-
-      // Inject JSON-LD Product schema
       const existingLd = document.getElementById('product-jsonld')
       if (existingLd) existingLd.remove()
 
-      const jsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'Product',
-        name: product.name,
-        description: product.description,
-        image: product.images[0] || '',
-        sku: product.sku || product.id,
-        brand: { '@type': 'Brand', name: 'ZoltMount' },
-        offers: {
-          '@type': 'Offer',
-          url: `https://zoltmount.com/products/${product.slug}`,
-          priceCurrency: 'USD',
-          price: product.price.toFixed(2),
-          availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      const jsonLd = [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.name,
+          description: product.description,
+          image: product.images[0] || '',
+          sku: product.sku || product.id,
+          brand: { '@type': 'Brand', name: 'ZoltMount' },
+          offers: {
+            '@type': 'Offer',
+            url: `https://zoltmount.com/products/${product.slug}`,
+            priceCurrency: 'USD',
+            price: product.price.toFixed(2),
+            availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          },
+          aggregateRating: product.reviewCount > 0 ? {
+            '@type': 'AggregateRating',
+            ratingValue: product.rating.toString(),
+            reviewCount: product.reviewCount.toString(),
+          } : undefined,
         },
-        aggregateRating: product.reviewCount > 0 ? {
-          '@type': 'AggregateRating',
-          ratingValue: product.rating.toString(),
-          reviewCount: product.reviewCount.toString(),
-        } : undefined,
-      }
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://zoltmount.com/' },
+            { '@type': 'ListItem', position: 2, name: 'Products', item: 'https://zoltmount.com/products' },
+            { '@type': 'ListItem', position: 3, name: product.name, item: `https://zoltmount.com/products/${product.slug}` },
+          ],
+        },
+      ]
 
       const script = document.createElement('script')
       script.id = 'product-jsonld'
@@ -68,7 +85,6 @@ export const ProductDetailPage: React.FC = () => {
       document.head.appendChild(script)
 
       return () => {
-        document.title = 'ZoltMount — Premium TV Mounts & Wall Brackets'
         const el = document.getElementById('product-jsonld')
         if (el) el.remove()
       }
@@ -186,7 +202,10 @@ export const ProductDetailPage: React.FC = () => {
               </span>
             )}
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{product.name}</h1>
+            <div className="flex items-start gap-3">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 flex-1">{product.name}</h1>
+              <WishlistButton productId={product.id} size={22} className="mt-1 shrink-0" />
+            </div>
             {product.sku && (
               <p className="text-xs text-gray-400 mt-1">SKU: {product.sku}</p>
             )}
